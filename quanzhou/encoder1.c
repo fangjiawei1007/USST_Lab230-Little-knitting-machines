@@ -2,15 +2,14 @@
 U32 encoder1_speed_pulse=0;
 U32	encoder1_speed=0;
 
-volatile float motor_factor[7]={0};
+volatile unsigned int motor_factor[7]={0};
 unsigned int dapan_round=0;
 //float encoder1_cal_factor;
 //const int encoder1_cal_factor=8884;
 const float encoder1_tran_factor=5;
 U16	encoder1_pulse_number=0;
 
-//const float k_factor[7][2]={{0.364,0.519},{0.249,0.309},{0.369,0.399},{0.264,0.324},{0.3285,0.3285},{1,1},{1,1}};
-const float k_factor[7][2]={{1,1},{1,1},{1,1},{1,1},{1,1},{1,1},{1,1}};
+const float k_factor[7][2]={{0.364,0.519},{0.249,0.309},{0.369,0.399},{0.264,0.2916},{0.3285,0.3121},{1,1},{1,1}};
 //const unsigned int pre_set_par[5][3]={{500,200,500},{600,500,655},{585,640,585},{910,850,910},{675,715,675}};
 unsigned char jiansu_permite=1;
 unsigned char signal;
@@ -135,7 +134,7 @@ void songsha_fre_change(void){
 				HuanChong_Start=0;
 				for (bb=0;bb<7;bb++)
 				{
-					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou]*modify_rate_different[bb][datou];
+					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou];
 				}
 			}
 			else{
@@ -143,9 +142,9 @@ void songsha_fre_change(void){
 				HuanChong_Start=1;
 				for (bb=0;bb<7;bb++)
 				{
-					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou]*modify_rate_different[bb][datou]*
+					k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*
 								(g_InteralMemory.KeepWord[103+bb]/100.0+(1.0-g_InteralMemory.KeepWord[103+bb]/100.0)/\
-									FenChenHuanChong_num*FenChenHuanChong_Record_kw);
+									FenChenHuanChong_num*FenChenHuanChong_Record_kw))*1000;
 				}
 			}
 			bianpingqi_speed_cal(ewaiduan_enter_flag);
@@ -155,10 +154,9 @@ void songsha_fre_change(void){
 			ewaiduan_enter_flag=0;
 			for (bb=0;bb<7;bb++){
 			
-				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*modify_rate_different[bb][datou]-\
-				             (k_factor[bb][datou]*rate_different[bb][datou]*modify_rate_different[bb][datou]-\
-				              k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou])\
-				             /middlequanshu*(dapan_round-daduanquanshu));
+				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]-\
+				             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])\
+				             /middlequanshu*(dapan_round-daduanquanshu))*1000;
 			}
 			bianpingqi_speed_cal(ewaiduan_enter_flag);
 			HuanChong_Start=0;
@@ -167,7 +165,7 @@ void songsha_fre_change(void){
 			current_stage=2;
 			bianpingqi_speed_cal(ewaiduan_enter_flag);
 			for (bb=0;bb<7;bb++)
-				k_motor[bb]=k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou];
+				k_motor[bb]=k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*1000;
 			HuanChong_Start=0;
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu)){
@@ -175,10 +173,9 @@ void songsha_fre_change(void){
 			bianpingqi_speed_cal(ewaiduan_enter_flag);
 			HuanChong_Start=1;
 			for (bb=0;bb<7;bb++){
-				k_motor[bb]=k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou]+\
-							(k_factor[bb][xiaotou]*rate_different[bb][fencen]*modify_rate_different[bb][fencen]-\
-							k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou])/\
-							FenChenHuanChong_num*FenChenHuanChong_Record_kw;
+				k_motor[bb]=(k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+\
+							(k_factor[bb][xiaotou]*rate_different[bb][fencen]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])/\
+							FenChenHuanChong_num*FenChenHuanChong_Record_kw)*1000;
 			}
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu)){
@@ -191,27 +188,24 @@ void songsha_fre_change(void){
 			
 				for (bb=0;bb<7;bb++)
 				{
-					k_motor[bb]=(k_factor[bb][xiaotou]*rate_different[bb][fencen]*modify_rate_different[bb][fencen]+\
-					             (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou]-\
-					              k_factor[bb][xiaotou]*rate_different[bb][fencen]*modify_rate_different[bb][fencen])\
-					             /caijianduan_sudu_change_num*caijianduan_sudu_change_record_num);
+					k_motor[bb]=(k_factor[bb][xiaotou]*rate_different[bb][fencen]+\
+					             (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]-k_factor[bb][xiaotou]*rate_different[bb][fencen])\
+					             /caijianduan_sudu_change_num*caijianduan_sudu_change_record_num)*1000;
 				}
 			}
 			else{
 			
 				HuanChong_Start=1;					//2017-4-15
 				for (bb=0;bb<7;bb++){
-					k_motor_temp[0][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou]+		\
-					             (k_factor[bb][datou]*rate_different[bb][datou]*modify_rate_different[bb][datou]-						\
-					              k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou])					\
+					k_motor_temp[0][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+		\
+					             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])					\
 					             /langfeiquanshu*(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu));
-					k_motor_temp[1][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou]+		\
-					             (k_factor[bb][datou]*rate_different[bb][datou]*modify_rate_different[bb][datou]-						\
-					              k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou])					\
+					k_motor_temp[1][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+		\
+					             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])					\
 					             /langfeiquanshu*(dapan_round+1-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu));
 					
 					k_motor[bb] =	(k_motor_temp[0][bb] + (k_motor_temp[1][bb] - k_motor_temp[0][bb])*
-									FenChenHuanChong_Record_kw/FenChenHuanChong_num);
+									FenChenHuanChong_Record_kw/FenChenHuanChong_num)*1000;
 				}
 			}	
 		}
@@ -236,15 +230,15 @@ void songsha_fre_change(void){
 			HuanChong_Start=1;
 			for (bb=0;bb<7;bb++){
 
-					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou]*modify_rate_different[bb][datou]*\
-								(1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num);
+					k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*\
+								(1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num))*1000;
 				}
 		}
 		else{
 			HuanChong_Start=0;
 			for (bb=0;bb<7;bb++){
-				k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou]*modify_rate_different[bb][datou]*\
-							(1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num);
+				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*\
+							(1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num))*1000;
 			}
 		}
 		if (dapan_round>=extra_part_quanshu){
@@ -294,8 +288,8 @@ void __irq	encoder1_process(void)
 	unsigned char jj;//,signal;
 	static unsigned char error_times=0;
 	static unsigned int reset_enter_times=0;
-	if (((rGPFDAT >> 1) & 0x1) && signal!=Get_X_Value(2)){
-		signal=Get_X_Value(2);
+	if (((rGPFDAT >> 1) & 0x1) && signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
+		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
 		encoder1_speed_pulse++;
 		encoder1_pulse_number++;
 		
@@ -312,102 +306,32 @@ void __irq	encoder1_process(void)
 				}
 			}	
 		}
-		if(mode_choose == seven_motor_mode){
-			for (jj=0;jj<7;jj++){
-				if (jj == 5 && chudao_shoudao_status[0] == 0 && chudao_shoudao_status[1] == 0 )
-					continue;
-				if (jj == 6 && chudao_shoudao_status[2] == 0 && chudao_shoudao_status[3] == 0 )
-					continue;
-				motor_factor[jj] += k_motor[jj];
-				if (motor_factor[jj]>=1){
-					rGPEDAT &= ~(1<<jj);
-					motor_factor[jj] -= 1;
-					songsha_num[jj]++;
-				}
+		for (jj=0;jj<4;jj++)
+		{
+			motor_factor[jj] += k_motor[jj];
+			if (motor_factor[jj]>=1000000)
+			{
+				rGPEDAT &= ~(1<<jj);
+				motor_factor[jj] -= 1000000;
+				songsha_num[jj]++;
 			}
 		}
-		/* else if(mode_choose == tiaoxian_mode)
-		{
-			for (jj=0;jj<5;jj++)
-			{
-				motor_factor[jj] += k_motor[jj];
-				if (motor_factor[jj]>=1)
-				{
-					rGPEDAT &= ~(1<<jj);
-					motor_factor[jj] -= 1;
-					songsha_num[jj]++;
-				}	//此处为五路压针版本+调纱 byFJW
-			}	
-		}
-		else if(mode_choose == yazheng_mode){
-			
-			for (jj=0;jj<5;jj++)
-			{
-				motor_factor[jj] += k_motor[jj];
-				if (motor_factor[jj]>=1)
-				{
-					rGPEDAT &= ~(1<<jj);
-					motor_factor[jj] -= 1;
-					songsha_num[jj]++;
-				}
-			}
-		}  */
-		
-	
-			
-				///////by FJW 2017/4/29 压针/////////
-		//注：average_yazhen是通过外部传参压针深度以及外部记录脉冲数进行计算得出，压针pulse_total_remember是通过外部记录脉冲数获得
-		
-		/* if(mode_choose == yazheng_mode)
-		{
-			if(current_stage == 0 && Get_X_Value(11) == uncover)
-			{
-				//此处应该弹出警告窗口
-			}
-			
-			if((current_stage == 1 || current_stage == 2) && (yazheng_pulse_send <= yazheng_pulse_need))//current_stage == 2 用于压针没有到位
-			{
-				yazheng_pulse_number ++;
-				
-				if(yazheng_pulse_number >= average_yazhen && average_yazhen != 0)
-				{
-					Set_Y_Value(pressing_director_port,pressing_positive);
-					
-					yazheng_pulse_number -= average_yazhen;
-					Set_Y_Value(pressing_pulse_port,1);		//外部使用Y9 对应的内部是GPE3，即发送脉冲直接通过GPIO直接置1次1，如果用SET_Y_VALUE()置一的话会保持1
-					
-					yazheng_pulse_send++;
-					
-				}
-				
-				pressing_zero_finish = 0;		//到达stage4之后可以直接回零
-			}
-			
-			if(current_stage == 4 && Get_X_Value(11) == uncover)	//此处确定一定要回零
-			{
-				pressing_zero(11);
-			}
-	
-		} */	
-		/////////////////////////////////////////////////
-		
-		//parameter_save();
+		rGPEDAT |= (0x7 << 4);
 	}
-	else if(signal!=Get_X_Value(2)){
-		signal=Get_X_Value(2);
+	else if(signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
+		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
 		
-		if(mode_choose == seven_motor_mode)
-			rGPEDAT |= (0x7f);//7路电机模式
-		
-		/* else if(mode_choose == yazheng_mode)
+		for (jj=4;jj<7;jj++)
 		{
-			rGPEDAT |= (0x1f);//5路电机模式
-			Set_Y_Value(pressing_pulse_port,1);		//压针 by FJW
-			
-		} */	//以上为压针+7路电机版本
-		
-		/* else if(mode_choose == tiaoxian_mode)
-			rGPEDAT |= (0x1f);//5路电机模式 +调线 by FJW */
+			motor_factor[jj] += k_motor[jj];
+			if (motor_factor[jj]>=1000000)
+			{
+				rGPEDAT &= ~(1<<jj);
+				motor_factor[jj] -= 1000000;
+				songsha_num[jj]++;
+			}
+		}
+		rGPEDAT |= (0xf);
 		
 		wdt_feed_dog();
 		if (encoder1_pulse_number>=encoder1_cal_factor){
@@ -425,8 +349,6 @@ void __irq	encoder1_process(void)
 				fenshan_jianxie_yizhuanquan_num++;
 			if(current_stage == 4)						//2017-4-15
 				FenChenHuanChong_Record_kw=0;
-			
-			//parameter_save();
 		}
 		if (Get_X_Value(shangduansha_port) == alarm_signal[shangduansha_port] &&
 		    sys_force_run_button == 0 && 

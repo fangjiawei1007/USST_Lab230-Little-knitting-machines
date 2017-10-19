@@ -466,10 +466,10 @@ void Main(void)
 					youbeng_new_way();
 				fenshan_sys_fun();
 				
-				if(mode_choose == yazheng_mode)
+				/* if(mode_choose == yazheng_mode)
 				{
-					//pressing();		//ันี๋ by FJW
-				}
+					pressing();		//ันี๋ by FJW
+				} */
 				if(tiaoxiankaiguan_kb == 1)//mode_choose == tiaoxian_mode
 				{
 					tiaoxian();

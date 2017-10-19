@@ -257,55 +257,29 @@ void stepmotor_init(void)
 		stepmotor_init_flag=1;
 	}
 	parameter_read();
-	rate_different[0][datou]=datou_rate_different_1/3000.0;
-	rate_different[1][datou]=datou_rate_different_2/3000.0;
-	rate_different[2][datou]=datou_rate_different_3/3000.0;
-	rate_different[3][datou]=datou_rate_different_4/3000.0;
-	rate_different[4][datou]=datou_rate_different_5/3000.0;
-	rate_different[5][datou]=datou_rate_different_6/3000.0;
-	rate_different[6][datou]=datou_rate_different_7/3000.0;
+	rate_different[0][datou]=datou_rate_different_1;
+	rate_different[1][datou]=datou_rate_different_2;
+	rate_different[2][datou]=datou_rate_different_3;
+	rate_different[3][datou]=datou_rate_different_4;
+	rate_different[4][datou]=datou_rate_different_5;
+	rate_different[5][datou]=datou_rate_different_6;
+	rate_different[6][datou]=datou_rate_different_7;
 		
-	rate_different[0][xiaotou]=xiaotou_rate_different_1/3000.0;
-	rate_different[1][xiaotou]=xiaotou_rate_different_2/3000.0;
-	rate_different[2][xiaotou]=xiaotou_rate_different_3/3000.0;
-	rate_different[3][xiaotou]=xiaotou_rate_different_4/3000.0;
-	rate_different[4][xiaotou]=xiaotou_rate_different_5/3000.0;
-	rate_different[5][xiaotou]=xiaotou_rate_different_6/3000.0;
-	rate_different[6][xiaotou]=xiaotou_rate_different_7/3000.0;
+	rate_different[0][xiaotou]=xiaotou_rate_different_1;
+	rate_different[1][xiaotou]=xiaotou_rate_different_2;
+	rate_different[2][xiaotou]=xiaotou_rate_different_3;
+	rate_different[3][xiaotou]=xiaotou_rate_different_4;
+	rate_different[4][xiaotou]=xiaotou_rate_different_5;
+	rate_different[5][xiaotou]=xiaotou_rate_different_6;
+	rate_different[6][xiaotou]=xiaotou_rate_different_7;
 		
-	rate_different[0][fencen]=fencen_rate_different_1/3000.0;
-	rate_different[1][fencen]=fencen_rate_different_2/3000.0;
-	rate_different[2][fencen]=fencen_rate_different_3/3000.0;
-	rate_different[3][fencen]=fencen_rate_different_4/3000.0;
-	rate_different[4][fencen]=fencen_rate_different_5/3000.0;
-	rate_different[5][fencen]=fencen_rate_different_6/3000.0;
-	rate_different[6][fencen]=fencen_rate_different_7/3000.0;
-	
-	modify_rate_different[0][datou]=1;
-	modify_rate_different[1][datou]=1;
-	modify_rate_different[2][datou]=1;
-	// modify_rate_different[3][datou]=0.9;
-	// modify_rate_different[4][datou]=0.95;
-	modify_rate_different[3][datou]=1;
-	modify_rate_different[4][datou]=1;
-	modify_rate_different[5][datou]=1;
-	modify_rate_different[6][datou]=1;
-	
-	modify_rate_different[0][xiaotou]=1;
-	modify_rate_different[1][xiaotou]=1;
-	modify_rate_different[2][xiaotou]=1;
-	modify_rate_different[3][xiaotou]=1;
-	modify_rate_different[4][xiaotou]=1;
-	modify_rate_different[5][xiaotou]=1;
-	modify_rate_different[6][xiaotou]=1;
-	
-	modify_rate_different[0][fencen]=1;
-	modify_rate_different[1][fencen]=1;
-	modify_rate_different[2][fencen]=1;
-	modify_rate_different[3][fencen]=1;
-	modify_rate_different[4][fencen]=1;
-	modify_rate_different[5][fencen]=1;
-	modify_rate_different[6][fencen]=1;
+	rate_different[0][fencen]=fencen_rate_different_1;
+	rate_different[1][fencen]=fencen_rate_different_2;
+	rate_different[2][fencen]=fencen_rate_different_3;
+	rate_different[3][fencen]=fencen_rate_different_4;
+	rate_different[4][fencen]=fencen_rate_different_5;
+	rate_different[5][fencen]=fencen_rate_different_6;
+	rate_different[6][fencen]=fencen_rate_different_7;
 		
 	songsha_rate[0]=songsha_rate[1]=songsha_dapanchilunshu*1.0/songsha_xiaochilunshu*songsha_lvpanzhijin;
 	songsha_rate[2]=songsha_rate[3]=songsha_xiaopanchilunshu*1.0/songsha_xiaochilunshu*songsha_lvpanzhijin;
