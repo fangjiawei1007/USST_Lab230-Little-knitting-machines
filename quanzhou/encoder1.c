@@ -2,13 +2,13 @@
 U32 encoder1_speed_pulse=0;
 U32	encoder1_speed=0;
 
-volatile unsigned int motor_factor[7]={0};
+volatile int motor_factor[7]={0};
 unsigned int dapan_round=0;
 //float encoder1_cal_factor;
 //const int encoder1_cal_factor=8884;
 const float encoder1_tran_factor=5;
 U16	encoder1_pulse_number=0;
-
+//////////////////////////////////////////////////////////////////////////////////////0.324*0.9/////////0.3285*0.95/////////
 const float k_factor[7][2]={{0.364,0.519},{0.249,0.309},{0.369,0.399},{0.264,0.2916},{0.3285,0.3121},{1,1},{1,1}};
 //const unsigned int pre_set_par[5][3]={{500,200,500},{600,500,655},{585,640,585},{910,850,910},{675,715,675}};
 unsigned char jiansu_permite=1;
@@ -22,13 +22,13 @@ unsigned char jianshu_ewaiduan_check=0;
 unsigned char reset_timer_start=0;
 #define	caijianduan_sudu_change_num		8.0
 
-
+#define	extra_part_start	1
+#define	extra_part_stop		0
+#define	extra_part_finish	0
+#define	extra_part_unfinish	1
 #define FenChenHuanChong_num			8.0
 
 #define	reset_time_100ms				4
-
-unsigned int chudao_jiange_tmp[4] = {0};		//出刀间隔记录 by FJW
-unsigned int shoudao_jiange_tmp[4] = {0};	//收刀间隔记录 by FJW
 
 void encoder1_data_process(void){
 	yuanpan_speed=encoder1_speed*600/encoder1_cal_factor;
@@ -57,10 +57,7 @@ void encoder1_data_reset(void){
 	if(encoder1_dangqianjian_reset==1)
 	{
 		encoder1_pulse_number=encoder1_pulse_number_save=0;
-		extra_part_finish_flag=extra_part_finish;
-		extra_part_flag=extra_part_stop;
 		dapan_round=dapan_round_save=0;
-		//lingwei_jiance_button = 1; //压针回零 by FJW
 	}
 	if (encoder1_jianshu_reset==1)
 		jianshu=0;
@@ -68,11 +65,6 @@ void encoder1_data_reset(void){
 	{
 		encoder1_pulse_number=encoder1_pulse_number_save=0;
 		dapan_round=dapan_round_save=0;
-		extra_part_finish_flag=extra_part_finish;
-		extra_part_flag=extra_part_stop;
-		
-		//lingwei_jiance_button = 1;		//压针回零 by FJW
-		
 		jianshu=0;
 	}
 	if (songshaliang_data_reset==1)
@@ -127,87 +119,109 @@ void songsha_fre_change(void){
 	if (extra_part_flag==extra_part_stop)
 	{
 		extra_part_finish_flag=extra_part_unfinish;
-		if (dapan_round<daduanquanshu){
-			current_stage=0;
-			if (ewaiduan_enter_flag==0){
-			
+		if (dapan_round<daduanquanshu)
+		{
+			if (ewaiduan_enter_flag==0)
+			{
 				HuanChong_Start=0;
 				for (bb=0;bb<7;bb++)
-				{
-					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou];
+				{//4.1.3
+					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou]*1000;//*modify_rate_different[bb][datou]
 				}
 			}
-			else{
-			
+			else
+			{
 				HuanChong_Start=1;
 				for (bb=0;bb<7;bb++)
-				{
+				{//4.1.3
 					k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*
 								(g_InteralMemory.KeepWord[103+bb]/100.0+(1.0-g_InteralMemory.KeepWord[103+bb]/100.0)/\
-									FenChenHuanChong_num*FenChenHuanChong_Record_kw))*1000;
+									FenChenHuanChong_num*FenChenHuanChong_Record_kw))*1000;//*modify_rate_different[bb][datou]
 				}
 			}
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
+			bianpingqi_speed=bianpingqi_fullspeed_set;
+			current_stage=0;
 		}
-		else if (dapan_round<(daduanquanshu+middlequanshu)){
-			current_stage=1;
+		else if (dapan_round<(daduanquanshu+middlequanshu))
+		{
 			ewaiduan_enter_flag=0;
-			for (bb=0;bb<7;bb++){
-			
-				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]-\
-				             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])\
-				             /middlequanshu*(dapan_round-daduanquanshu))*1000;
-			}
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
-			HuanChong_Start=0;
-		}
-		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu)){
-			current_stage=2;
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
 			for (bb=0;bb<7;bb++)
-				k_motor[bb]=k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*1000;
-			HuanChong_Start=0;
-		}
-		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu)){
-			current_stage=3;
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
-			HuanChong_Start=1;
-			for (bb=0;bb<7;bb++){
-				k_motor[bb]=(k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+\
-							(k_factor[bb][xiaotou]*rate_different[bb][fencen]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])/\
-							FenChenHuanChong_num*FenChenHuanChong_Record_kw)*1000;
+			{//4.1.3
+				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]-\
+				            (k_factor[bb][datou]*rate_different[bb][datou]-\
+				             k_factor[bb][xiaotou]*rate_different[bb][xiaotou])\
+				             *(dapan_round-daduanquanshu)/middlequanshu)*1000;//*modify_rate_different[bb][datou]*modify_rate_different[bb][datou]*modify_rate_different[bb][xiaotou]
 			}
+			bianpingqi_speed=bianpingqi_fullspeed_set;
+			HuanChong_Start=0;
+			current_stage=1;
 		}
-		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu)){
-			current_stage=4;
+		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu))
+		{
+			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu-bianpingqi_huanchongquan_num))
+				bianpingqi_speed=bianpingqi_fullspeed_set;
+			else
+				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
+			for (bb=0;bb<7;bb++)
+				k_motor[bb]=k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*1000;//*modify_rate_different[bb][xiaotou]  //4.1.3
+			HuanChong_Start=0;
+			current_stage=2;
+		}
+		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu))
+		{
+			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+1))
+				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
+			else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu-bianpingqi_huanchongquan_num))
+				bianpingqi_speed=bianpingqi_fencen_speed_set;
+			else
+				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
+			current_stage=3;
+			HuanChong_Start=1;
+			for (bb=0;bb<7;bb++)
+			{
+				k_motor[bb]=(k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+\
+							(k_factor[bb][xiaotou]*rate_different[bb][fencen]-\
+							k_factor[bb][xiaotou]*rate_different[bb][xiaotou])/\
+							FenChenHuanChong_num*FenChenHuanChong_Record_kw)*1000;//*modify_rate_different[bb][xiaotou]*modify_rate_different[bb][fencen]*modify_rate_different[bb][xiaotou]
+			}//4.1.3
+		}
+		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu))
+		{
 			if (caijianduan_sudu_change_flag != 1)
 				HuanChong_Start=0;
 			caijianduan_sudu_change_flag=1;
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
-			if (caijianduan_sudu_change_record_num<=caijianduan_sudu_change_num){
-			
+			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+1))
+				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
+			else
+				bianpingqi_speed=bianpingqi_fullspeed_set;
+			if (caijianduan_sudu_change_record_num<=caijianduan_sudu_change_num)
+			{
 				for (bb=0;bb<7;bb++)
 				{
 					k_motor[bb]=(k_factor[bb][xiaotou]*rate_different[bb][fencen]+\
-					             (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]-k_factor[bb][xiaotou]*rate_different[bb][fencen])\
-					             /caijianduan_sudu_change_num*caijianduan_sudu_change_record_num)*1000;
-				}
+					             (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]-\
+					              k_factor[bb][xiaotou]*rate_different[bb][fencen])\
+					             /caijianduan_sudu_change_num*caijianduan_sudu_change_record_num)*1000;//*modify_rate_different[bb][fencen]*modify_rate_different[bb][xiaotou]*modify_rate_different[bb][fencen]
+				}//4.1.3
 			}
-			else{
-			
+			else
+			{
 				HuanChong_Start=1;					//2017-4-15
-				for (bb=0;bb<7;bb++){
-					k_motor_temp[0][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+		\
-					             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])					\
+				for (bb=0;bb<7;bb++){//*modify_rate_different[bb][xiaotou]*modify_rate_different[bb][datou]*modify_rate_different[bb][xiaotou]*modify_rate_different[bb][xiaotou]*modify_rate_different[bb][datou]*modify_rate_different[bb][xiaotou]
+					k_motor_temp[0][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+\
+					             (k_factor[bb][datou]*rate_different[bb][datou]-						\
+					              k_factor[bb][xiaotou]*rate_different[bb][xiaotou])					\
 					             /langfeiquanshu*(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu));
 					k_motor_temp[1][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+		\
-					             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])					\
+					             (k_factor[bb][datou]*rate_different[bb][datou]-						\
+					              k_factor[bb][xiaotou]*rate_different[bb][xiaotou])					\
 					             /langfeiquanshu*(dapan_round+1-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu));
 					
 					k_motor[bb] =	(k_motor_temp[0][bb] + (k_motor_temp[1][bb] - k_motor_temp[0][bb])*
 									FenChenHuanChong_Record_kw/FenChenHuanChong_num)*1000;
-				}
+				}//4.1.3
 			}	
+			current_stage=4;
 		}
 		else
 		{
@@ -221,33 +235,38 @@ void songsha_fre_change(void){
 			extra_part_finish_flag=extra_part_finish;
 		}
 	}
-	else{
-	
-		current_stage=5;	//以下均为挡片段
-		ewaiduan_enter_flag=1;//额外段即为挡片段
-		bianpingqi_speed_cal(ewaiduan_enter_flag);
-		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>(extra_part_quanshu-extra_fencen_quan_num_kw))	{
+	else
+	{
+		current_stage=5;
+		ewaiduan_enter_flag=1;
+		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>(extra_part_quanshu-extra_fencen_quan_num_kw))
+		{
 			HuanChong_Start=1;
-			for (bb=0;bb<7;bb++){
-
-					k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*\
-								(1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num))*1000;
-				}
-		}
-		else{
-			HuanChong_Start=0;
-			for (bb=0;bb<7;bb++){
+			bianpingqi_speed=bianpingqi_fencen_speed_set;
+			for (bb=0;bb<7;bb++)
+			{//*modify_rate_different[bb][datou] //4.1.3
 				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*\
-							(1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num))*1000;
+				            (1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num))*1000;
 			}
 		}
-		if (dapan_round>=extra_part_quanshu){
+		else
+		{//*modify_rate_different[bb][datou]
+			HuanChong_Start=0;
+			bianpingqi_speed=bianpingqi_fullspeed_set;
+			for (bb=0;bb<7;bb++){//4.1.3
+				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*\
+				            (1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num))*1000;
+			}
+		}
+		if (dapan_round>=extra_part_quanshu)
+		{
 			extra_part_flag=extra_part_stop;
 			FenChenHuanChong_Record_kw=0;
 			if (jianshu>=zhibusheding || (previous_dingdanzongshu!=0&&dingdan_lianghua_num_kw>=previous_dingdanzongshu))
 				jianshu_ewaiduan_check=1;
 			dapan_round=0;
 		}
+		//current_stage=5;
 	}
 }
 
@@ -292,27 +311,13 @@ void __irq	encoder1_process(void)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
 		encoder1_speed_pulse++;
 		encoder1_pulse_number++;
-		
-		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
-			for (jj = 0 ; jj < 4 ; jj++){
-				if (chudao_start[jj] == 1 && chudao_start_status[jj] == 0)	//出刀间隔计算 by FJW
-				{
-					chudao_jiange_tmp[jj] ++;
-				}
-
-				if (shoudao_start[jj] == 1 && shoudao_start_status[jj] == 0)	//收刀间隔计算 by FJW
-				{
-					shoudao_jiange_tmp[jj] ++;
-				}
-			}	
-		}
 		for (jj=0;jj<4;jj++)
 		{
 			motor_factor[jj] += k_motor[jj];
-			if (motor_factor[jj]>=1000000)
+			if (motor_factor[jj]>=1000000)//4.1.3
 			{
 				rGPEDAT &= ~(1<<jj);
-				motor_factor[jj] -= 1000000;
+				motor_factor[jj] -= 1000000;//4.1.3
 				songsha_num[jj]++;
 			}
 		}
@@ -320,19 +325,17 @@ void __irq	encoder1_process(void)
 	}
 	else if(signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
-		
 		for (jj=4;jj<7;jj++)
 		{
 			motor_factor[jj] += k_motor[jj];
-			if (motor_factor[jj]>=1000000)
+			if (motor_factor[jj]>=1000000)//4.1.3
 			{
 				rGPEDAT &= ~(1<<jj);
-				motor_factor[jj] -= 1000000;
+				motor_factor[jj] -= 1000000;//4.1.3
 				songsha_num[jj]++;
 			}
 		}
 		rGPEDAT |= (0xf);
-		
 		wdt_feed_dog();
 		if (encoder1_pulse_number>=encoder1_cal_factor){
 			dapan_round++;
@@ -349,6 +352,8 @@ void __irq	encoder1_process(void)
 				fenshan_jianxie_yizhuanquan_num++;
 			if(current_stage == 4)						//2017-4-15
 				FenChenHuanChong_Record_kw=0;
+			
+			//parameter_save();
 		}
 		if (Get_X_Value(shangduansha_port) == alarm_signal[shangduansha_port] &&
 		    sys_force_run_button == 0 && 
@@ -407,10 +412,9 @@ void __irq	encoder1_process(void)
 			caijianduan_sudu_change_record_num++;
 		else if (FenChenHuanChong_Set_kw==0)
 			caijianduan_sudu_change_record_num=caijianduan_sudu_change_num+1;
-		
-		
-		
 	}	
+	
+	
 	rEINTPEND=(1<<1); 
 	ClearPending((U32)BIT_EINT1);
 }

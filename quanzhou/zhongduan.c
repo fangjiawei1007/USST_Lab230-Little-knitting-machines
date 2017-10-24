@@ -268,19 +268,6 @@ void zhongduan_fun(void)
 		emer_stop_flag=1;
 		run_permite_flag=0;
 	}
-	
-	/* if (current_stage == 0 && Get_X_Value(11) == uncover && err_flag!=1)
-	{
-		err_flag=1;
-		previous_error_status_w=9;
-		if (privilege_run_flag==0)
-			alarm_disp(16);
-		qz_error_status=1;
-		emer_stop_flag=1;
-		run_permite_flag=0;
-	} */
-	
-	
 	if (i>max_port && err_flag==0)
 	{
 		emer_stop_flag=0;

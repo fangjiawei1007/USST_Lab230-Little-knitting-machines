@@ -18,7 +18,6 @@ void bianpingqi_init(void);
 void qz_uart_init(void);
 void stepmotor_init(void);
 
-void tiaoxian_init(void); //by FJW 调线功能
 
 
 

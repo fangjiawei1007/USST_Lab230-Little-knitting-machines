@@ -1,7 +1,6 @@
 #include"includes.h"
 
 char Info_qz[9][11]={0};
-unsigned int SET_HIGH_STATUS = 0; //调线功能
 
 void jidianqi_init(void)
 {
@@ -66,12 +65,6 @@ void menu_init(void)
 		//xiaduansha_alarm_level=level_3;
 		tanbu_alarm_level=level_3;
 		
-		mode_choose = seven_motor_mode; 	//模式选择 by FJW
-		tiaoxian_12_enter = 100;
-		tiaoxian_12_exit = 200;
-		tiaoxian_34_enter = 100;
-		tiaoxian_34_exit = 200;
-		
 		qz_guanliyuan_mima=12345;
 		a_ban_mima_kw=12345;
 		b_ban_mima_kw=12345;
@@ -94,7 +87,6 @@ void menu_init(void)
 		bianpingqi_fullspeed_set=500;
 		bianpingqi_delta_num=50;
 		bianpingqi_fencen_speed_set=500;
-		bianpingqi_tiaoxian_speed_set = 500;
 		
 		xifenshu=1600;
 		jianshu=0;
@@ -117,16 +109,6 @@ void menu_init(void)
 		
 		reset_time_kw = 700;
 		init_stop_time_kw = 30;
-		
-		
-		chudao_jiange = 10000;	//by FJW
-		shoudao_jiange = 10000; //by FJW
-		tiaoxiankaiguan_kb = 0;
-		guoduquanshu_tiaoxian = 0;
-		xiaotouquanshu_tiaoxian = 0;
-		fencengquanshu_tiaoxian = 0;
-		
-		jiajiansujiangemaichong_kw = 10000;
 		
 		menu_init_flag=1;
 	}
@@ -151,8 +133,7 @@ void zhongduan_init(void)
 	char jianshu_max[]=		{28,94,42,93,21,29,41,47,47,62,'\0'};
 	char dingdan_max[]=		{22, 9,21, 5,50,49,45,74,19,41,'\0'};
 	char qingche_error[]=	{39,69,19,21,40, 6,42,93,21,29,'\0'};
-	//char yazheng_error[]=	{};
-		
+	
 	strcpy(Info_qz[shangduansha_port-min_port],shangduansha);
 	strcpy(Info_qz[anquanmen_port-min_port],anquanmen);
 	strcpy(Info_qz[queyou_port-min_port],queyou);
@@ -162,7 +143,6 @@ void zhongduan_init(void)
 	strcpy(Info_qz[6],jianshu_max);
 	strcpy(Info_qz[7],dingdan_max);
 	strcpy(Info_qz[8],qingche_error);
-	//strcpy(Info_qz[9],yazheng_error);
 	
 	tmp = rGPFCON & (~(0x3<< 6)) & (~(0x3<< 8)) & (~(0x3<< 10)); //& (~(0x3<< 12)) & (~(0x3<< 14));
 	rGPFCON = tmp | (0x0<<6) | (0x0<<8)  | (0x0<<10);//| (0x2<<12) | (0x2<<14);	
@@ -280,6 +260,30 @@ void stepmotor_init(void)
 	rate_different[4][fencen]=fencen_rate_different_5;
 	rate_different[5][fencen]=fencen_rate_different_6;
 	rate_different[6][fencen]=fencen_rate_different_7;
+	
+	/* modify_rate_different[0][datou]=1;
+	modify_rate_different[1][datou]=1;
+	modify_rate_different[2][datou]=1;
+	modify_rate_different[3][datou]=0.9;
+	modify_rate_different[4][datou]=0.95;
+	modify_rate_different[5][datou]=1;
+	modify_rate_different[6][datou]=1;
+	
+	modify_rate_different[0][xiaotou]=1;
+	modify_rate_different[1][xiaotou]=1;
+	modify_rate_different[2][xiaotou]=1;
+	modify_rate_different[3][xiaotou]=1;
+	modify_rate_different[4][xiaotou]=1;
+	modify_rate_different[5][xiaotou]=1;
+	modify_rate_different[6][xiaotou]=1;
+	
+	modify_rate_different[0][fencen]=1;
+	modify_rate_different[1][fencen]=1;
+	modify_rate_different[2][fencen]=1;
+	modify_rate_different[3][fencen]=1;
+	modify_rate_different[4][fencen]=1;
+	modify_rate_different[5][fencen]=1;
+	modify_rate_different[6][fencen]=1; */
 		
 	songsha_rate[0]=songsha_rate[1]=songsha_dapanchilunshu*1.0/songsha_xiaochilunshu*songsha_lvpanzhijin;
 	songsha_rate[2]=songsha_rate[3]=songsha_xiaopanchilunshu*1.0/songsha_xiaochilunshu*songsha_lvpanzhijin;
@@ -287,17 +291,3 @@ void stepmotor_init(void)
 	songsha_fre_change();
 }
 
-void tiaoxian_init(void)	//调线初始化 by FJW
-{
-	int ii;
-	tongxunzhen = 0xff;
-	for (ii = 0 ; ii < 5 ; ii++){
-		if (tiaoxian_jidianqi_write() == 1){
-			break;
-		}
-	}
-	/* Set_Y_Value(Y9,HIGH);
-	Set_Y_Value(Y10,HIGH); */
-	//rGPEDAT |= (1<<5);
-	
-}

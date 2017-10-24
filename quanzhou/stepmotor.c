@@ -5,9 +5,10 @@
 #define	max_length						200
 #define	min_length						0
 
-volatile unsigned int k_motor[7]={0};
+volatile int k_motor[7]={0};
 //volatile unsigned int k_motor[5]={0};
-unsigned int rate_different[7][3]={0};
+int rate_different[7][3]={0};
+//float modify_rate_different[7][3]={0};
 unsigned char check_time=0;
 
 void qz_assert(void)
@@ -49,49 +50,73 @@ void qz_assert(void)
 		rate_different[4][fencen]=fencen_rate_different_5;
 		rate_different[5][fencen]=fencen_rate_different_6;
 		rate_different[6][fencen]=fencen_rate_different_7;
+		
+		/* modify_rate_different[0][datou]=1;
+		modify_rate_different[1][datou]=1;
+		modify_rate_different[2][datou]=1;
+		modify_rate_different[3][datou]=0.9;
+		modify_rate_different[4][datou]=0.95;
+		modify_rate_different[5][datou]=1;
+		modify_rate_different[6][datou]=1;
+	
+		modify_rate_different[0][xiaotou]=1;
+		modify_rate_different[1][xiaotou]=1;
+		modify_rate_different[2][xiaotou]=1;
+		modify_rate_different[3][xiaotou]=1;
+		modify_rate_different[4][xiaotou]=1;
+		modify_rate_different[5][xiaotou]=1;
+		modify_rate_different[6][xiaotou]=1;
+	
+		modify_rate_different[0][fencen]=1;
+		modify_rate_different[1][fencen]=1;
+		modify_rate_different[2][fencen]=1;
+		modify_rate_different[3][fencen]=1;
+		modify_rate_different[4][fencen]=1;
+		modify_rate_different[5][fencen]=1;
+		modify_rate_different[6][fencen]=1; */
 
 		songsha_rate[0]=songsha_rate[1]=songsha_dapanchilunshu*1.0/songsha_xiaochilunshu*songsha_lvpanzhijin;
 		songsha_rate[2]=songsha_rate[3]=songsha_xiaopanchilunshu*1.0/songsha_xiaochilunshu*songsha_lvpanzhijin;
 		
-		if (g_InteralMemory.Word[PING_STATE]==6){//大头段2000*100.0
-			shachang_shuru_xianshi_1_w=	200.0/3/dapan_zongzhenshu_kw*\
+		if (g_InteralMemory.Word[PING_STATE]==6){//大头段*modify_rate_different[0][datou]*modify_rate_different[1][datou]*modify_rate_different[2][datou]*modify_rate_different[3][datou]
+			shachang_shuru_xianshi_1_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[0][datou]*rate_different[0][datou]\
 										/xifenshu*songsha_rate[0];
-			shachang_shuru_xianshi_2_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_2_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[1][datou]*rate_different[1][datou]\
 										/xifenshu*songsha_rate[1];
-			shachang_shuru_xianshi_3_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_3_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[2][datou]*rate_different[2][datou]\
 										/xifenshu*songsha_rate[2];
-			shachang_shuru_xianshi_4_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_4_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[3][datou]*rate_different[3][datou]\
 										/xifenshu*songsha_rate[3];
 		}
-		else if (g_InteralMemory.Word[PING_STATE]==7){//小头
-			shachang_shuru_xianshi_1_w=	200.0/3/dapan_zongzhenshu_kw*\
+		else if (g_InteralMemory.Word[PING_STATE]==7){//小头*modify_rate_different[0][xiaotou]*modify_rate_different[1][xiaotou]*modify_rate_different[2][xiaotou]*modify_rate_different[3][xiaotou]
+			shachang_shuru_xianshi_1_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[0][xiaotou]*rate_different[0][xiaotou]\
 										/xifenshu*songsha_rate[0];
-			shachang_shuru_xianshi_2_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_2_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[1][xiaotou]*rate_different[1][xiaotou]\
 										/xifenshu*songsha_rate[1];
-			shachang_shuru_xianshi_3_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_3_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[2][xiaotou]*rate_different[2][xiaotou]\
 										/xifenshu*songsha_rate[2];
-			shachang_shuru_xianshi_4_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_4_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[3][xiaotou]*rate_different[3][xiaotou]\
 										/xifenshu*songsha_rate[3];
 		}
-		else if (g_InteralMemory.Word[PING_STATE]==8){//分层
-			shachang_shuru_xianshi_1_w=	200.0/3/dapan_zongzhenshu_kw*\
+		else if (g_InteralMemory.Word[PING_STATE]==8){//分层*modify_rate_different[0][fencen]*modify_rate_different[1][fencen]*modify_rate_different[2][fencen]*modify_rate_different[3][fencen]
+			shachang_shuru_xianshi_1_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[0][xiaotou]*rate_different[0][fencen]\
 										/xifenshu*songsha_rate[0];
-			shachang_shuru_xianshi_2_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_2_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[1][xiaotou]*rate_different[1][fencen]\
 										/xifenshu*songsha_rate[1];
-			shachang_shuru_xianshi_3_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_3_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[2][xiaotou]*rate_different[2][fencen]\
 										/xifenshu*songsha_rate[2];
-			shachang_shuru_xianshi_4_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_4_w=	2*100.0/dapan_zongzhenshu_kw*\
 										k_factor[3][xiaotou]*rate_different[3][fencen]\
 										/xifenshu*songsha_rate[3];
 		}

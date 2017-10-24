@@ -10,7 +10,6 @@ U8 bianpingqi_run_flag;
 U8 bianpingqi_previous_run_status=0;
 unsigned int bianpingqi_speed;
 U8 bpqComCount=0;
-
 void bianpingqi_RTU_WriteWord(U8 function_num,int DevAddress,int Value)
 {
 	U8 auchMsg[8],SendArray[8],RecArray[8];  
@@ -69,16 +68,29 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int DevAddress,int Value)
 			}
 		}
 		if (check>=4){
-			if (bianpingqi_jog_status==1)
+			/* if (DevAddress==bianpingqi_fre_add)
+			{ */
+				if (bianpingqi_jog_status==1)
+				{
+					bianpingqi_previous_speed=300;
+				}
+				else
+				{
+					//bianpingqi_previous_speed=g_InteralMemory.Word[30];
+					bianpingqi_previous_speed=bianpingqi_speed;
+					bpqComCount=0;
+				}
+			//}
+			/* else if (DevAddress==0x1001)
 			{
-				bianpingqi_previous_speed=300;
-			}
-			else
-			{
-				//bianpingqi_previous_speed=g_InteralMemory.Word[30];
-				bianpingqi_previous_speed=bianpingqi_speed;
-				bpqComCount=0;
-			}
+				if (Value==((int)(1<<2)))
+					bianpingqi_previous_run_status=1;
+				else
+				{
+					bianpingqi_previous_run_status=0;
+					bianpingqi_previous_speed=0;
+				}
+			} */
 		}
 		else
 			bpqComCount++;
@@ -93,19 +105,15 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int DevAddress,int Value)
 
 void bianpingqi_start_sub(void)
 {
-	if (Choose_bianpingqi_kb == CHOOSE_BIANPINGQI){
 	rGPBDAT &= ~(1<<1);
 	rGPBDAT |= 1<<3;
-	}
 	bianpingqi_previous_run_status=1;
 }
 
 void bianpingqi_stop_sub(void)
 {
-	if (Choose_bianpingqi_kb == CHOOSE_BIANPINGQI){
-		rGPBDAT &= ~(1<<3);
-		rGPBDAT |= 1<<1;
-	}
+	rGPBDAT &= ~(1<<3);
+	rGPBDAT |= 1<<1;
 	bianpingqi_previous_speed=0;
 	bianpingqi_previous_run_status=0;
 }
@@ -183,292 +191,5 @@ void bianpingqi_jog(void)
 		bianpingqi_jog_status=0;
 		bianpingqi_jog_button=0;
 		bianpingqi_stop_sub();
-	}
-}
-
-void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
-	int ii;
-	static unsigned int y1y3delay_flag = 0;
-	for( ii = 0 ; ii < 4 && tiaoxiankaiguan_kb == 1 && current_stage != 5; ii++){
-		if ( ii % 2 == 0) {
-			if ( dapan_round == (g_InteralMemory.KeepWord[154 + ii] - 1) ||
-			   ( dapan_round == g_InteralMemory.KeepWord[154 + ii] && encoder1_pulse_number <= jiajiansujiangemaichong_kw) ){//&& dapan_round <= (g_InteralMemory.KeepWord[154 + ii])
-				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
-				return;
-			}
-		}
-		else {
-			if ( dapan_round >= (g_InteralMemory.KeepWord[154 + ii] - 1) && chudao_shoudao_status[ii] == 1 ){//&& dapan_round <= (g_InteralMemory.KeepWord[154 + ii])
-				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
-				return;
-			}
-		}
-	}
-	
-	switch (current_stage){
-		case 0:{
-			if (ewaiduan_flag == 1 && dapan_round == 0){
-				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
-					if (y1y3delay_flag == 0){
-						delay_qz(5,40,1);
-					}
-					if (delay_fac.delay_permit[5] == 1)
-					{
-						if (delay_5_count<=5){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);	
-						}
-						else if (delay_5_count <= 16){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,LOW);
-						}
-						else{
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							delay_qz(5,40,0);
-							y1y3delay_flag = 1;
-						}
-					}
-				}
-			}
-			else{
-				bianpingqi_speed=bianpingqi_fullspeed_set;
-				if (Choose_bianpingqi_kb == CHOOSE_NOT){
-					Set_Y_Value(1,HIGH);
-					Set_Y_Value(3,HIGH);
-					y1y3delay_flag = 0;
-				}
-			}
-			break;
-		}
-		case 1:{
-			bianpingqi_speed=bianpingqi_fullspeed_set;
-			if (Choose_bianpingqi_kb == CHOOSE_NOT){
-				Set_Y_Value(1,HIGH);
-				Set_Y_Value(3,HIGH);
-				y1y3delay_flag = 0;
-			}
-			break;
-		}
-		case 2:{
-			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu-bianpingqi_huanchongquan_num)){
-				bianpingqi_speed=bianpingqi_fullspeed_set;
-			}
-			else{
-				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dapan_round==(daduanquanshu+middlequanshu+xiaoduanquanshu - 1) && 
-				   encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw) || jiajiansujiangemaichong_kw == 0){
-					Set_Y_Value(1,LOW);
-					Set_Y_Value(3,HIGH);
-					y1y3delay_flag = 0;
-				}
-			}
-			break;
-		}
-		case 3:{
-			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+1)){
-				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 1){
-					if (y1y3delay_flag == 0){
-						delay_qz(5,40,1);
-					}
-					if (delay_fac.delay_permit[5] == 1)
-					{
-						if (delay_5_count<=5){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							
-						}
-						else if (delay_5_count <= 16){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,LOW);
-						}
-						else{
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							delay_qz(5,40,0);
-							y1y3delay_flag = 1;
-						}
-					}
-				}
-			}
-			else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu-bianpingqi_huanchongquan_num)){
-				bianpingqi_speed=bianpingqi_fencen_speed_set;
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 1){
-					if (delay_fac.delay_permit[5] == 1)
-					{
-						if (delay_5_count<=5){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							
-						}
-						else if (delay_5_count <= 16){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,LOW);
-						}
-						else{
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							delay_qz(5,40,0);
-							y1y3delay_flag = 0;
-						}
-					}
-				}
-			}
-			else{
-				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dapan_round==(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu - 1) && 
-				   encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw) || jiajiansujiangemaichong_kw == 0){
-					Set_Y_Value(1,LOW);
-					Set_Y_Value(3,HIGH);
-					y1y3delay_flag = 0;
-				}
-			}
-			break;
-		}
-		case 4:{
-			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+1)){
-				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
-					if (y1y3delay_flag == 0){
-						delay_qz(5,40,1);
-					}
-					if (delay_fac.delay_permit[5] == 1)
-					{
-						if (delay_5_count<=5){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);	
-						}
-						else if (delay_5_count <= 16){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,LOW);
-						}
-						else{
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							delay_qz(5,40,0);
-							y1y3delay_flag = 1;
-						}
-					}
-				}
-			}	
-			else {
-				bianpingqi_speed=bianpingqi_fullspeed_set;
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
-					if (delay_fac.delay_permit[5] == 1)
-					{
-						if (delay_5_count<=5){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);	
-						}
-						else if (delay_5_count <= 16){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,LOW);
-						}
-						else{
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							delay_qz(5,40,0);
-							y1y3delay_flag = 0;
-						}
-					}
-				}
-				if (extra_part_quanshu!=0 && extra_part_jiansu!=0 && (jianshu+1)!=0 &&
-					(jianshu + 1)%extra_part_jiansu==0 && 
-					(dapan_round == (daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu -1))){//
-					bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-					if (Choose_bianpingqi_kb == CHOOSE_NOT && dapan_round==(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu - 1) && 
-						encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw) || jiajiansujiangemaichong_kw == 0){
-						
-						Set_Y_Value(1,LOW);
-						Set_Y_Value(3,HIGH);
-						y1y3delay_flag = 0;
-					}
-				}
-			}
-			break;
-		}
-		case 5:{
-			if (dapan_round == 0){
-				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
-					if (y1y3delay_flag == 0){
-						delay_qz(5,40,1);
-					}
-					if (delay_fac.delay_permit[5] == 1)
-					{
-						if (delay_5_count<=5){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);	
-						}
-						else if (delay_5_count <= 16){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,LOW);
-						}
-						else{
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							delay_qz(5,40,0);
-							y1y3delay_flag = 1;
-						}
-					}
-				}
-			}
-			else if (	(dapan_round >= 1 && dapan_round < (extra_fencen_quan_num_kw - 1)) || 
-						(dapan_round >= (extra_part_quanshu-extra_fencen_quan_num_kw + 1) && dapan_round < (extra_part_quanshu - 1)) ){
-				
-				bianpingqi_speed=bianpingqi_fencen_speed_set;
-				if (Choose_bianpingqi_kb == CHOOSE_NOT){
-					Set_Y_Value(1,HIGH);
-					Set_Y_Value(3,HIGH);
-					y1y3delay_flag = 0;
-				}
-			}
-			else if (dapan_round >= (extra_fencen_quan_num_kw + 1) && dapan_round < (extra_part_quanshu-extra_fencen_quan_num_kw - 1)){//开始位置包含，结束位置不包含，因为结束前一圈和最后一圈变速
-				
-				bianpingqi_speed=bianpingqi_fullspeed_set;
-				if (Choose_bianpingqi_kb == CHOOSE_NOT){
-					Set_Y_Value(1,HIGH);
-					Set_Y_Value(3,HIGH);
-					y1y3delay_flag = 0;
-				}
-			}
-			else if (dapan_round == (extra_fencen_quan_num_kw - 1) || dapan_round == (extra_part_quanshu-extra_fencen_quan_num_kw - 1) || dapan_round == (extra_part_quanshu - 1)){
-				
-				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw) || jiajiansujiangemaichong_kw == 0){
-					Set_Y_Value(1,LOW);
-					Set_Y_Value(3,HIGH);
-					y1y3delay_flag = 0;
-				}
-			}
-			else if (dapan_round == extra_fencen_quan_num_kw ||  dapan_round == (extra_part_quanshu-extra_fencen_quan_num_kw)){
-				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
-				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
-					if (y1y3delay_flag == 0){
-						delay_qz(5,40,1);
-					}
-					if (delay_fac.delay_permit[5] == 1)
-					{
-						if (delay_5_count<=5){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);	
-						}
-						else if (delay_5_count <= 16){
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,LOW);
-						}
-						else{
-							Set_Y_Value(1,HIGH);
-							Set_Y_Value(3,HIGH);
-							delay_qz(5,40,0);
-							y1y3delay_flag = 1;
-						}
-					}
-				}
-			}
-			break;	
-		}
 	}
 }

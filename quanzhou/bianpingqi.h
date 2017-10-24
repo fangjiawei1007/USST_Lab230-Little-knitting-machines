@@ -45,28 +45,26 @@
 #define	bianpingqi_speed_to_fre_word		19
 
 #define bianpingqi_fullspeed_set_kword		1
-#define bianpingqi_fullspeed_set			g_InteralMemory.KeepWord[1]
+#define bianpingqi_fullspeed_set			g_InteralMemory.KeepWord[bianpingqi_fullspeed_set_kword]
 
 #define	bianpingqi_fencen_speed_set_kword	60
-#define	bianpingqi_fencen_speed_set			g_InteralMemory.KeepWord[60]
-
-#define	bianpingqi_tiaoxian_speed_set		g_InteralMemory.KeepWord[159]
+#define	bianpingqi_fencen_speed_set			g_InteralMemory.KeepWord[bianpingqi_fencen_speed_set_kword]
 
 #define	bianpingqi_delta_num_kword			14
-#define	bianpingqi_delta_num				g_InteralMemory.KeepWord[14]
+#define	bianpingqi_delta_num				g_InteralMemory.KeepWord[bianpingqi_delta_num_kword]
 
 #define	bianpingqi_huanchongquan_num_kword	15
-#define	bianpingqi_huanchongquan_num		g_InteralMemory.KeepWord[15]
+#define	bianpingqi_huanchongquan_num		g_InteralMemory.KeepWord[bianpingqi_huanchongquan_num_kword]
 
 #define	bianpingqi_jog_speed_lv_kword		3
 /*************************************************************************************************************/
-#define	bianpingqi_jog_button				g_InteralMemory.Bit[3]
-#define bianpingqi_stop_button				g_InteralMemory.Bit[7]
-#define	bianpingqi_start_button				g_InteralMemory.Bit[2]
+#define	bianpingqi_jog_button				g_InteralMemory.Bit[bianpingqi_jog_button_bit]
+#define bianpingqi_stop_button				g_InteralMemory.Bit[bianpingqi_stop_button_bit]
+#define	bianpingqi_start_button				g_InteralMemory.Bit[bianpingqi_run_button_bit]
 
-#define	bianpingqi_speed_to_fre				g_InteralMemory.Word[19]
+#define	bianpingqi_speed_to_fre				g_InteralMemory.Word[bianpingqi_speed_to_fre_word]
 
-#define	bianpingqi_jog_speed_lv				g_InteralMemory.KeepWord[3]
+#define	bianpingqi_jog_speed_lv				g_InteralMemory.KeepWord[bianpingqi_jog_speed_lv_kword]
 
 #define	bianpingqi_zhonglei_kb				g_InteralMemory.KeepBit[37]
 /*************************************************************************************************************/
@@ -84,7 +82,6 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int DevAddress,int Value);
 void bianpingqi_set_speed(unsigned int speed);
 void bianpingqi_start_sub(void);
 void bianpingqi_stop_sub(void);
-void bianpingqi_speed_cal(unsigned char ewaiduan_flag);
 
 
 #endif

@@ -601,9 +601,6 @@ void Pulse_In_Init(void)
 	//	GPG 0 1 2---up down disable---  X9 X10 X11 X12 X13 X14 X15
     rGPGUDP &= (~(0x3<< 0)) & (~(0x3<< 2))& (~(0x3<< 4)) & (~(0x3<< 6))& (~(0x3<< 8))& (~(0x3<< 10))& (~(0x3<< 12))& (~(0x3<< 14));
 	
-	tmp = rGPGCON &(~(0x3<<6));						//by FJW
-	rGPGCON = tmp | (0x2<<6);						//SET GPG3 AS EINT X11	//by FJW
-	
 	rEXTINT0 = (rEXTINT0 & (~(0x7<<4))) | (0x6<<4);		// Eint1	Both edge triggered
 	//rEXTINT0 = (rEXTINT0 & (~(0x7<<4))) | (0x2<<4);		// Eint1	Falling edge triggered
 	
@@ -631,7 +628,6 @@ void Pulse_In_Init(void)
 	rEXTINT0 = (rEXTINT0 & (~(0x7<<20))) | (0x2<<20);	// Eint5	Falling edge triggered	
 	rEXTINT0 = (rEXTINT0 & (~(0x7<<24))) | (0x2<<24);	// Eint6	Falling edge triggered	
  */
-	rEXTINT1 = (rEXTINT1 & (~(0x7<<12))) | (0x2<<12);	    // Eint11	下降沿触发		压针零位传感器by FJW
 	
 	//GPF1~6  x1-x6 双边沿触发
 	/*rEXTINT0 = (rEXTINT0 & (~(0x7<<4))) | (0x6<<4);		// Eint1	Both edge triggered
@@ -651,13 +647,9 @@ void Pulse_In_Init(void)
 	pISR_EINT2= (U32)encoder2_process;				// X1	
 	pISR_EINT3= (U32)encoder3_process;				// X1	
 	pISR_EINT4_7= (U32)pwrDownHandler;
-	//pISR_EINT8_23= (U32)pressing_zero_process;		//压针零位 By FJW
 	rGPFDAT=0Xff;
 	rEINTPEND = 0xffffff;
-	
-	rSRCPND1 |= BIT_EINT1|BIT_EINT2|BIT_EINT3|BIT_EINT4_7|BIT_EINT8_23; //to clear the previous pending states //BIT_EINT8_23 by FJW
-	
-	//rSRCPND1 |= BIT_EINT1|BIT_EINT2|BIT_EINT3|BIT_EINT4_7; //to clear the previous pending states
+	rSRCPND1 |= BIT_EINT1|BIT_EINT2|BIT_EINT3|BIT_EINT4_7; //to clear the previous pending states
 	rINTPND1 |= BIT_EINT1|BIT_EINT2|BIT_EINT3|BIT_EINT4_7;
 	InPulse1_Stop();
 	InPulse2_Stop();
@@ -697,34 +689,6 @@ void Pulse_In_Init(void)
 		rGPEDAT |= (0x07);
 		encoder1_speed_pulse++;
 		encoder1_pulse_number++;
-	} */
-	
-	/* rGPEDAT ^= 1<<5; //BY FJW 压针 Y9的GPIO直接操作
-	
-	if(jog_positive_status == 1 || jog_negative_status == 1)
-	{
-	
-		if (OutPulse_Counter[1]%2==0){
-			if(positive_button == 1)								//正向压针脉冲记录
-			jiaodu_monitor++;
-			if(negative_button == 1)
-			jiaodu_monitor--;
-		}
-		// else{
-		
-		//}
-		
-		if (OutPulse_Counter[1] >= multiply*2){
-			
-			PulseOut_1_Stop();
-		}
-	
-	}
-	
-
-	if (lingwei_jiance_cover == 1 && lingwei_jiance_uncover == 0 && Get_X_Value(11)==uncover)//init_zero_start==1 &&
-	{
-		huiling_length_tmp ++;
 	} */
 	
 	ClearPending((U32)BIT_TIMER1);
@@ -781,24 +745,6 @@ void PulseOut_1_Start(unsigned int frequence, int pulse_PreSet)
 void PulseOut_1_Stop(void)
 {
 	//DWORD tmp;
-	//rGPEDAT &= ~(1<<3);//by FJW 压针
-	/* if(mode_choose == yazheng_mode)
-	{	
-		Set_Y_Value(pressing_pulse_port,0);	//代替上面一行直接进行未操作
-
-		////////手动调节结束/////////压针 by FJW
-		if(positive_button == 1){//正向压针脉冲记录
-			jog_positive_status = 0;
-			positive_button = 0;
-		}		
-		if(negative_button == 1){
-			jog_negative_status = 0;
-			negative_button = 0;
-		}
-		
-		OutPulse_Counter[1] = 0;
-	/////////////////////////////////////////////////////
-	} */
 	rTCON &= ~(1 << 8);			/* Timer1, stop							*/
 	rINTMSK1 |= BIT_TIMER1;
 	ClearPending((U32)BIT_TIMER1);

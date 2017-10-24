@@ -38,7 +38,7 @@ void Timer0_init_quanzhou(void)
 void Delay_qz_sub(void)
 {
 	U8 delay_rank;
-	for (delay_rank=0;delay_rank<6;delay_rank++)
+	for (delay_rank=0;delay_rank<5;delay_rank++)
 	{
 		if (delay_fac.delay_permit[delay_rank]==1)
 		{
@@ -65,7 +65,7 @@ void Delay_qz_sub(void)
 	}
 }
 
-void delay_qz(U8 delay_rank,U8 delay_t,U8 status)
+void delay_qz(U8 delay_rank,U32 delay_t,U8 status)
 {
 	delay_fac.delay_time_qz[delay_rank]=delay_t;
 	delay_fac.delay_permit[delay_rank]=status;

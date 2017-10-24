@@ -1,7 +1,6 @@
 #include"includes.h"
 
 #define jidianqi_station_num	22
-
 U8 jdqComCount[8]={0};
 char qz_Uart_Getch(void)
 {
@@ -40,6 +39,7 @@ void jidianqi_write_single(U8 which_port,U8 button_bit)
 {
 	U8 auchMsg[8],SendArray[8],RecArray[8];  
 	U8 Count,jdqCheck,waitTime;
+	unsigned int cc,dd;
 	int i;
 	U32 ErrorLoop;
 	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;

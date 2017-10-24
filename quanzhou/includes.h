@@ -48,18 +48,8 @@
 #include"qigang.h"
 #include"wdt.h"
 
-/* #include "pressing.h"
-#include "pressing_jog.h"
-#include "pressing_cal.h"
-#include "pressing_get_zero.h"		//压针 by FJW */
-#include "tiaosha.h"				//调线 by FJW
-
-
 #define	start_quanzhou					1
 #define	stop_quanzhou					0
-
-#define	HIGH							0
-#define	LOW								1
 
 #define	Pen_status						!(rADCDAT0>>15)						//笔尖落下判断，1为笔尖落下态，0为笔尖抬起态
 #define	Pen_status_down					1
@@ -67,11 +57,6 @@
 
 #define	dangban_jianshu_dis_w			g_InteralMemory.Word[44]
 
-
-#define mode_choose						(g_InteralMemory.KeepWord[153]) //模式设置选择by FJW
-#define seven_motor_mode				1
-#define tiaoxian_mode					2
-#define yazheng_mode					10
 
 extern char PlcType;
 extern INTERALMEMORY g_InteralMemory;
@@ -92,17 +77,19 @@ extern U8	xianshi_flag;
 extern unsigned char ss_station_num[4];
 //extern SONGSHA_PARAMETER p_ss;
 extern SYSTEMCONFIG g_SystemConf;
-extern DELAY_STRUCTURE delay_fac;
 
-extern volatile unsigned int k_motor[7];
+
+extern volatile int k_motor[7];
 extern const float k_factor[7][2];
+//extern volatile unsigned int k_motor[5];
 extern U32 youbeng_quanjianxie_yizhuan_num;
-extern unsigned int rate_different[7][3];
+extern int rate_different[7][3];
 extern unsigned int dapan_round;
 //extern float encoder1_cal_factor;
 //extern const int encoder1_cal_factor;
 
 //extern const float encoder1_tran_factor;
+//extern float motor_factor[5];
 //extern U32 encoder1_speed_pulse;
 extern U8 bianpingqi_run_flag;
 extern unsigned int bianpingqi_speed;
@@ -117,6 +104,7 @@ extern unsigned char beep_status;
 extern U8 youbeng_quan_init_flag;
 extern U8 fenshan_quan_init_flag;
 extern const unsigned int pre_set_par[5][3];
+//extern float modify_rate_different[7][3];
 extern	float songsha_rate[4];
 extern U16 songsha_num[7];
 extern unsigned char run_permite_flag;
@@ -140,31 +128,7 @@ extern	unsigned char main_enter_flag;
 extern unsigned char reset_timer_start;
 extern	unsigned int reset_timer_counter;
 
-////压针 by FJW
 
-extern unsigned int pressing_zero_finish;
-extern unsigned int average_yazhen;
-extern unsigned int jog_positive_status;
-extern unsigned int jog_negative_status;
-extern unsigned int lingwei_jiance_cover;
-extern unsigned int lingwei_jiance_uncover;
-extern unsigned int	huiling_length_tmp;
-
-
-extern unsigned int chudao_start[4];	//调线功能 by FJW
-extern unsigned int shoudao_start[4];	//调线功能 by FJW
-extern unsigned int chudao_start_status[4];	//调线功能 by FJW
-extern unsigned int shoudao_start_status[4];	//调线功能 by FJW
-extern unsigned int chudao_jiange_tmp[4];		//出刀间隔记录 by FJW
-extern unsigned int shoudao_jiange_tmp[4];		//收刀间隔记录 by FJW
-
-extern	unsigned int tongxunzhen;
-extern unsigned int shinengwei[4];	
-extern unsigned int chudao_shoudao_status[4];
-
-
-//extern unsigned int SET_HIGH_STATUS;		//置高电平标志位 by FJW
-//unsigned int chudao_shoudao_status;
 #endif
 
 

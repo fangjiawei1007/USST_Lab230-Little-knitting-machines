@@ -465,15 +465,6 @@ void Main(void)
 				else
 					youbeng_new_way();
 				fenshan_sys_fun();
-				
-				/* if(mode_choose == yazheng_mode)
-				{
-					pressing();		//压针 by FJW
-				} */
-				if(tiaoxiankaiguan_kb == 1)//mode_choose == tiaoxian_mode
-				{
-					tiaoxian();
-				}
 				dangban_jianshu_dis_w=*banci[jianshu_no];//当班产量显示
 				g_InteralMemory.Word[23]=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 				g_InteralMemory.Word[24]=dapan_round;
@@ -484,7 +475,7 @@ void Main(void)
 					g_InteralMemory.Word[28]=g_InteralMemory.Word[31]+extra_part_quanshu/extra_part_jiansu;
 				else
 					g_InteralMemory.Word[28]=g_InteralMemory.Word[31];//每件所需圈数
-				//g_InteralMemory.Word[29]=k_motor[4]*1000;
+				g_InteralMemory.Word[29]=k_motor[4]*1000;
 				g_InteralMemory.Word[32]=bianpingqi_speed/100;
 				//////////////////////////////////////
 			}

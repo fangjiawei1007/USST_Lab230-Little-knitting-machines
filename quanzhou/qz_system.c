@@ -15,7 +15,7 @@ float songsha_rate[4]={0};
 U16 songsha_num[7]={0};
 unsigned char youbeng_finish_dida=1;
 U16	youbeng_dida_num=0;
-U8	youbeng_delay=0;
+//U8	youbeng_delay=0;
 
 INT16U* banci[5]={NULL};
 INT16U* banci_mima[3]={&a_ban_mima_kw,&b_ban_mima_kw,&c_ban_mima_kw};
@@ -28,7 +28,7 @@ INT16U previous_dingdanbianhao;
 INT16U previous_dingdanzongshu;
 void youbeng_sys_fun(void)
 {
-	U8	youbeng_work_fac;
+	U32	youbeng_work_fac;
 	if (youbeng_lianxu_button!=1 && youbeng_miaojianxie_button!=1 && youbeng_quanjianxie_button!=1)
 	{
 		youbeng_lianxu_button=1;
@@ -109,7 +109,7 @@ void youbeng_sys_fun(void)
 }
 
 void fenshan_sys_fun(void){
-	U8	fenshan_work_fac;
+	U32	fenshan_work_fac;
 	if (fenshan_lianxu_button!=1 && fenshan_jianxie_1_button!=1 && fenshan_jianxie_2_button!=1)
 	{
 		fenshan_lianxu_button=1;
@@ -266,7 +266,7 @@ void shachang_xianshi(void){
 }
 
 void youbeng_new_way(void){
-	U8	youbeng_work_fac;
+	U32	youbeng_work_fac;
 	if (youbeng_lianxu_button!=1 && youbeng_miaojianxie_button!=1 && youbeng_quanjianxie_button!=1)
 	{
 		youbeng_miaojianxie_button=1;
@@ -560,9 +560,6 @@ void dingdanlianghua(void){
 				previous_dingdanzongshu=dingdanzongshu_kw;
 				encoder1_pulse_number=encoder1_pulse_number_save=0;//编码器计数清零
 				dapan_round=dapan_round_save=0;					//大盘圈数清零
-				
-				//lingwei_jiance_button = 1;						//压针回零 by FJW
-				
 				jianshu=0;										//件数清零
 				dingdan_lianghua_num_kw=0;						//订单量化清零
 				songsha1_num=songsha_num[0]=0;					//各送纱电机所发出脉冲数清零

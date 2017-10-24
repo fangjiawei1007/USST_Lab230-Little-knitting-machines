@@ -876,9 +876,6 @@ void KeyScan(void)
 					{
 						encoder1_pulse_number=encoder1_pulse_number_save=0;
 						dapan_round=dapan_round_save=0;
-						
-						//lingwei_jiance_button = 1;		//—π’Îªÿ¡„ by FJW
-						
 						jianshu=0;
 						jianshu_ewaiduan_check=0;
 					}
@@ -1287,12 +1284,6 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 	{	
 		count++;
 		zhongduan_fun();
-		songsha_fre_change();
-		if(mode_choose == tiaoxian_mode)
-		{
-			tiaoxian();
-		}
-		
 		wdt_feed_dog();main_enter_flag = 1;
 		if ((qz_error_status==1&&privilege_run_flag==0)||ext_start_status==press||ext_stop_status==press||ext_jog_status==press)
 		{

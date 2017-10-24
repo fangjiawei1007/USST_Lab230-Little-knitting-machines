@@ -39,10 +39,10 @@
 #define	current_stage_word					11
 
 #define	encoder1_pulse_number_save_kword	2
-#define	encoder1_pulse_number_save			g_InteralMemory.KeepWord[2]
+#define	encoder1_pulse_number_save			g_InteralMemory.KeepWord[encoder1_pulse_number_save_kword]
 
 #define	dapan_round_save_kword				7
-#define	dapan_round_save					g_InteralMemory.KeepWord[7]
+#define	dapan_round_save					g_InteralMemory.KeepWord[dapan_round_save_kword]
 
 #define	total_quanshu						g_InteralMemory.KeepWord[13]
 
@@ -52,14 +52,14 @@
 #define	shangmian						1
 
 #define	qigang_zhonglei_choose_kbit		14
-#define	qigang_zhonglei_choose			g_InteralMemory.KeepBit[14]
+#define	qigang_zhonglei_choose			g_InteralMemory.KeepBit[qigang_zhonglei_choose_kbit]
 
 #define	qigangdongzuo_multi_num				g_InteralMemory.KeepWord[93]
 /*************************************************************************************************************/
-#define	encoder1_run_status					g_InteralMemory.Bit[13]
-#define	encoder1_dangqianjian_reset			g_InteralMemory.Bit[14]
+#define	encoder1_run_status					g_InteralMemory.Bit[encoder1_run_status_bit]
+#define	encoder1_dangqianjian_reset			g_InteralMemory.Bit[encoder1_dangqianjian_reset_bit]
 
-#define	current_stage						g_InteralMemory.Word[11]	
+#define	current_stage						g_InteralMemory.Word[current_stage_word]	
 
 #define	encoder1_jianshu_reset				g_InteralMemory.Bit[6]
 
@@ -99,13 +99,6 @@
 #define	caijianduan_first_speed_fac_kw		g_InteralMemory.KeepWord[138]
 
 #define	save_button_b						g_InteralMemory.Bit[68]
-
-#define	jiajiansujiangemaichong_kw			g_InteralMemory.KeepWord[158]
-
-#define	extra_part_start	1
-#define	extra_part_stop		0
-#define	extra_part_finish	0
-#define	extra_part_unfinish	1
 
 extern	unsigned int InPulseCount[7];		//记录6路高速输入的脉冲数
 extern	unsigned int OutPulse_PreSet[4];	// 3路脉冲输出的  脉冲预设值
