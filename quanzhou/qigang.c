@@ -85,7 +85,7 @@ void qigang_fun(void)
 
 void qigang_fun(void)
 {
-	if (current_stage==3 || (current_stage==5 && (dapan_round<extra_fencen_quan_num_kw || dapan_round>(extra_part_quanshu-extra_fencen_quan_num_kw))))
+	if (current_stage==3 || (current_stage==5 && (dapan_round<extra_fencen_quan_num_kw || dapan_round>=(extra_part_quanshu-extra_fencen_quan_num_kw))))
 	{
 		dianci_button=1;
 		dianci_fun();

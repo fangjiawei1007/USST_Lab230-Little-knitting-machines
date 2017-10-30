@@ -239,7 +239,7 @@ void songsha_fre_change(void){
 	{
 		current_stage=5;
 		ewaiduan_enter_flag=1;
-		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>(extra_part_quanshu-extra_fencen_quan_num_kw))
+		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>=(extra_part_quanshu-extra_fencen_quan_num_kw))
 		{
 			HuanChong_Start=1;
 			bianpingqi_speed=bianpingqi_fencen_speed_set;

@@ -173,23 +173,7 @@ static EnvParams Env;
 #define SJF_Ram_END	0x32400000	// 4M Ram 区
 
 
-//#define VERSION "Ver3.0.0 2013-05-01"
-//#define VERSION "Ver1.0.1 2016-10-26"
-//#define VERSION "Ver1.1.2 2016-11-21"
-//#define VERSION "Ver1.1.3 2016-11-28"
-//#define VERSION "Ver1.1.4 2016-12-1"
-//#define VERSION "Ver1.1.5 2016-12-10"
-//#define VERSION "Ver1.2.1 2017-1-7"
-//#define VERSION "Ver1.2.2 2017-2-16"
-//#define VERSION "Ver1.2.3 2017-3-27"
-//#define VERSION "Ver1.2.4 2017-4-15"
-//#define VERSION "Ver4.0.1 2017-5-7"
-//#define VERSION "Ver4.0.2 2017-5-9"
-//#define VERSION "Ver4.1.0 2017-5-11"
-//#define VERSION "Ver4.1.1 2017-5-15"
-//#define VERSION "Ver4.1.2 2017-8-31"
-//#define VERSION "Ver4.1.3 2017-10-11"
-#define VERSION "Ver4.1.4 2017-10-23"
+#define VERSION "Ver4.1.5 2017-10-30"
 
 
 #define UART_PrintStr		0		// 是否串口输出调试信息
