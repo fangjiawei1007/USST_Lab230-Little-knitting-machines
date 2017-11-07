@@ -653,7 +653,7 @@ U8 Ts_Calibrate(void)
 
 void KeyScan(void)
 {
-	INT32U w;
+	//INT32U w;
 //	INT8U a[10];
 	CalibrateXY();
 	switch (CurrentScrNum)
@@ -878,6 +878,8 @@ void KeyScan(void)
 						dapan_round=dapan_round_save=0;
 						
 						//lingwei_jiance_button = 1;		//压针回零 by FJW
+						extra_part_finish_flag=extra_part_finish;
+						extra_part_flag=extra_part_stop;
 						
 						jianshu=0;
 						jianshu_ewaiduan_check=0;
@@ -906,7 +908,7 @@ void UserScrKeyScan(void)
 	INT8U temp8U,Type;
 	INT16U ElementCount;
 	INT16U Left,Top,Right,Bottom;
-	INT32U ElementPrt,w;
+	INT32U ElementPrt;//,w
 
 	INT32U i;
 
@@ -1268,7 +1270,7 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 //	char  QueDing[]="OK";//显示英文确定
 	U8 i=0;
 	INT16U Left,Top;
-	int w,l;
+	int l;//w,
 	char Num[2],Num1[2];//,Result;
 	double CurrentValue;
 
@@ -1288,7 +1290,7 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 		count++;
 		zhongduan_fun();
 		songsha_fre_change();
-		if(mode_choose == tiaoxian_mode)
+		if(tiaoxiankaiguan_kb == 1)
 		{
 			tiaoxian();
 		}
@@ -2091,7 +2093,7 @@ void Check_Ctrl_State(void)
 void Func_KeepButton(INT16U StarAddr)
 {
 	INT8U SubType,temp;
-	int w,j;
+	int j;//w,
 	INT16U PlcReadNum,PlcWriteNum,PlcReadLong,PlcWriteLong;
 	char PlcReadStr[5],PlcWriteStr[5];
 
@@ -2346,7 +2348,7 @@ void Func_SetValue(INT16 StarAddr)
 	INT8U WordOrDWord,DigitPos,DigitNumb,ButtonBackColor;
 	INT16U PlcWriteNum,PlcWriteLong,PlcReadLong;
 	int PlcMaxValue,PlcMinValue;
-	int j,w;
+	int j;//,w
 	char PlcWriteStr[5];
 	INT16U Left,Top,Right,Bottom;
 
@@ -2605,7 +2607,7 @@ void Func_UpButton(int StarAddr)
 	INT16U Step,PlcReadNum,PlcWriteNum,PlcReadLong,PlcWriteLong;
 	int LimitValue;
 	INT32U CurrentValue,CurrentValue1;	// 060628
-	int w,j;
+	int j;//w,
 	char PlcReadStr[5],PlcWriteStr[5];
 
 	SubType= ScreenDataBuffer[StarAddr+1];

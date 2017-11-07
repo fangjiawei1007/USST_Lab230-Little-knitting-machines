@@ -54,44 +54,44 @@ void qz_assert(void)
 		songsha_rate[2]=songsha_rate[3]=songsha_xiaopanchilunshu*1.0/songsha_xiaochilunshu*songsha_lvpanzhijin;
 		
 		if (g_InteralMemory.Word[PING_STATE]==6){//大头段2000*100.0
-			shachang_shuru_xianshi_1_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_1_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[0][datou]*rate_different[0][datou]\
 										/xifenshu*songsha_rate[0];
-			shachang_shuru_xianshi_2_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_2_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[1][datou]*rate_different[1][datou]\
 										/xifenshu*songsha_rate[1];
-			shachang_shuru_xianshi_3_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_3_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[2][datou]*rate_different[2][datou]\
 										/xifenshu*songsha_rate[2];
-			shachang_shuru_xianshi_4_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_4_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[3][datou]*rate_different[3][datou]\
 										/xifenshu*songsha_rate[3];
 		}
 		else if (g_InteralMemory.Word[PING_STATE]==7){//小头
-			shachang_shuru_xianshi_1_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_1_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[0][xiaotou]*rate_different[0][xiaotou]\
 										/xifenshu*songsha_rate[0];
-			shachang_shuru_xianshi_2_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_2_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[1][xiaotou]*rate_different[1][xiaotou]\
 										/xifenshu*songsha_rate[1];
-			shachang_shuru_xianshi_3_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_3_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[2][xiaotou]*rate_different[2][xiaotou]\
 										/xifenshu*songsha_rate[2];
-			shachang_shuru_xianshi_4_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_4_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[3][xiaotou]*rate_different[3][xiaotou]\
 										/xifenshu*songsha_rate[3];
 		}
 		else if (g_InteralMemory.Word[PING_STATE]==8){//分层
-			shachang_shuru_xianshi_1_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_1_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[0][xiaotou]*rate_different[0][fencen]\
 										/xifenshu*songsha_rate[0];
-			shachang_shuru_xianshi_2_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_2_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[1][xiaotou]*rate_different[1][fencen]\
 										/xifenshu*songsha_rate[1];
-			shachang_shuru_xianshi_3_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_3_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[2][xiaotou]*rate_different[2][fencen]\
 										/xifenshu*songsha_rate[2];
-			shachang_shuru_xianshi_4_w=	200.0/3/dapan_zongzhenshu_kw*\
+			shachang_shuru_xianshi_4_w=	200.0/dapan_zongzhenshu_kw*\
 										k_factor[3][xiaotou]*rate_different[3][fencen]\
 										/xifenshu*songsha_rate[3];
 		}

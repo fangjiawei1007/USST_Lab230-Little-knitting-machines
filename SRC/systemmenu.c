@@ -417,7 +417,7 @@ void ParScrKeyScan()
 	//int Rate;
 	char new_i,old_i;
 
-	int w,baud;
+	int baud;//w,
 	char Num[2];
 	
 	new_i=old_i=0;
@@ -840,7 +840,7 @@ void DisplayScrCheck(char CurrentSrcNum)
 void ScrCheckScan(void)
 {
 	char num[2];
-	int w,i;
+	int i;//w,
 	char JianCha[]={28,76,18,73};
 	char FanHui[]={23,21,27,56};
 	char CurrentScrNum=0;	
