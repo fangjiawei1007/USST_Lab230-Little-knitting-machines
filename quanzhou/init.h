@@ -2,7 +2,7 @@
 #define	_INIT_H_
 
 #define	menu_init_flag							g_InteralMemory.KeepBit[19]
-#define	encoder1_fac_test_flag					g_InteralMemory.KeepBit[16]
+//#define	encoder1_fac_test_flag					g_InteralMemory.KeepBit[16]
 #define	stepmotor_init_flag						g_InteralMemory.KeepBit[12]
 #define	bianpingqi_init_flag					g_InteralMemory.KeepBit[10]
 #define	jidianqi_init_flag						g_InteralMemory.KeepBit[27]

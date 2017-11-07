@@ -28,7 +28,7 @@ INT16U previous_dingdanbianhao;
 INT16U previous_dingdanzongshu;
 void youbeng_sys_fun(void)
 {
-	U8	youbeng_work_fac;
+	U32	youbeng_work_fac;
 	if (youbeng_lianxu_button!=1 && youbeng_miaojianxie_button!=1 && youbeng_quanjianxie_button!=1)
 	{
 		youbeng_lianxu_button=1;
@@ -109,7 +109,7 @@ void youbeng_sys_fun(void)
 }
 
 void fenshan_sys_fun(void){
-	U8	fenshan_work_fac;
+	U32	fenshan_work_fac;
 	if (fenshan_lianxu_button!=1 && fenshan_jianxie_1_button!=1 && fenshan_jianxie_2_button!=1)
 	{
 		fenshan_lianxu_button=1;
@@ -266,7 +266,7 @@ void shachang_xianshi(void){
 }
 
 void youbeng_new_way(void){
-	U8	youbeng_work_fac;
+	U32	youbeng_work_fac;
 	if (youbeng_lianxu_button!=1 && youbeng_miaojianxie_button!=1 && youbeng_quanjianxie_button!=1)
 	{
 		youbeng_miaojianxie_button=1;

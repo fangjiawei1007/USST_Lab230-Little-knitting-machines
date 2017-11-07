@@ -13,15 +13,15 @@
 typedef struct 
 {
 	U8 delay_init_flag[6];
-	U8 delay_flag[6];
-	U8 delay_time_qz[6];
+	U32 delay_flag[6];
+	U32 delay_time_qz[6];
 	U8 delay_permit[6];
 }DELAY_STRUCTURE;
 
 void Timer0_init_quanzhou(void);
 
 void Delay_qz_sub(void);
-void delay_qz(U8 delay_rank,U8 delay_t,U8 status);
+void delay_qz(U8 delay_rank,U32 delay_t,U8 status);
 
 
 

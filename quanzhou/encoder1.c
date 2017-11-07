@@ -216,6 +216,7 @@ void songsha_fre_change(void){
 			if (banci_status_kw!=s_ban)
 				dingdan_lianghua_num_kw++;					//订单量化计数，只有在改变订单号后会清零,无班次时不增加班次订单计数
 			dapan_round=0;
+			HuanChong_Start=0;
 			FenChenHuanChong_Record_kw=0;
 			caijianduan_sudu_change_flag=0;
 			extra_part_finish_flag=extra_part_finish;
@@ -226,7 +227,7 @@ void songsha_fre_change(void){
 		current_stage=5;	//以下均为挡片段
 		ewaiduan_enter_flag=1;//额外段即为挡片段
 		bianpingqi_speed_cal(ewaiduan_enter_flag);
-		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>(extra_part_quanshu-extra_fencen_quan_num_kw))	{
+		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>=(extra_part_quanshu-extra_fencen_quan_num_kw))	{
 			HuanChong_Start=1;
 			for (bb=0;bb<7;bb++){
 
@@ -392,14 +393,20 @@ void __irq	encoder1_process(void)
 			else if (FenChenHuanChong_Set_kw==0)
 				FenChenHuanChong_Record_kw=FenChenHuanChong_num;
 		}
-		else if (ewaiduan_enter_flag==1&&FenChenHuanChong_Record_kw>0){
-			if (FenChenHuanChong_Set_kw!=0&&encoder1_pulse_number%FenChenHuanChong_Set_kw==0)	//2016.12.01增加0判断，若为0，则直接为FenChenHuanChong_num
-				FenChenHuanChong_Record_kw--;
+		else if (ewaiduan_enter_flag==1){
+			if (FenChenHuanChong_Set_kw!=0&&encoder1_pulse_number%FenChenHuanChong_Set_kw==0&&
+				FenChenHuanChong_Record_kw>0){//2016.12.01增加0判断，若为0，则直接为FenChenHuanChong_num
+					FenChenHuanChong_Record_kw--;
+				}
 			else if(FenChenHuanChong_Set_kw==0)													//2016.12.01
 				FenChenHuanChong_Record_kw=0;
 		}
-		else
+		else if (current_stage == 4){
 			FenChenHuanChong_Record_kw=0;
+		}
+		else
+			FenChenHuanChong_Record_kw=caijianduan_first_speed_fac_kw;
+			
 		if (caijianduan_sudu_change_flag==0)
 			caijianduan_sudu_change_record_num=caijianduan_first_speed_fac_kw;
 		else if (FenChenHuanChong_Set_kw!=0&&encoder1_pulse_number%FenChenHuanChong_Set_kw==0&&\

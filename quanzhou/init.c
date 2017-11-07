@@ -17,11 +17,11 @@ void jidianqi_init(void)
 
 void encoder1_init(void)
 {
-	if(encoder1_fac_test_flag!=1)
+	/* if(encoder1_fac_test_flag!=1)
 	{
 		//encoder1_resolution=2000;					//默认编码器线数600
 		encoder1_fac_test_flag=1;
-	}	
+	}	 */
 	rGPFCON &= (~(3<<4));						//为了接B相
 	signal=Get_X_Value(2);
 	encoder1_fun(1);
