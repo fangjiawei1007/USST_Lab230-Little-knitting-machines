@@ -100,7 +100,7 @@
 
 #define	save_button_b						g_InteralMemory.Bit[68]
 
-#define	jiajiansujiangemaichong_kw			g_InteralMemory.KeepWord[158]
+#define	jiajiansujiangemaichong_kw			g_InteralMemory.KeepWord[154]
 
 #define	extra_part_start	1
 #define	extra_part_stop		0

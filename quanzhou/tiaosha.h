@@ -9,10 +9,10 @@
 #define chudao_jiange					(g_InteralMemory.KeepWord[151]) //出刀间隔
 #define shoudao_jiange					(g_InteralMemory.KeepWord[152]) //出刀间隔
 
-#define	tiaoxian_12_enter			(g_InteralMemory.KeepWord[154])
-#define	tiaoxian_12_exit			(g_InteralMemory.KeepWord[155])
-#define	tiaoxian_34_enter			(g_InteralMemory.KeepWord[156])
-#define	tiaoxian_34_exit			(g_InteralMemory.KeepWord[157])
+#define	tiaoxian_12_enter			(g_InteralMemory.KeepWord[156])
+#define	tiaoxian_12_exit			(g_InteralMemory.KeepWord[157])
+#define	tiaoxian_34_enter			(g_InteralMemory.KeepWord[158])
+#define	tiaoxian_34_exit			(g_InteralMemory.KeepWord[159])
 
 #define Y9								9
 #define Y10								10

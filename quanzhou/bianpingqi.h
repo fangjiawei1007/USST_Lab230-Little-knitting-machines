@@ -50,7 +50,7 @@
 #define	bianpingqi_fencen_speed_set_kword	60
 #define	bianpingqi_fencen_speed_set			g_InteralMemory.KeepWord[60]
 
-#define	bianpingqi_tiaoxian_speed_set		g_InteralMemory.KeepWord[159]
+#define	bianpingqi_tiaoxian_speed_set		g_InteralMemory.KeepWord[155]
 
 #define	bianpingqi_delta_num_kword			14
 #define	bianpingqi_delta_num				g_InteralMemory.KeepWord[14]

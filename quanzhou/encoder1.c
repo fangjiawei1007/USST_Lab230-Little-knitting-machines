@@ -134,7 +134,7 @@ void songsha_fre_change(void){
 				HuanChong_Start=0;
 				for (bb=0;bb<7;bb++)
 				{
-					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou];
+					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou]*1000;
 				}
 			}
 			else{

@@ -191,14 +191,14 @@ void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
 	static unsigned int y1y3delay_flag = 0;
 	for( ii = 0 ; ii < 4 && tiaoxiankaiguan_kb == 1 && current_stage != 5; ii++){
 		if ( ii % 2 == 0) {
-			if ( dapan_round == (g_InteralMemory.KeepWord[154 + ii] - 1) ||
-			   ( dapan_round == g_InteralMemory.KeepWord[154 + ii] && encoder1_pulse_number <= jiajiansujiangemaichong_kw) ){//&& dapan_round <= (g_InteralMemory.KeepWord[154 + ii])
+			if ( dapan_round == (g_InteralMemory.KeepWord[156 + ii] - 1) ||
+			   ( dapan_round == g_InteralMemory.KeepWord[156 + ii] && encoder1_pulse_number <= jiajiansujiangemaichong_kw) ){
 				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
 				return;
 			}
 		}
 		else {
-			if ( dapan_round >= (g_InteralMemory.KeepWord[154 + ii] - 1) && chudao_shoudao_status[ii] == 1 ){//&& dapan_round <= (g_InteralMemory.KeepWord[154 + ii])
+			if ( dapan_round >= (g_InteralMemory.KeepWord[156 + ii] - 1) && chudao_shoudao_status[ii] == 1 ){
 				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
 				return;
 			}
