@@ -22,5 +22,7 @@ void tiaoxian(void);
 void chudao_shoudao_process(unsigned int i);
 void weisha(unsigned int i);
 unsigned int tiaoxian_jidianqi_write(void);
+unsigned int between_check(unsigned int whichShineng, unsigned int roundShineng);
+unsigned int at_check(unsigned int whichShineng, unsigned int roundShineng);
 #endif
 

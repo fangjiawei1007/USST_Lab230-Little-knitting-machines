@@ -11,40 +11,49 @@ unsigned int shinengwei[4]={0};
 unsigned int tongxunzhen = 0xff;
 unsigned int tongxunstart = 0; 
 
+unsigned int between_check(unsigned int whichShineng, unsigned int roundShineng){
+	int i;
+	for(i=0;i<8;i++){
+		if ( roundShineng >= g_InteralMemory.KeepWord[156 + 16*whichShineng + i]		//大于下限
+			&& g_InteralMemory.KeepWord[164 + 16*whichShineng + i] != 0					//对应上限不为零
+			&& roundShineng < g_InteralMemory.KeepWord[164 + 16*whichShineng + i]){		//小于上限
+				
+				return 1;
+			}
+	}
+	return 0;
+}
+
+unsigned int at_check(unsigned int whichShineng, unsigned int roundShineng){
+	int i;
+	for(i=0;i<8;i++){
+		if (g_InteralMemory.KeepWord[164 + 16*whichShineng + i] != 0){						//对应上限不为零
+			if (roundShineng == g_InteralMemory.KeepWord[156 + 16*whichShineng + i]){		//等于下限
+			
+				return 1;
+			}
+			if (roundShineng == g_InteralMemory.KeepWord[164 + 16*whichShineng + i]){		//等于上限
+
+				return 2;
+			}
+		}
+	}
+	return 0;
+}
+
 void shinengpanduan(void){
 	int i;
 	//unsigned int wei[4];
 	for (i = 0 ; i <4 ; i++){
 		shinengwei[i] = 0;
 	}
-	if ( tiaoxiankaiguan_kb != 0){
-		/* wei[0] = channal_choose / 1000;
-		wei[1] = (channal_choose - wei[0]*1000) / 100; 
-		wei[2] = (channal_choose - wei[0]*1000 - wei[1]*100) / 10;
-		wei[3] = channal_choose % 10;
-		for (i = 0 ; i <4 ; i++){
-			switch (wei[i]){
-				case 1:
-					//weizhi |= (0x03 << 0);
-					shinengwei[0] = 1;
-					break;
-				case 2:
-					//weizhi |= (0x03 << 2);
-					shinengwei[1] = 1;
-					break;
-				case 3:
-					//weizhi |= (0x03 << 4);
-					shinengwei[2] = 1;
-					break;
-				case 4:
-					//weizhi |= (0x03 << 6);
-					shinengwei[3] = 1;
-					break;
-				default:
-					break;
-				}
-		} */
-		if ( dapan_round >= tiaoxian_12_enter && dapan_round < tiaoxian_12_exit && current_stage != 4 && current_stage != 5){
+	if (current_stage != 4 && current_stage != 5){
+		for( i = 0 ; i<4 ; i++){
+			shinengwei[i] = between_check(i,dapan_round);
+		}
+	}
+	
+	/* if ( dapan_round >= tiaoxian_12_enter && dapan_round < tiaoxian_12_exit && current_stage != 4 && current_stage != 5){
 			shinengwei[0] = 1;
 			shinengwei[1] = 1;
 		}
@@ -60,7 +69,7 @@ void shinengpanduan(void){
 			shinengwei[2] = 0;
 			shinengwei[3] = 0;
 		}
-	}
+	} */
 }
 
 void tiaoxian(void)
