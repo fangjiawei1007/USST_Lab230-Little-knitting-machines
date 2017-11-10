@@ -2,28 +2,25 @@
 U32 encoder1_speed_pulse=0;
 U32	encoder1_speed=0;
 
+volatile unsigned int k_motor[7]={0};
+unsigned int kMotorTarget[7]={0};
 volatile unsigned int motor_factor[7]={0};
 unsigned int dapan_round=0;
-//float encoder1_cal_factor;
-//const int encoder1_cal_factor=8884;
-const float encoder1_tran_factor=5;
 U16	encoder1_pulse_number=0;
 
-const float k_factor[7][2]={{0.364,0.519},{0.249,0.309},{0.369,0.399},{0.264,0.2916},{0.3285,0.3121},{1,1},{1,1}};
+const float k_factor[7][3]={{364,519,364},{249,309,249},{369,399,369},{264,291.6,264},{328.5,312.1,328.5},{1000,1000,1000},{1000,1000,1000}};
 //const unsigned int pre_set_par[5][3]={{500,200,500},{600,500,655},{585,640,585},{910,850,910},{675,715,675}};
 unsigned char jiansu_permite=1;
 unsigned char signal;
-unsigned char HuanChong_Start=0;
-unsigned char ewaiduan_enter_flag=0;
+unsigned char speedUpFlag=0;
+unsigned char speedDownFlag=0;
 
-unsigned char caijianduan_sudu_change_flag;
-unsigned char caijianduan_sudu_change_record_num;
 unsigned char jianshu_ewaiduan_check=0;
 unsigned char reset_timer_start=0;
-#define	caijianduan_sudu_change_num		8.0
+unsigned int speedUpCnt=1;
+unsigned int speedDownCnt=1;
+unsigned int forceEqual = 1;
 
-
-#define FenChenHuanChong_num			8.0
 
 #define	reset_time_100ms				4
 
@@ -60,6 +57,7 @@ void encoder1_data_reset(void){
 		extra_part_finish_flag=extra_part_finish;
 		extra_part_flag=extra_part_stop;
 		dapan_round=dapan_round_save=0;
+		forceEqual = 1;
 		//lingwei_jiance_button = 1; //压针回零 by FJW
 	}
 	if (encoder1_jianshu_reset==1)
@@ -70,7 +68,7 @@ void encoder1_data_reset(void){
 		dapan_round=dapan_round_save=0;
 		extra_part_finish_flag=extra_part_finish;
 		extra_part_flag=extra_part_stop;
-		
+		forceEqual = 1;
 		//lingwei_jiance_button = 1;		//压针回零 by FJW
 		
 		jianshu=0;
@@ -106,9 +104,119 @@ void encoder1_data_reset(void){
 	}
 }
 
+void SpeedChange(const unsigned int* kMotor){
+	static unsigned int previousKMotor[7]={0};
+	int i;
+	if (forceEqual == 1){
+		for ( i = 0; i<7 ; i++){
+			k_motor[i] = kMotor[i];
+			previousKMotor[i] = kMotor[i];		
+		}
+		forceEqual = 0;
+	}
+	else{
+		for ( i = 0; i<7 ; i++){
+			if (speedUpCnt == speedUpMax){
+				k_motor[i] = kMotor[i];
+				previousKMotor[i] = kMotor[i];
+				if (i == 6){
+					speedUpCnt = 1;
+				}
+				continue;
+			}
+			if (speedDownCnt == speedDownMax){
+				k_motor[i] = kMotor[i];
+				previousKMotor[i] = kMotor[i];
+				if (i == 6){
+					speedDownCnt = 1;
+				}
+				continue;
+			}
+			if (previousKMotor[i] < kMotor[i]){		
+				k_motor[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt/speedUpMax);
+				speedUpFlag = 1;
+			}
+			else if (previousKMotor[i] > kMotor[i]){
+				k_motor[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt/speedDownMax);
+				speedDownFlag = 1;
+			}
+			else{
+				k_motor[i] = kMotor[i];
+			}
+		}
+		
+	}
+	
+}
+
+unsigned int getStage(const unsigned int stage,int direction){
+	int requestStage = datouduan;
+	unsigned char validRound = 0x00;
+	if (daduanquanshu != 0){
+		validRound |= 1<<datouduan;
+	}
+	if (middlequanshu != 0){
+		validRound |= 1<<guoduduan;
+	}
+	if (xiaoduanquanshu != 0){
+		validRound |= 1<<xiaotouduan;
+	}
+	if (caijiaoquanshu != 0){
+		validRound |= 1<<fencenduan;
+	}
+	if (langfeiquanshu != 0){
+		validRound |= 1<<caijianduan;
+	}
+	if (extra_part_quanshu != 0){
+		if (direction == NEXTSTAGE){
+			if (extra_part_quanshu!=0 && extra_part_jiansu!=0 && jianshu!=0 && (jianshu+1)%extra_part_jiansu==0){
+				
+				validRound |= 1<<ewaiduan;
+			}
+		}
+		else{
+			if (extra_part_quanshu!=0 && extra_part_jiansu!=0 && jianshu!=0 && (jianshu)%extra_part_jiansu==0){
+				
+				validRound |= 1<<ewaiduan;
+			}
+		}
+	}
+	if (direction == CURRENT){
+		return stage;
+	}
+	for( requestStage=((int)stage + direction);;requestStage += direction){
+		if (requestStage < datouduan){
+			requestStage = ewaiduan;
+		}
+		if (requestStage > ewaiduan){
+			requestStage = datouduan;
+		}
+		if ( validRound & 1<<requestStage ){
+			return requestStage;
+		}			
+	}	
+}
+
+int getKMotor(const unsigned char bb,const unsigned int stage,int direction){
+	int requestStage = 0;
+	
+	requestStage = getStage(stage,direction);
+	if (requestStage == ewaiduan){
+		return (k_factor[bb][datou]*rate_different[bb][datou]);
+	}
+	else if (requestStage != guoduduan && requestStage != caijianduan){
+		return (k_factor[bb][requestStage]*rate_different[bb][requestStage]);
+	}
+	else{
+		for (;requestStage != guoduduan && requestStage != caijianduan;){
+			requestStage = getStage(requestStage,direction);
+		}
+		return (k_factor[bb][requestStage]*rate_different[bb][requestStage]);
+	}
+}
+
 void songsha_fre_change(void){
 	unsigned char bb;
-	static float k_motor_temp[2][7]={0};
 	wdt_feed_dog();main_enter_flag = 1;
 	g_InteralMemory.Word[31]=daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu;
 	if (g_InteralMemory.Word[31]==0)
@@ -127,87 +235,50 @@ void songsha_fre_change(void){
 	if (extra_part_flag==extra_part_stop)
 	{
 		extra_part_finish_flag=extra_part_unfinish;
-		if (dapan_round<daduanquanshu){
-			current_stage=0;
-			if (ewaiduan_enter_flag==0){
-			
-				HuanChong_Start=0;
-				for (bb=0;bb<7;bb++)
-				{
-					k_motor[bb]=k_factor[bb][datou]*rate_different[bb][datou]*1000;
-				}
+		if (dapan_round<daduanquanshu || daduanquanshu == 9999){
+			current_stage=datouduan;
+			for (bb=0;bb<7;bb++){
+				kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
 			}
-			else{
-			
-				HuanChong_Start=1;
-				for (bb=0;bb<7;bb++)
-				{
-					k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*
-								(g_InteralMemory.KeepWord[103+bb]/100.0+(1.0-g_InteralMemory.KeepWord[103+bb]/100.0)/\
-									FenChenHuanChong_num*FenChenHuanChong_Record_kw))*1000;
-				}
-			}
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
+			SpeedChange(kMotorTarget);
+			bianpingqi_speed_cal();
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu)){
-			current_stage=1;
-			ewaiduan_enter_flag=0;
+			current_stage=guoduduan;
 			for (bb=0;bb<7;bb++){
 			
-				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]-\
-				             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])\
-				             /middlequanshu*(dapan_round-daduanquanshu))*1000;
+				kMotorTarget[bb]=(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
+								 (getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE) )
+								 *(dapan_round-daduanquanshu)/middlequanshu); 
 			}
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
-			HuanChong_Start=0;
+			forceEqual=1;
+			SpeedChange(kMotorTarget);
+			bianpingqi_speed_cal();
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu)){
-			current_stage=2;
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
+			current_stage=xiaotouduan;
+			bianpingqi_speed_cal();
 			for (bb=0;bb<7;bb++)
-				k_motor[bb]=k_factor[bb][xiaotou]*rate_different[bb][xiaotou]*1000;
-			HuanChong_Start=0;
+				kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
+			SpeedChange(kMotorTarget);
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu)){
-			current_stage=3;
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
-			HuanChong_Start=1;
+			current_stage=fencenduan;
+			bianpingqi_speed_cal();
 			for (bb=0;bb<7;bb++){
-				k_motor[bb]=(k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+\
-							(k_factor[bb][xiaotou]*rate_different[bb][fencen]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])/\
-							FenChenHuanChong_num*FenChenHuanChong_Record_kw)*1000;
+				kMotorTarget[bb]= getKMotor(bb,current_stage,CURRENT);
 			}
+			SpeedChange(kMotorTarget);
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu)){
-			current_stage=4;
-			if (caijianduan_sudu_change_flag != 1)
-				HuanChong_Start=0;
-			caijianduan_sudu_change_flag=1;
-			bianpingqi_speed_cal(ewaiduan_enter_flag);
-			if (caijianduan_sudu_change_record_num<=caijianduan_sudu_change_num){
-			
-				for (bb=0;bb<7;bb++)
-				{
-					k_motor[bb]=(k_factor[bb][xiaotou]*rate_different[bb][fencen]+\
-					             (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]-k_factor[bb][xiaotou]*rate_different[bb][fencen])\
-					             /caijianduan_sudu_change_num*caijianduan_sudu_change_record_num)*1000;
-				}
+			current_stage=caijianduan;
+			bianpingqi_speed_cal();
+			for (bb=0;bb<7;bb++){
+				kMotorTarget[bb] = (getKMotor(bb,current_stage,PREVIOUSSTAGE)+
+								   (getKMotor(bb,current_stage,NEXTSTAGE)-getKMotor(bb,current_stage,PREVIOUSSTAGE) )
+									*(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu)/langfeiquanshu);
 			}
-			else{
-			
-				HuanChong_Start=1;					//2017-4-15
-				for (bb=0;bb<7;bb++){
-					k_motor_temp[0][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+		\
-					             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])					\
-					             /langfeiquanshu*(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu));
-					k_motor_temp[1][bb] = (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]+		\
-					             (k_factor[bb][datou]*rate_different[bb][datou]-k_factor[bb][xiaotou]*rate_different[bb][xiaotou])					\
-					             /langfeiquanshu*(dapan_round+1-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu));
-					
-					k_motor[bb] =	(k_motor_temp[0][bb] + (k_motor_temp[1][bb] - k_motor_temp[0][bb])*
-									FenChenHuanChong_Record_kw/FenChenHuanChong_num)*1000;
-				}
-			}	
+			SpeedChange(kMotorTarget);
 		}
 		else
 		{
@@ -216,35 +287,26 @@ void songsha_fre_change(void){
 			if (banci_status_kw!=s_ban)
 				dingdan_lianghua_num_kw++;					//订单量化计数，只有在改变订单号后会清零,无班次时不增加班次订单计数
 			dapan_round=0;
-			HuanChong_Start=0;
-			FenChenHuanChong_Record_kw=0;
-			caijianduan_sudu_change_flag=0;
 			extra_part_finish_flag=extra_part_finish;
 		}
 	}
 	else{
 	
-		current_stage=5;	//以下均为挡片段
-		ewaiduan_enter_flag=1;//额外段即为挡片段
-		bianpingqi_speed_cal(ewaiduan_enter_flag);
+		current_stage=ewaiduan;	//以下均为挡片段
+		bianpingqi_speed_cal();
 		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>=(extra_part_quanshu-extra_fencen_quan_num_kw))	{
-			HuanChong_Start=1;
 			for (bb=0;bb<7;bb++){
-
-					k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*\
-								(1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num))*1000;
-				}
-		}
-		else{
-			HuanChong_Start=0;
-			for (bb=0;bb<7;bb++){
-				k_motor[bb]=(k_factor[bb][datou]*rate_different[bb][datou]*\
-							(1+(g_InteralMemory.KeepWord[103+bb]/100.0-1.0)*FenChenHuanChong_Record_kw/FenChenHuanChong_num))*1000;
+				kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]/100);
 			}
 		}
+		else{
+			for (bb=0;bb<7;bb++){
+				kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]);
+			}
+		}
+		SpeedChange(kMotorTarget);
 		if (dapan_round>=extra_part_quanshu){
 			extra_part_flag=extra_part_stop;
-			FenChenHuanChong_Record_kw=0;
 			if (jianshu>=zhibusheding || (previous_dingdanzongshu!=0&&dingdan_lianghua_num_kw>=previous_dingdanzongshu))
 				jianshu_ewaiduan_check=1;
 			dapan_round=0;
@@ -296,13 +358,11 @@ void __irq	encoder1_process(void)
 		
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
 			for (jj = 0 ; jj < 4 ; jj++){
-				if (chudao_start[jj] == 1 && chudao_start_status[jj] == 0)	//出刀间隔计算 by FJW
-				{
+				if (chudao_start[jj] == 1 && chudao_start_status[jj] == 0){	//出刀间隔计算 by FJW
 					chudao_jiange_tmp[jj] ++;
 				}
 
-				if (shoudao_start[jj] == 1 && shoudao_start_status[jj] == 0)	//收刀间隔计算 by FJW
-				{
+				if (shoudao_start[jj] == 1 && shoudao_start_status[jj] == 0){	//收刀间隔计算 by FJW
 					shoudao_jiange_tmp[jj] ++;
 				}
 			}	
@@ -334,7 +394,8 @@ void __irq	encoder1_process(void)
 		}
 		rGPEDAT |= (0xf);
 		
-		wdt_feed_dog();
+		
+		rWTCNT = reset_time_kw;	//wdt_feed_dog();
 		if (encoder1_pulse_number>=encoder1_cal_factor){
 			dapan_round++;
 			encoder1_pulse_number=0;
@@ -348,10 +409,8 @@ void __irq	encoder1_process(void)
 				youbeng_quanjianxie_yizhuan_num++;
 			if (fenshan_quan_init_flag==1)
 				fenshan_jianxie_yizhuanquan_num++;
-			if(current_stage == 4)						//2017-4-15
-				FenChenHuanChong_Record_kw=0;
 		}
-		if (Get_X_Value(shangduansha_port) == alarm_signal[shangduansha_port] &&
+		if ( ((rGPFDAT >> 7) & 0x1) == alarm_signal[shangduansha_port] &&//Get_X_Value(shangduansha_port)
 		    sys_force_run_button == 0 && 
 			shangduansha_alarm_level!=level_0){
 			error_times++;
@@ -386,38 +445,31 @@ void __irq	encoder1_process(void)
 			reset_enter_times = 0;
 		}
 		main_enter_flag = 0;				//用以做主程序循环正常检测
-		if (HuanChong_Start==1){
-			if (FenChenHuanChong_Set_kw!=0&&FenChenHuanChong_Record_kw<FenChenHuanChong_num&&\
-			encoder1_pulse_number%FenChenHuanChong_Set_kw==0)
-				FenChenHuanChong_Record_kw++;
-			else if (FenChenHuanChong_Set_kw==0)
-				FenChenHuanChong_Record_kw=FenChenHuanChong_num;
+		if (speedUpFlag==1){
+			if (huanchongmaichong!=0&&speedUpCnt<speedUpMax&&\
+			encoder1_pulse_number%huanchongmaichong==0)
+				speedUpCnt++;
+			else if (huanchongmaichong==0){
+				speedUpCnt=speedUpMax;
+				speedUpFlag=0;
+			}
+			else if (speedUpCnt >= speedUpMax){
+				speedUpFlag=0;
+			}	
 		}
-		else if (ewaiduan_enter_flag==1){
-			if (FenChenHuanChong_Set_kw!=0&&encoder1_pulse_number%FenChenHuanChong_Set_kw==0&&
-				FenChenHuanChong_Record_kw>0){//2016.12.01增加0判断，若为0，则直接为FenChenHuanChong_num
-					FenChenHuanChong_Record_kw--;
-				}
-			else if(FenChenHuanChong_Set_kw==0)													//2016.12.01
-				FenChenHuanChong_Record_kw=0;
+		if (speedDownFlag==1){
+			if (huanchongmaichong!=0&&speedDownCnt<speedDownMax&&\
+			encoder1_pulse_number%huanchongmaichong==0)
+				speedDownCnt++;
+			else if (huanchongmaichong==0){
+				speedDownCnt=speedDownMax;
+				speedDownFlag=0;
+			}
+			else if (speedDownCnt >= speedDownMax){
+				speedDownFlag=0;
+			}
 		}
-		else if (current_stage == 4){
-			FenChenHuanChong_Record_kw=0;
-		}
-		else
-			FenChenHuanChong_Record_kw=caijianduan_first_speed_fac_kw;
-			
-		if (caijianduan_sudu_change_flag==0)
-			caijianduan_sudu_change_record_num=caijianduan_first_speed_fac_kw;
-		else if (FenChenHuanChong_Set_kw!=0&&encoder1_pulse_number%FenChenHuanChong_Set_kw==0&&\
-				caijianduan_sudu_change_record_num<=caijianduan_sudu_change_num)					//2016.12.01增加record_num只能比总数大1
-			caijianduan_sudu_change_record_num++;
-		else if (FenChenHuanChong_Set_kw==0)
-			caijianduan_sudu_change_record_num=caijianduan_sudu_change_num+1;
-		
-		
-		
-	}	
+	}
 	rEINTPEND=(1<<1); 
 	ClearPending((U32)BIT_EINT1);
 }

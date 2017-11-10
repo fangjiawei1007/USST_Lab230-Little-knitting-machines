@@ -19,7 +19,7 @@
 
 #define pulse_divider					400
 #define	productivity_per_round			0.4
-//#define	encoder1_tran_factor			5.556
+
 /*************************************************************************************************************/
 //编码器接口 X1
 #define	encoder1_port	1
@@ -54,12 +54,13 @@
 #define	qigang_zhonglei_choose_kbit		14
 #define	qigang_zhonglei_choose			g_InteralMemory.KeepBit[14]
 
-#define	qigangdongzuo_multi_num				g_InteralMemory.KeepWord[93]
+
 /*************************************************************************************************************/
 #define	encoder1_run_status					g_InteralMemory.Bit[13]
 #define	encoder1_dangqianjian_reset			g_InteralMemory.Bit[14]
 
 #define	current_stage						g_InteralMemory.Word[11]	
+//#define	previous_current_stage				g_InteralMemory.KeepWord[93]
 
 #define	encoder1_jianshu_reset				g_InteralMemory.Bit[6]
 
@@ -90,13 +91,14 @@
 #define	extra_part_flag						g_InteralMemory.KeepBit[15]
 #define	extra_part_finish_flag				g_InteralMemory.KeepBit[16]
 
-#define	FenChenHuanChong_Set_kw				g_InteralMemory.KeepWord[146]
-#define	FenChenHuanChong_Record_kw			g_InteralMemory.KeepWord[147]
+#define	huanchongmaichong				g_InteralMemory.KeepWord[146]
+#define	speedUpMax							g_InteralMemory.KeepWord[147]
+#define	speedDownMax		g_InteralMemory.KeepWord[138]
 
 #define	xitong_total_num_upper_kw			g_InteralMemory.KeepWord[128]
 #define	total_qingling_b					g_InteralMemory.Bit[66]
 
-#define	caijianduan_first_speed_fac_kw		g_InteralMemory.KeepWord[138]
+
 
 #define	save_button_b						g_InteralMemory.Bit[68]
 
@@ -106,6 +108,18 @@
 #define	extra_part_stop		0
 #define	extra_part_finish	0
 #define	extra_part_unfinish	1
+
+#define	NEXTSTAGE			1
+#define	PREVIOUSSTAGE		-1
+#define	CURRENT 			0
+
+#define	datouduan			0
+#define	guoduduan			1
+#define	xiaotouduan			2
+#define	fencenduan			3
+#define	caijianduan			4
+#define	ewaiduan			5
+
 
 extern	unsigned int InPulseCount[7];		//记录6路高速输入的脉冲数
 extern	unsigned int OutPulse_PreSet[4];	// 3路脉冲输出的  脉冲预设值
@@ -122,6 +136,7 @@ void parameter_save(void);
 void __irq	encoder1_process(void);
 void Timer0_init_quanzhou(void);
 void songsha_fre_change(void);
+unsigned int getStage(const unsigned int stage,int direction);
 
 
 #endif

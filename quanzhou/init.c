@@ -101,9 +101,10 @@ void menu_init(void)
 		youben_choose=youben_old;
 		dida_num=5;
 		
-		FenChenHuanChong_Record_kw=0;
-		FenChenHuanChong_Set_kw=1000;
-		caijianduan_first_speed_fac_kw=1;
+		speedUpMax = 5;
+		speedDownMax=5;
+		huanchongmaichong=1000;
+		
 		Choose_bianpingqi_kb=CHOOSE_BIANPINGQI;
 		bianpingqi_zhonglei_kb = shilin_bianpingqi;
 		
@@ -135,7 +136,6 @@ void menu_init(void)
 	previous_dingdanbianhao=dingdanbianhao_kw;
 	previous_dingdanzongshu=dingdanzongshu_kw;
 	next_banci_status=banci_status_kw;
-	caijianduan_sudu_change_record_num=caijianduan_first_speed_fac_kw;
 	g_InteralMemory.Word[40]=8888;
 }
 
@@ -251,7 +251,7 @@ void stepmotor_init(void)
 		max_speed=120;
 		
 		qigang_zhonglei_choose=xiamian;
-		qigangdongzuo_multi_num=100;
+		
 		
 		encoder1_cal_factor=26677;
 		stepmotor_init_flag=1;

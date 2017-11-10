@@ -47,7 +47,7 @@ void shinengpanduan(void){
 	for (i = 0 ; i <4 ; i++){
 		shinengwei[i] = 0;
 	}
-	if (current_stage != 4 && current_stage != 5){
+	if (current_stage != caijianduan && current_stage != ewaiduan){
 		for( i = 0 ; i<4 ; i++){
 			shinengwei[i] = between_check(i,dapan_round);
 		}
@@ -97,7 +97,7 @@ void tiaoxian(void)
 			chudao_shoudao_start[i] = 0;
 			//previous_stage[i] = current_stage; //此处应该放在出刀收刀结束
 		}
-		else if (current_stage >= 4 && chudao_shoudao_status[i] == 1){
+		else if (current_stage >= caijianduan && chudao_shoudao_status[i] == 1){
 			chudao_shoudao_process(i);
 			tongxunzhen &= (~(3<< (i*2)));
 			tongxunzhen |= (kaiguan[i] << (i*2));

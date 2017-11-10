@@ -94,15 +94,13 @@ extern unsigned char ss_station_num[4];
 extern SYSTEMCONFIG g_SystemConf;
 extern DELAY_STRUCTURE delay_fac;
 
-extern volatile unsigned int k_motor[7];
-extern const float k_factor[7][2];
+extern const float k_factor[7][3];
 extern U32 youbeng_quanjianxie_yizhuan_num;
 extern unsigned int rate_different[7][3];
 extern unsigned int dapan_round;
 //extern float encoder1_cal_factor;
 //extern const int encoder1_cal_factor;
 
-//extern const float encoder1_tran_factor;
 //extern U32 encoder1_speed_pulse;
 extern U8 bianpingqi_run_flag;
 extern unsigned int bianpingqi_speed;

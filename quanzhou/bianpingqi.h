@@ -84,7 +84,7 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int DevAddress,int Value);
 void bianpingqi_set_speed(unsigned int speed);
 void bianpingqi_start_sub(void);
 void bianpingqi_stop_sub(void);
-void bianpingqi_speed_cal(unsigned char ewaiduan_flag);
+void bianpingqi_speed_cal(void);
 
 
 #endif

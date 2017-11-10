@@ -186,10 +186,10 @@ void bianpingqi_jog(void)
 	}
 }
 
-void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
+void bianpingqi_speed_cal(void){
 	int ii;
 	static unsigned int y1y3delay_flag = 0;
-	if (current_stage != 5 && tiaoxiankaiguan_kb == 1){
+	if (tiaoxiankaiguan_kb == 1 && current_stage != ewaiduan){
 		for( ii = 0 ; ii < 4 ; ii++){
 			if ((at_check(ii,(dapan_round+1)) == 1 && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
 				( at_check(ii,(dapan_round))==1 && encoder1_pulse_number < jiajiansujiangemaichong_kw) ){
@@ -209,8 +209,8 @@ void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
 	}
 	
 	switch (current_stage){
-		case 0:{
-			if (ewaiduan_flag == 1 && dapan_round == 0){
+		case datouduan:{
+			if (getStage(current_stage,PREVIOUSSTAGE) == ewaiduan && dapan_round == 0){
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
 					if (y1y3delay_flag == 0){
@@ -245,7 +245,7 @@ void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
 			}
 			break;
 		}
-		case 1:{
+		case guoduduan:{
 			bianpingqi_speed=bianpingqi_fullspeed_set;
 			if (Choose_bianpingqi_kb == CHOOSE_NOT){
 				Set_Y_Value(1,HIGH);
@@ -254,7 +254,7 @@ void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
 			}
 			break;
 		}
-		case 2:{
+		case xiaotouduan:{
 			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu-bianpingqi_huanchongquan_num)){
 				bianpingqi_speed=bianpingqi_fullspeed_set;
 			}
@@ -269,7 +269,7 @@ void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
 			}
 			break;
 		}
-		case 3:{
+		case fencenduan:{
 			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+1)){
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 1){
@@ -330,7 +330,7 @@ void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
 			}
 			break;
 		}
-		case 4:{
+		case caijianduan:{
 			if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+1)){
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
@@ -392,7 +392,7 @@ void bianpingqi_speed_cal(unsigned char ewaiduan_flag){
 			}
 			break;
 		}
-		case 5:{
+		case ewaiduan:{
 			if (dapan_round == 0){
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 				if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
