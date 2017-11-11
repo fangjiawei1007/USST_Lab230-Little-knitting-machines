@@ -64,6 +64,9 @@
 #define bianpingqi_stop_button				g_InteralMemory.Bit[7]
 #define	bianpingqi_start_button				g_InteralMemory.Bit[2]
 
+#define	bianpingqi_speed_up_b				g_InteralMemory.Bit[13]
+#define bianpingqi_speed_down_b				g_InteralMemory.Bit[4]
+
 #define	bianpingqi_speed_to_fre				g_InteralMemory.Word[19]
 
 #define	bianpingqi_jog_speed_lv				g_InteralMemory.KeepWord[3]

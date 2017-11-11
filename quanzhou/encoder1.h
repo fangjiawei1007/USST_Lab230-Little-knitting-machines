@@ -56,7 +56,7 @@
 
 
 /*************************************************************************************************************/
-#define	encoder1_run_status					g_InteralMemory.Bit[13]
+
 #define	encoder1_dangqianjian_reset			g_InteralMemory.Bit[14]
 
 #define	current_stage						g_InteralMemory.Word[11]	
@@ -91,9 +91,9 @@
 #define	extra_part_flag						g_InteralMemory.KeepBit[15]
 #define	extra_part_finish_flag				g_InteralMemory.KeepBit[16]
 
-#define	huanchongmaichong				g_InteralMemory.KeepWord[146]
+#define	huanchongmaichong					g_InteralMemory.KeepWord[146]
 #define	speedUpMax							g_InteralMemory.KeepWord[147]
-#define	speedDownMax		g_InteralMemory.KeepWord[138]
+#define	speedDownMax						g_InteralMemory.KeepWord[138]
 
 #define	xitong_total_num_upper_kw			g_InteralMemory.KeepWord[128]
 #define	total_qingling_b					g_InteralMemory.Bit[66]

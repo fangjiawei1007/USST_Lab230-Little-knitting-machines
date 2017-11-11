@@ -37,8 +37,6 @@
 #define	fencen_rate_different_6				g_InteralMemory.KeepWord[144]
 #define	fencen_rate_different_7				g_InteralMemory.KeepWord[145]
 
-#define parameter_check_bit				4
-#define parameter_check					g_InteralMemory.Bit[4]
 
 #define	datou_modify_rate_different_1_kword			61
 #define	datou_modify_rate_different_2_kword			62

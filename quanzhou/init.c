@@ -55,7 +55,7 @@ void menu_init(void)
 		caijiaoquanshu=76;
 		langfeiquanshu=5;
 		bianpingqi_huanchongquan_num=2;
-		extra_part_jiansu=2;
+		extra_part_jiansu=0;
 		extra_part_quanshu=100;
 		extra_fencen_quan_num_kw=2;
 		
@@ -96,19 +96,19 @@ void menu_init(void)
 		bianpingqi_fencen_speed_set=500;
 		bianpingqi_tiaoxian_speed_set = 500;
 		
-		xifenshu=1600;
+		xifenshu=800;
 		jianshu=0;
 		youben_choose=youben_old;
 		dida_num=5;
 		
 		speedUpMax = 5;
-		speedDownMax=5;
+		speedDownMax=2;
 		huanchongmaichong=1000;
 		
 		Choose_bianpingqi_kb=CHOOSE_BIANPINGQI;
 		bianpingqi_zhonglei_kb = shilin_bianpingqi;
 		
-		dapan_zongzhenshu_kw=900;
+		dapan_zongzhenshu_kw=600;
 		
 		shangduansha_alarm_sig_kb=0;
 		anquanmen_alarm_sig_kb=0;
@@ -243,10 +243,10 @@ void stepmotor_init(void)
 		shachang_upper_num_4_kw=0;
 
 		
-		songsha_dapanchilunshu=30;
-		songsha_xiaopanchilunshu=10;
-		songsha_lvpanzhijin=15;
-		songsha_xiaochilunshu=20;
+		songsha_dapanchilunshu=108;
+		songsha_xiaopanchilunshu=81;
+		songsha_lvpanzhijin=137;
+		songsha_xiaochilunshu=27;
 		
 		max_speed=120;
 		

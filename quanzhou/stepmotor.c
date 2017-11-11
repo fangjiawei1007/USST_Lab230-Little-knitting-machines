@@ -20,7 +20,7 @@ void qz_assert(void)
 			alarm_disp_assert();
 			check_time=1;
 		}
-		parameter_check=0;
+
 	}
 	else
 	{
@@ -94,7 +94,7 @@ void qz_assert(void)
 										/xifenshu*songsha_rate[3];
 		}
 		
-		parameter_check=1;
+
 		check_time=0;
 	}
 }

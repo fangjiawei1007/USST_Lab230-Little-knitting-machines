@@ -485,7 +485,7 @@ void Main(void)
 				else
 					g_InteralMemory.Word[28]=g_InteralMemory.Word[31];//每件所需圈数
 				//g_InteralMemory.Word[29]=k_motor[4]*1000;
-				g_InteralMemory.Word[32]=bianpingqi_speed/100;
+				//g_InteralMemory.Word[32]=bianpingqi_speed/100;
 				//////////////////////////////////////
 			}
 	

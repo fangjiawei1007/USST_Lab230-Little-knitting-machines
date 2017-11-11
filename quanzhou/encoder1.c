@@ -106,11 +106,13 @@ void encoder1_data_reset(void){
 
 void SpeedChange(const unsigned int* kMotor){
 	static unsigned int previousKMotor[7]={0};
+	static unsigned int previousKMotorCompare[7]={0};
 	int i;
 	if (forceEqual == 1){
 		for ( i = 0; i<7 ; i++){
 			k_motor[i] = kMotor[i];
-			previousKMotor[i] = kMotor[i];		
+			previousKMotor[i] = kMotor[i];
+			previousKMotorCompare[i] = kMotor[i];
 		}
 		forceEqual = 0;
 	}
@@ -132,6 +134,12 @@ void SpeedChange(const unsigned int* kMotor){
 				}
 				continue;
 			}
+			if (previousKMotorCompare[i] != kMotor[i]){
+				speedUpCnt = 1;
+				speedDownCnt = 1;
+				previousKMotorCompare[i] = kMotor[i];
+				previousKMotor[i] = k_motor[i];
+			}
 			if (previousKMotor[i] < kMotor[i]){		
 				k_motor[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt/speedUpMax);
 				speedUpFlag = 1;
@@ -140,13 +148,12 @@ void SpeedChange(const unsigned int* kMotor){
 				k_motor[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt/speedDownMax);
 				speedDownFlag = 1;
 			}
-			else{
+			else if (k_motor[i] != kMotor[i]){
 				k_motor[i] = kMotor[i];
 			}
 		}
 		
 	}
-	
 }
 
 unsigned int getStage(const unsigned int stage,int direction){
@@ -206,13 +213,27 @@ int getKMotor(const unsigned char bb,const unsigned int stage,int direction){
 		return (k_factor[bb][datou]*rate_different[bb][datou]);
 	}
 	else if (requestStage != guoduduan && requestStage != caijianduan){
-		return (k_factor[bb][requestStage]*rate_different[bb][requestStage]);
+		if (requestStage == datouduan)
+			return (k_factor[bb][datou]*rate_different[bb][datou]);
+		else if (requestStage == xiaotouduan)
+			return (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]);
+		else if (requestStage == fencenduan)
+			return (k_factor[bb][fencen]*rate_different[bb][fencen]);
+		else
+			return (k_factor[bb][datou]*rate_different[bb][datou]);
 	}
 	else{
-		for (;requestStage != guoduduan && requestStage != caijianduan;){
+		for (;requestStage == guoduduan || requestStage == caijianduan;){
 			requestStage = getStage(requestStage,direction);
 		}
-		return (k_factor[bb][requestStage]*rate_different[bb][requestStage]);
+		if (requestStage == datouduan)
+			return (k_factor[bb][datou]*rate_different[bb][datou]);
+		else if (requestStage == xiaotouduan)
+			return (k_factor[bb][xiaotou]*rate_different[bb][xiaotou]);
+		else if (requestStage == fencenduan)
+			return (k_factor[bb][fencen]*rate_different[bb][fencen]);
+		else
+			return (k_factor[bb][datou]*rate_different[bb][datou]);
 	}
 }
 
@@ -220,8 +241,8 @@ void songsha_fre_change(void){
 	unsigned char bb;
 	wdt_feed_dog();main_enter_flag = 1;
 	g_InteralMemory.Word[31]=daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu;
-	if (g_InteralMemory.Word[31]==0)
-		daduanquanshu=1;
+	if (daduanquanshu == 0 && xiaoduanquanshu == 0 && caijiaoquanshu == 0)
+		daduanquanshu=100;
 	if (extra_part_quanshu!=0 && extra_part_jiansu!=0 && jianshu!=0 && \
 	   jianshu%extra_part_jiansu==0 && extra_part_finish_flag==extra_part_finish){
 		extra_part_flag=extra_part_start;

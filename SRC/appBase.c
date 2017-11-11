@@ -238,7 +238,6 @@ void InPulse1_Start(void)
 	rEINTMASK &= ~BIT_EINT1;
 	rINTMSK1 &= ~BIT_EINT1;
 	
-	encoder1_run_status=1;
 }
 ///////////////////////////////////////////////////////////////
 ////	∏ﬂÀŸ¬ˆ≥Â ‰»ÎX1  Õ£÷π//////////////////////////
@@ -251,7 +250,6 @@ void InPulse1_Stop(void)
 	rEINTPEND=(1<<1);
 	ClearPending(BIT_EINT1);
 	
-	encoder1_run_status=0;
 }
 
 ///////////////////////////////////////////////////////////////
