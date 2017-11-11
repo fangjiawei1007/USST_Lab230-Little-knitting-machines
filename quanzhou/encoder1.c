@@ -20,7 +20,7 @@ unsigned char reset_timer_start=0;
 unsigned int speedUpCnt=1;
 unsigned int speedDownCnt=1;
 unsigned int forceEqual = 1;
-
+unsigned int ewaiduan_fencen_status = 0;
 
 #define	reset_time_100ms				4
 
@@ -298,11 +298,13 @@ void songsha_fre_change(void){
 			for (bb=0;bb<7;bb++){
 				kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]/100);
 			}
+			ewaiduan_fencen_status = 1;
 		}
 		else{
 			for (bb=0;bb<7;bb++){
 				kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]);
 			}
+			ewaiduan_fencen_status = 0;
 		}
 		SpeedChange(kMotorTarget);
 		if (dapan_round>=extra_part_quanshu){

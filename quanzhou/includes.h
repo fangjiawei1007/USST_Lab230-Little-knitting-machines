@@ -159,8 +159,8 @@ extern unsigned int shoudao_jiange_tmp[4];		//收刀间隔记录 by FJW
 extern	unsigned int tongxunzhen;
 extern unsigned int shinengwei[4];	
 extern unsigned int chudao_shoudao_status[4];
-
-
+extern unsigned int forceEqual;
+extern unsigned int ewaiduan_fencen_status;
 //extern unsigned int SET_HIGH_STATUS;		//置高电平标志位 by FJW
 //unsigned int chudao_shoudao_status;
 #endif

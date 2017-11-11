@@ -189,6 +189,11 @@ void bianpingqi_jog(void)
 void bianpingqi_speed_cal(void){
 	int ii;
 	static unsigned int y1y3delay_flag = 0;
+	unsigned int quanshu[7]={0};
+	unsigned int next_stage = 0;
+	unsigned int previous_stage = 0;
+	static unsigned int speed_status = 0;
+		
 	if (tiaoxiankaiguan_kb == 1 && current_stage != ewaiduan){
 		for( ii = 0 ; ii < 4 ; ii++){
 			if ((at_check(ii,(dapan_round+1)) == 1 && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
@@ -207,8 +212,95 @@ void bianpingqi_speed_cal(void){
 			}
 		}
 	}
+	quanshu[0] = 0;
+	quanshu[datouduan+1] = daduanquanshu;
+	quanshu[guoduduan+1] = quanshu[datouduan]+middlequanshu;
+	quanshu[xiaotouduan+1] = quanshu[guoduduan]+xiaoduanquanshu;
+	quanshu[fencenduan+1] = quanshu[xiaotouduan]+caijiaoquanshu;
+	quanshu[caijianduan+1] = quanshu[fencenduan]+langfeiquanshu;
+	quanshu[ewaiduan+1] = extra_part_quanshu;
+	next_stage = getStage(current_stage,NEXTSTAGE);
+	previous_stage = getStage(current_stage,PREVIOUSSTAGE);
 	
-	switch (current_stage){
+	if (bianpingqi_huanchongquan_num == 0 || bianpingqi_delta_num >= 100){
+		if (current_stage == fencenduan || ewaiduan_fencen_status == 1){
+			bianpingqi_speed=bianpingqi_fencen_speed_set;
+		}
+		else{
+			bianpingqi_speed=bianpingqi_fullspeed_set;
+		}
+		if (Choose_bianpingqi_kb == CHOOSE_NOT){
+			Set_Y_Value(1,HIGH);
+			Set_Y_Value(3,HIGH);
+			y1y3delay_flag = 0;
+		}
+	}
+	else if ( speed_status == 1 && 
+			((current_stage != ewaiduan && dapan_round <(quanshu[current_stage]+1)) || 
+			( current_stage == ewaiduan && (dapan_round <1 || dapan_round == extra_fencen_quan_num_kw || dapan_round == (extra_part_quanshu - extra_fencen_quan_num_kw))))){
+				
+		bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
+		if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
+			if (y1y3delay_flag == 0){
+				delay_qz(5,40,1);
+			}
+			if (delay_fac.delay_permit[5] == 1)
+			{
+				if (delay_5_count<=5){
+					Set_Y_Value(1,HIGH);
+					Set_Y_Value(3,HIGH);	
+				}
+				else if (delay_5_count <= 16){
+					Set_Y_Value(1,HIGH);
+					Set_Y_Value(3,LOW);
+				}
+				else{
+					Set_Y_Value(1,HIGH);
+					Set_Y_Value(3,HIGH);
+					delay_qz(5,40,0);
+					y1y3delay_flag = 1;
+				}
+			}
+		}
+	}
+	else if ((next_stage == fencenduan || next_stage == caijianduan || (next_stage == ewaiduan && extra_fencen_quan_num_kw != 0)) && dapan_round >= (quanshu[current_stage+1] - bianpingqi_huanchongquan_num)){
+		
+		bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
+		if (Choose_bianpingqi_kb == CHOOSE_NOT && dapan_round==(quanshu[current_stage+1] - 1) && 
+			encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw) || jiajiansujiangemaichong_kw == 0){
+				Set_Y_Value(1,LOW);
+				Set_Y_Value(3,HIGH);
+				y1y3delay_flag = 0;
+		}
+		speed_status = 1;
+	}
+	else if (current_stage == ewaiduan && extra_fencen_quan_num_kw != 0 && 
+			(dapan_round == (extra_fencen_quan_num_kw -1) || dapan_round == (extra_part_quanshu - extra_fencen_quan_num_kw -1) || dapan_round == (extra_part_quanshu -1))){
+		
+		bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
+		if (Choose_bianpingqi_kb == CHOOSE_NOT && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw) || jiajiansujiangemaichong_kw == 0){
+				Set_Y_Value(1,LOW);
+				Set_Y_Value(3,HIGH);
+				y1y3delay_flag = 0;
+		}
+		speed_status = 1;
+	}
+	else{
+		if (current_stage == fencenduan || ewaiduan_fencen_status == 1){
+			bianpingqi_speed=bianpingqi_fencen_speed_set;
+		}
+		else{
+			bianpingqi_speed=bianpingqi_fullspeed_set;
+		}
+		if (Choose_bianpingqi_kb == CHOOSE_NOT){
+			Set_Y_Value(1,HIGH);
+			Set_Y_Value(3,HIGH);
+			y1y3delay_flag = 0;
+		}
+		speed_status = 0;
+	}
+	
+	/* switch (current_stage){
 		case datouduan:{
 			if (getStage(current_stage,PREVIOUSSTAGE) == ewaiduan && dapan_round == 0){
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
@@ -473,5 +565,5 @@ void bianpingqi_speed_cal(void){
 			}
 			break;	
 		}
-	}
+	} */
 }
