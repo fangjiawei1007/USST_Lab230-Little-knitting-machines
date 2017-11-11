@@ -152,6 +152,9 @@ void SpeedChange(const unsigned int* kMotor){
 unsigned int getStage(const unsigned int stage,int direction){
 	int requestStage = datouduan;
 	unsigned char validRound = 0x00;
+	if (direction == CURRENT){
+		return stage;
+	}
 	if (daduanquanshu != 0){
 		validRound |= 1<<datouduan;
 	}
@@ -181,9 +184,7 @@ unsigned int getStage(const unsigned int stage,int direction){
 			}
 		}
 	}
-	if (direction == CURRENT){
-		return stage;
-	}
+	
 	for( requestStage=((int)stage + direction);;requestStage += direction){
 		if (requestStage < datouduan){
 			requestStage = ewaiduan;
@@ -291,7 +292,6 @@ void songsha_fre_change(void){
 		}
 	}
 	else{
-	
 		current_stage=ewaiduan;	//以下均为挡片段
 		bianpingqi_speed_cal();
 		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>=(extra_part_quanshu-extra_fencen_quan_num_kw))	{
@@ -376,23 +376,31 @@ void __irq	encoder1_process(void)
 				motor_factor[jj] -= 1000000;
 				songsha_num[jj]++;
 			}
+			if (jj != 3 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
+				rGPEDAT |= (1<<(jj + 4));
+			}
 		}
-		rGPEDAT |= (0x7 << 4);
+		//rGPEDAT |= (0x7 << 4);
 	}
 	else if(signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
 		
-		for (jj=4;jj<7;jj++)
+		for (jj=4;jj<8;jj++)
 		{
-			motor_factor[jj] += k_motor[jj];
-			if (motor_factor[jj]>=1000000)
-			{
-				rGPEDAT &= ~(1<<jj);
-				motor_factor[jj] -= 1000000;
-				songsha_num[jj]++;
+			if (jj != 7){
+				motor_factor[jj] += k_motor[jj];
+				if (motor_factor[jj]>=1000000)
+				{
+					rGPEDAT &= ~(1<<jj);
+					motor_factor[jj] -= 1000000;
+					songsha_num[jj]++;
+				}
+			}
+			if (motor_factor[jj - 4] >= 500000 || k_motor[jj - 4] >= 500000){
+				rGPEDAT |= (1<<(jj - 4));
 			}
 		}
-		rGPEDAT |= (0xf);
+		//rGPEDAT |= (0xf);
 		
 		
 		rWTCNT = reset_time_kw;	//wdt_feed_dog();
@@ -446,7 +454,7 @@ void __irq	encoder1_process(void)
 		}
 		main_enter_flag = 0;				//用以做主程序循环正常检测
 		if (speedUpFlag==1){
-			if (huanchongmaichong!=0&&speedUpCnt<speedUpMax&&\
+			if (huanchongmaichong!=0&&speedUpCnt<speedUpMax&&
 			encoder1_pulse_number%huanchongmaichong==0)
 				speedUpCnt++;
 			else if (huanchongmaichong==0){
@@ -458,7 +466,7 @@ void __irq	encoder1_process(void)
 			}	
 		}
 		if (speedDownFlag==1){
-			if (huanchongmaichong!=0&&speedDownCnt<speedDownMax&&\
+			if (huanchongmaichong!=0&&speedDownCnt<speedDownMax&&
 			encoder1_pulse_number%huanchongmaichong==0)
 				speedDownCnt++;
 			else if (huanchongmaichong==0){
