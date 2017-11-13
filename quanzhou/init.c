@@ -31,6 +31,7 @@ void encoder1_init(void)
 void menu_init(void)
 {
 	int ban,lei;
+	int ii,bb;
 	if (menu_init_flag!=1)
 	{
 		zhibusheding=2000;
@@ -119,7 +120,13 @@ void menu_init(void)
 		reset_time_kw = 700;
 		init_stop_time_kw = 30;
 		
-		
+		for (ii = 0; ii < tiaoshaduan_max; ii++){
+			g_InteralMemory.KeepWord[156 + 9*ii] = 0;
+			g_InteralMemory.KeepWord[157 + 9*ii] = 0;
+			for (bb = 0; bb<7; bb++){
+				g_InteralMemory.KeepWord[158 + 9*ii + bb] = 100;
+			}
+		}
 		chudao_jiange = 10000;	//by FJW
 		shoudao_jiange = 10000; //by FJW
 		tiaoxiankaiguan_kb = 0;
@@ -285,19 +292,4 @@ void stepmotor_init(void)
 	songsha_rate[2]=songsha_rate[3]=songsha_xiaopanchilunshu*1.0/songsha_xiaochilunshu*songsha_lvpanzhijin;
 			
 	songsha_fre_change();
-}
-
-void tiaoxian_init(void)	//调线初始化 by FJW
-{
-	int ii;
-	tongxunzhen = 0xff;
-	for (ii = 0 ; ii < 5 ; ii++){
-		if (tiaoxian_jidianqi_write() == 1){
-			break;
-		}
-	}
-	/* Set_Y_Value(Y9,HIGH);
-	Set_Y_Value(Y10,HIGH); */
-	//rGPEDAT |= (1<<5);
-	
 }

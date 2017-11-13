@@ -11,6 +11,26 @@ unsigned int shinengwei[4]={0};
 unsigned int tongxunzhen = 0xff;
 unsigned int tongxunstart = 0; 
 
+TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
+
+void tiaoxian_init(void)	//调线初始化 by FJW
+{
+	int ii,bb;
+	tongxunzhen = 0xff;
+	for (ii = 0 ; ii < 5 ; ii++){
+		if (tiaoxian_jidianqi_write() == 1){
+			break;
+		}
+	}
+	for (ii = 0; ii < tiaoshaduan_max; ii++){
+		tiaoxianduan[ii].kaishiquanshu = &g_InteralMemory.KeepWord[156 + 9*ii];
+		tiaoxianduan[ii].jieshuquanshu = &g_InteralMemory.KeepWord[157 + 9*ii];
+		for (bb = 0; bb<7; bb++){
+			tiaoxianduan[ii].fangdabeishu[bb] = &g_InteralMemory.KeepWord[158 + 9*ii + bb];
+		}
+	}
+}
+
 unsigned int between_check(unsigned int whichShineng, unsigned int roundShineng){
 	int i;
 	for(i=0;i<8;i++){
@@ -39,6 +59,44 @@ unsigned int at_check(unsigned int whichShineng, unsigned int roundShineng){
 		}
 	}
 	return 0;
+}
+
+void tiqushuzi(INT16U channal_choose){
+	int i;
+	unsigned int wei[4];
+	//unsigned int weizhi = 0x00;
+	for (i = 0 ; i <4 ; i++){
+		shinengwei[i] = 0;
+	}
+	if ( tiaoxiankaiguan_kb != 0){
+		wei[0] = channal_choose / 1000;
+		wei[1] = (channal_choose - wei[0]*1000) / 100; 
+		wei[2] = (channal_choose - wei[0]*1000 - wei[1]*100) / 10;
+		wei[3] = channal_choose % 10;
+		for (i = 0 ; i <4 ; i++){
+			switch (wei[i]){
+				case 1:
+					//weizhi |= (0x03 << 0);
+					shinengwei[0] = 1;
+					break;
+				case 2:
+					//weizhi |= (0x03 << 2);
+					shinengwei[1] = 1;
+					break;
+				case 3:
+					//weizhi |= (0x03 << 4);
+					shinengwei[2] = 1;
+					break;
+				case 4:
+					//weizhi |= (0x03 << 6);
+					shinengwei[3] = 1;
+					break;
+				default:
+					break;
+				}
+		}
+	}
+	//return weizhi;
 }
 
 void shinengpanduan(void){

@@ -17,6 +17,15 @@
 #define Y9								9
 #define Y10								10
 
+#define	tiaoshaduan_max					8
+
+typedef struct{
+	INT16U* kaishiquanshu;
+	INT16U* jieshuquanshu;
+	INT16U* fangdabeishu[7];
+}TIAOXIANDUAN;
+
+
 void shinengpanduan(void);
 void tiaoxian(void);
 void chudao_shoudao_process(unsigned int i);
@@ -24,5 +33,7 @@ void weisha(unsigned int i);
 unsigned int tiaoxian_jidianqi_write(void);
 unsigned int between_check(unsigned int whichShineng, unsigned int roundShineng);
 unsigned int at_check(unsigned int whichShineng, unsigned int roundShineng);
+void tiaoxian_init(void); //by FJW 调线功能
+
 #endif
 

@@ -20,6 +20,9 @@ unsigned char reset_timer_start=0;
 unsigned int speedUpCnt=1;
 unsigned int speedDownCnt=1;
 unsigned int forceEqual = 1;
+unsigned int forceDownEqual = 0;
+unsigned int forceUpEqual = 0;
+
 unsigned int ewaiduan_fencen_status = 0;
 
 #define	reset_time_100ms				4
@@ -134,25 +137,44 @@ void SpeedChange(const unsigned int* kMotor){
 				}
 				continue;
 			}
-			if (previousKMotorCompare[i] != kMotor[i]){
+			if (previousKMotorCompare[i] != kMotor[i]){ //作为如果在变化完成之前，若改变了目标速度，则从当前速度重新从1,2,3开始变化到目标速度
 				speedUpCnt = 1;
 				speedDownCnt = 1;
 				previousKMotorCompare[i] = kMotor[i];
 				previousKMotor[i] = k_motor[i];
 			}
-			if (previousKMotor[i] < kMotor[i]){		
-				k_motor[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt/speedUpMax);
-				speedUpFlag = 1;
+			if (previousKMotor[i] < kMotor[i]){
+				if (forceUpEqual == 1){
+					k_motor[i] = kMotor[i];
+					previousKMotor[i] = kMotor[i];
+					previousKMotorCompare[i] = kMotor[i];
+					if ( i == 6){
+						forceUpEqual = 0;
+					}
+				}
+				else{
+					k_motor[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt/speedUpMax);
+					speedUpFlag = 1;
+				}
 			}
 			else if (previousKMotor[i] > kMotor[i]){
-				k_motor[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt/speedDownMax);
-				speedDownFlag = 1;
+				if (forceDownEqual == 1){
+					k_motor[i] = kMotor[i];
+					previousKMotor[i] = kMotor[i];
+					previousKMotorCompare[i] = kMotor[i];
+					if ( i == 6){
+						forceDownEqual = 0;
+					}
+				}
+				else{
+					k_motor[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt/speedDownMax);
+					speedDownFlag = 1;
+				}
 			}
 			else if (k_motor[i] != kMotor[i]){
 				k_motor[i] = kMotor[i];
 			}
 		}
-		
 	}
 }
 
