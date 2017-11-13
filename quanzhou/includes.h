@@ -149,18 +149,22 @@ extern unsigned int lingwei_jiance_uncover;
 extern unsigned int	huiling_length_tmp;
 
 
-extern unsigned int chudao_start[4];	//调线功能 by FJW
-extern unsigned int shoudao_start[4];	//调线功能 by FJW
-extern unsigned int chudao_start_status[4];	//调线功能 by FJW
-extern unsigned int shoudao_start_status[4];	//调线功能 by FJW
-extern unsigned int chudao_jiange_tmp[4];		//出刀间隔记录 by FJW
-extern unsigned int shoudao_jiange_tmp[4];		//收刀间隔记录 by FJW
+extern unsigned int chudao_start[6];	//调线功能 by FJW
+extern unsigned int shoudao_start[6];	//调线功能 by FJW
+extern unsigned int chudao_start_status[6];	//调线功能 by FJW
+extern unsigned int shoudao_start_status[6];	//调线功能 by FJW
+extern unsigned int chudao_jiange_tmp[6];		//出刀间隔记录 by FJW
+extern unsigned int shoudao_jiange_tmp[6];		//收刀间隔记录 by FJW
+extern unsigned int chudao_shoudao_finish[6];
 
 extern	unsigned int tongxunzhen;
-extern unsigned int shinengwei[4];	
-extern unsigned int chudao_shoudao_status[4];
+extern unsigned int shinengwei[6];	
+extern unsigned int chudao_shoudao_status[6];
 extern unsigned int forceEqual;
 extern unsigned int ewaiduan_fencen_status;
+
+extern TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
+
 //extern unsigned int SET_HIGH_STATUS;		//置高电平标志位 by FJW
 //unsigned int chudao_shoudao_status;
 #endif

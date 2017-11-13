@@ -27,8 +27,6 @@ unsigned int ewaiduan_fencen_status = 0;
 
 #define	reset_time_100ms				4
 
-unsigned int chudao_jiange_tmp[4] = {0};		//出刀间隔记录 by FJW
-unsigned int shoudao_jiange_tmp[4] = {0};	//收刀间隔记录 by FJW
 
 void encoder1_data_process(void){
 	yuanpan_speed=encoder1_speed*600/encoder1_cal_factor;
@@ -261,6 +259,7 @@ int getKMotor(const unsigned char bb,const unsigned int stage,int direction){
 
 void songsha_fre_change(void){
 	unsigned char bb;
+	int i;
 	wdt_feed_dog();main_enter_flag = 1;
 	g_InteralMemory.Word[31]=daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu;
 	if (daduanquanshu == 0 && xiaoduanquanshu == 0 && caijiaoquanshu == 0)
@@ -278,51 +277,87 @@ void songsha_fre_change(void){
 	}
 	if (extra_part_flag==extra_part_stop)
 	{
-		extra_part_finish_flag=extra_part_unfinish;
+		extra_part_finish_flag=extra_part_unfinish;	
 		if (dapan_round<daduanquanshu || daduanquanshu == 9999){
 			current_stage=datouduan;
-			for (bb=0;bb<7;bb++){
-				kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
+			i = between_check(dapan_round);
+			if ( i != -1){
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
+				}
+			}
+			else{
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
+				}
 			}
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu)){
 			current_stage=guoduduan;
-			for (bb=0;bb<7;bb++){
-			
-				kMotorTarget[bb]=(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
-								 (getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE) )
-								 *(dapan_round-daduanquanshu)/middlequanshu); 
+			i = between_check(dapan_round);
+			if ( i != -1){
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=	(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
+										(getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE) )
+										*(dapan_round-daduanquanshu)/middlequanshu)*(*tiaoxianduan[i].fangdabeishu[bb])/100; 
+				}
 			}
-			forceEqual=1;
+			else{
+				for (bb=0;bb<7;bb++){
+			
+					kMotorTarget[bb]=	(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
+										(getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE) )
+										*(dapan_round-daduanquanshu)/middlequanshu); 
+				}
+			}
+			
+			forceDownEqual=1;
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu)){
 			current_stage=xiaotouduan;
-			bianpingqi_speed_cal();
-			for (bb=0;bb<7;bb++)
-				kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
+			i = between_check(dapan_round);
+			if ( i != -1){
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
+				}
+			}
+			else{
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
+				}
+			}
 			SpeedChange(kMotorTarget);
+			bianpingqi_speed_cal();
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu)){
 			current_stage=fencenduan;
-			bianpingqi_speed_cal();
-			for (bb=0;bb<7;bb++){
-				kMotorTarget[bb]= getKMotor(bb,current_stage,CURRENT);
+			i = between_check(dapan_round);
+			if ( i != -1){
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
+				}
+			}
+			else{
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
+				}
 			}
 			SpeedChange(kMotorTarget);
+			bianpingqi_speed_cal();
 		}
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu)){
 			current_stage=caijianduan;
-			bianpingqi_speed_cal();
-			for (bb=0;bb<7;bb++){
+			for (bb=0;bb<7;bb++){//裁剪圈不调线
 				kMotorTarget[bb] = (getKMotor(bb,current_stage,PREVIOUSSTAGE)+
 								   (getKMotor(bb,current_stage,NEXTSTAGE)-getKMotor(bb,current_stage,PREVIOUSSTAGE) )
 									*(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu)/langfeiquanshu);
 			}
 			SpeedChange(kMotorTarget);
+			bianpingqi_speed_cal();
 		}
 		else
 		{
@@ -336,20 +371,37 @@ void songsha_fre_change(void){
 	}
 	else{
 		current_stage=ewaiduan;	//以下均为挡片段
-		bianpingqi_speed_cal();
+		i = between_check(dapan_round);
 		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>=(extra_part_quanshu-extra_fencen_quan_num_kw))	{
-			for (bb=0;bb<7;bb++){
-				kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]/100);
+			
+			if ( i != -1){
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]/100)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
+				}
+			}
+			else{
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]/100);
+				}
 			}
 			ewaiduan_fencen_status = 1;
 		}
 		else{
-			for (bb=0;bb<7;bb++){
-				kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]);
+			
+			if ( i != -1){
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
+				}
+			}
+			else{
+				for (bb=0;bb<7;bb++){
+					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
+				}
 			}
 			ewaiduan_fencen_status = 0;
 		}
 		SpeedChange(kMotorTarget);
+		bianpingqi_speed_cal();
 		if (dapan_round>=extra_part_quanshu){
 			extra_part_flag=extra_part_stop;
 			if (jianshu>=zhibusheding || (previous_dingdanzongshu!=0&&dingdan_lianghua_num_kw>=previous_dingdanzongshu))

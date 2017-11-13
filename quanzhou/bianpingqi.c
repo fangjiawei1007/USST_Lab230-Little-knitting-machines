@@ -212,24 +212,28 @@ void bianpingqi_speed_cal(void){
 			bianpingqi_tiaoxian_speed_set -= 100;
 		bianpingqi_speed_down_b = 0;
 	}	
-	if (tiaoxiankaiguan_kb == 1 && current_stage != ewaiduan){
-		for( ii = 0 ; ii < 4 ; ii++){
-			if ((at_check(ii,(dapan_round+1)) == 1 && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
-				( at_check(ii,(dapan_round))==1 && encoder1_pulse_number < jiajiansujiangemaichong_kw) ){
+	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan
+		if ((at_check((dapan_round+1)) == 1 && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
+			(at_check((dapan_round))==1 && encoder1_pulse_number < jiajiansujiangemaichong_kw) ){
 				
-					bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
-					return;
-			}
-			else {
-				if (at_check(ii,(dapan_round+1))==2 && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw)
-				    && chudao_shoudao_status[ii] == 1 ){
-					
-					bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
-					return;
+				for (ii = 0; ii < 6 ; ii++){
+					chudao_shoudao_finish[ii]=0;
 				}
+				
+				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
+				return;
+		}
+
+		if ((at_check((dapan_round+1)) == 2 && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw)) ||
+			(at_check((dapan_round))==2)){
+				
+				for (ii = 0; ii < 6 && chudao_shoudao_finish[ii] != 1 ; ii++ );
+				if (ii == 6){
+					bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
+					return;
+				}	
 			}
 		}
-	}
 	quanshu[0] = 0;
 	quanshu[datouduan+1] = daduanquanshu;
 	quanshu[guoduduan+1] = quanshu[datouduan]+middlequanshu;

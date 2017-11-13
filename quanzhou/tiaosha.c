@@ -1,15 +1,18 @@
 #include "includes.h"
 
-unsigned int chudao_start_status[4] = {0};
-unsigned int shoudao_start_status[4] = {0};
-unsigned int chudao_start[4] = {0};
-unsigned int shoudao_start[4] = {0};
-unsigned int chudao_shoudao_status[4] = {0};
-int previous_stage[4] = {-1};
-unsigned int kaiguan[4] = {0x00};	
-unsigned int shinengwei[4]={0};	
+unsigned int chudao_start_status[6] = {0};
+unsigned int shoudao_start_status[6] = {0};
+unsigned int chudao_start[6] = {0};
+unsigned int shoudao_start[6] = {0};
+unsigned int chudao_shoudao_status[6] = {0};
+// int previous_stage[6] = {-1};
+unsigned int kaiguan[6] = {0x00};	
+unsigned int shinengwei[6]={0};	
 unsigned int tongxunzhen = 0xff;
-unsigned int tongxunstart = 0; 
+unsigned int tongxunstart = 0;
+unsigned int chudao_jiange_tmp[6] = {0};		//出刀间隔记录 by FJW
+unsigned int shoudao_jiange_tmp[6] = {0};	//收刀间隔记录 by FJW
+unsigned int chudao_shoudao_finish[6]={0};
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
@@ -25,141 +28,148 @@ void tiaoxian_init(void)	//调线初始化 by FJW
 	for (ii = 0; ii < tiaoshaduan_max; ii++){
 		tiaoxianduan[ii].kaishiquanshu = &g_InteralMemory.KeepWord[156 + 9*ii];
 		tiaoxianduan[ii].jieshuquanshu = &g_InteralMemory.KeepWord[157 + 9*ii];
+		tiaoxianduan[ii].channal_choose= &g_InteralMemory.KeepWord[158 + 9*ii];
+		tiaoxianduan[ii].ewaiduan_choose=&g_InteralMemory.KeepBit[49 + ii];
 		for (bb = 0; bb<7; bb++){
-			tiaoxianduan[ii].fangdabeishu[bb] = &g_InteralMemory.KeepWord[158 + 9*ii + bb];
+			tiaoxianduan[ii].fangdabeishu[bb] = &g_InteralMemory.KeepWord[159 + 9*ii + bb];
 		}
 	}
 }
 
-unsigned int between_check(unsigned int whichShineng, unsigned int roundShineng){
+int between_check(unsigned int roundShineng){
 	int i;
 	for(i=0;i<8;i++){
-		if ( roundShineng >= g_InteralMemory.KeepWord[156 + 16*whichShineng + i]		//大于下限
-			&& g_InteralMemory.KeepWord[164 + 16*whichShineng + i] != 0					//对应上限不为零
-			&& roundShineng < g_InteralMemory.KeepWord[164 + 16*whichShineng + i]){		//小于上限
+		if ( roundShineng >= *tiaoxianduan[i].kaishiquanshu								//大于下限
+			&& *tiaoxianduan[i].jieshuquanshu											//对应上限不为零
+			&& roundShineng < *tiaoxianduan[i].jieshuquanshu){							//小于上限
 				
-				return 1;
+			if (current_stage == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
+				return i;
 			}
+			else if (current_stage != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
+				return i;
+			}
+		}
 	}
-	return 0;
+	return -1;
 }
 
-unsigned int at_check(unsigned int whichShineng, unsigned int roundShineng){
+unsigned int at_check(unsigned int roundShineng){
 	int i;
 	for(i=0;i<8;i++){
-		if (g_InteralMemory.KeepWord[164 + 16*whichShineng + i] != 0){						//对应上限不为零
-			if (roundShineng == g_InteralMemory.KeepWord[156 + 16*whichShineng + i]){		//等于下限
-			
-				return 1;
+		if (*tiaoxianduan[i].jieshuquanshu){											//对应上限不为零
+			if (*tiaoxianduan[i].kaishiquanshu == 0
+			    && roundShineng == (daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu)){
+					if (getStage(current_stage,NEXTSTAGE) == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
+						return 1;
+					}
+					else if (getStage(current_stage,NEXTSTAGE) != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
+						return 1;
+					}
+			}//这个if为了保证在开始圈数为0时，能提早减速进行调线。
+			else if (roundShineng == *tiaoxianduan[i].kaishiquanshu){						//等于下限
+				if (current_stage == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
+					return 1;
+				}
+				else if (current_stage != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
+					return 1;
+				}
 			}
-			if (roundShineng == g_InteralMemory.KeepWord[164 + 16*whichShineng + i]){		//等于上限
+			if (roundShineng == *tiaoxianduan[i].jieshuquanshu){						//等于上限
 
-				return 2;
+				if (current_stage == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
+					return 2;
+				}
+				else if (current_stage != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
+					return 2;
+				}
 			}
 		}
 	}
 	return 0;
 }
 
-void tiqushuzi(INT16U channal_choose){
+unsigned int tiqushuzi(INT16U channal_choose){
 	int i;
-	unsigned int wei[4];
-	//unsigned int weizhi = 0x00;
-	for (i = 0 ; i <4 ; i++){
-		shinengwei[i] = 0;
-	}
-	if ( tiaoxiankaiguan_kb != 0){
-		wei[0] = channal_choose / 1000;
-		wei[1] = (channal_choose - wei[0]*1000) / 100; 
-		wei[2] = (channal_choose - wei[0]*1000 - wei[1]*100) / 10;
-		wei[3] = channal_choose % 10;
-		for (i = 0 ; i <4 ; i++){
+	unsigned int wei[5];
+	unsigned int weizhi = 0x00;
+	if (channal_choose != 7){
+		wei[0] = channal_choose / 10000;
+		wei[1] = (channal_choose - wei[0]*10000) / 1000; 
+		wei[2] = (channal_choose - wei[0]*10000 - wei[1]*1000) / 100;
+		wei[3] = (channal_choose - wei[0]*10000 - wei[1]*1000- wei[2]*100) /10;
+		wei[4] = channal_choose % 10;
+		for (i = 0 ; i <5 ; i++){
 			switch (wei[i]){
 				case 1:
-					//weizhi |= (0x03 << 0);
-					shinengwei[0] = 1;
+					weizhi |= 1<<0;
 					break;
 				case 2:
-					//weizhi |= (0x03 << 2);
-					shinengwei[1] = 1;
+					weizhi |= 1<<1;
 					break;
 				case 3:
-					//weizhi |= (0x03 << 4);
-					shinengwei[2] = 1;
+					weizhi |= 1<<2;
 					break;
 				case 4:
-					//weizhi |= (0x03 << 6);
-					shinengwei[3] = 1;
+					weizhi |= 1<<3;
+					break;
+				case 5:
+					weizhi |= 1<<4;
+					break;
+				case 6:
+					weizhi |= 1<<5;
 					break;
 				default:
 					break;
-				}
+			}
 		}
 	}
-	//return weizhi;
+	else{
+		weizhi = 0xff;
+	}
+	return weizhi;
 }
 
 void shinengpanduan(void){
 	int i;
-	//unsigned int wei[4];
-	for (i = 0 ; i <4 ; i++){
+	unsigned int weizhi = 0x00;
+	for (i = 0 ; i <6 ; i++){
 		shinengwei[i] = 0;
 	}
-	if (current_stage != caijianduan && current_stage != ewaiduan){
-		for( i = 0 ; i<4 ; i++){
-			shinengwei[i] = between_check(i,dapan_round);
+	i = between_check(dapan_round);
+	if ( i != -1 && current_stage != caijianduan){
+		weizhi = tiqushuzi(*tiaoxianduan[i].channal_choose);
+		for (i = 0 ; i <6 ; i++){
+			if ( (weizhi>>i) & 0x01){
+				shinengwei[i] = 1;
+			}
 		}
 	}
 	
-	/* if ( dapan_round >= tiaoxian_12_enter && dapan_round < tiaoxian_12_exit && current_stage != 4 && current_stage != 5){
-			shinengwei[0] = 1;
-			shinengwei[1] = 1;
-		}
-		else{
-			shinengwei[0] = 0;
-			shinengwei[1] = 0;
-		}
-		if ( dapan_round >= tiaoxian_34_enter && dapan_round < tiaoxian_34_exit && current_stage != 4 && current_stage != 5){
-			shinengwei[2] = 1;
-			shinengwei[3] = 1;
-		}
-		else{
-			shinengwei[2] = 0;
-			shinengwei[3] = 0;
-		}
-	} */
 }
 
 void tiaoxian(void)
 {
-	//static int previous_stage[i] = -1;
-	//static int close_init = 0;
 	static unsigned int chudao_shoudao_start[4] = {0};
 	static unsigned int tongxunnum = 0;
 	int i;
-	shinengpanduan();//g_InteralMemory.KeepWord[154+current_stage]
-	for (i = 0; i<4 ; i++){
-		if (shinengwei[i] == 1 && chudao_shoudao_start[i] == 0){//g_InteralMemory.KeepBit[48+current_stage]&& current_stage < 4
+	shinengpanduan();
+	for (i = 0; i<6 ; i++){
+		if (shinengwei[i] == 1 && chudao_shoudao_start[i] == 0){
 			weisha(i);
 			tongxunzhen &= (~(3<< (i*2)));
 			tongxunzhen |= (kaiguan[i] << (i*2));
 			chudao_shoudao_status[i] = 1;
-			previous_stage[i] = current_stage;
+			// previous_stage[i] = current_stage;
 			tongxunstart = 1;
 			chudao_shoudao_start[i] = 1;
 		}
-		else if (shinengwei[i] == 0 && chudao_shoudao_status[i] == 1 && current_stage < 4){//g_InteralMemory.KeepBit[48+current_stage]
+		else if (shinengwei[i] == 0 && chudao_shoudao_status[i] == 1){
 			chudao_shoudao_process(i);
 			tongxunzhen &= (~(3<< (i*2)));
 			tongxunzhen |= (kaiguan[i] << (i*2));
 			chudao_shoudao_start[i] = 0;
 			//previous_stage[i] = current_stage; //此处应该放在出刀收刀结束
-		}
-		else if (current_stage >= caijianduan && chudao_shoudao_status[i] == 1){
-			chudao_shoudao_process(i);
-			tongxunzhen &= (~(3<< (i*2)));
-			tongxunzhen |= (kaiguan[i] << (i*2));
-			chudao_shoudao_start[i] = 0;
 		}
 	}
 	if (tongxunstart == 1 && tongxunnum <5){
@@ -322,8 +332,9 @@ void chudao_shoudao_process(unsigned int i)
 			shoudao_start[i] = 0;
 			shoudao_jiange_tmp[i] = 0;
 			
-			previous_stage[i] = current_stage;
+			//previous_stage[i] = current_stage;
 			chudao_shoudao_status[i] = 0;
+			chudao_shoudao_finish[i] = 1;
 		}
 }
 

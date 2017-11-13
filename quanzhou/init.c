@@ -123,16 +123,15 @@ void menu_init(void)
 		for (ii = 0; ii < tiaoshaduan_max; ii++){
 			g_InteralMemory.KeepWord[156 + 9*ii] = 0;
 			g_InteralMemory.KeepWord[157 + 9*ii] = 0;
+			g_InteralMemory.KeepWord[158 + 9*ii] = 0;
+			g_InteralMemory.KeepBit[49 + ii] = 0;
 			for (bb = 0; bb<7; bb++){
-				g_InteralMemory.KeepWord[158 + 9*ii + bb] = 100;
+				g_InteralMemory.KeepWord[159 + 9*ii + bb] = 100;
 			}
 		}
 		chudao_jiange = 10000;	//by FJW
 		shoudao_jiange = 10000; //by FJW
 		tiaoxiankaiguan_kb = 0;
-		guoduquanshu_tiaoxian = 0;
-		xiaotouquanshu_tiaoxian = 0;
-		fencengquanshu_tiaoxian = 0;
 		
 		jiajiansujiangemaichong_kw = 10000;
 		
