@@ -6,10 +6,7 @@
 #define chudao_jiange					(g_InteralMemory.KeepWord[151]) //出刀间隔
 #define shoudao_jiange					(g_InteralMemory.KeepWord[152]) //出刀间隔
 
-#define	tiaoxian_12_enter			(g_InteralMemory.KeepWord[156])
-#define	tiaoxian_12_exit			(g_InteralMemory.KeepWord[157])
-#define	tiaoxian_34_enter			(g_InteralMemory.KeepWord[158])
-#define	tiaoxian_34_exit			(g_InteralMemory.KeepWord[159])
+#define	tiaoxianzu_jiange				g_InteralMemory.KeepWord[99]
 
 #define Y9								9
 #define Y10								10
@@ -29,8 +26,8 @@ typedef struct{
 
 void shinengpanduan(void);
 void tiaoxian(void);
-void chudao_shoudao_process(unsigned int i);
-void weisha(unsigned int i);
+void chudao_shoudao_process(unsigned int i,unsigned int zushu);
+void weisha(unsigned int i,unsigned int zushu);
 unsigned int tiaoxian_jidianqi_write(void);
 int between_check(unsigned int roundShineng);
 unsigned int at_check(unsigned int roundShineng);

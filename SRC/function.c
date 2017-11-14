@@ -1294,7 +1294,7 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 		{
 			tiaoxian();
 		}
-		
+		bianpingqi_set_speed(bianpingqi_speed);
 		wdt_feed_dog();main_enter_flag = 1;
 		if ((qz_error_status==1&&privilege_run_flag==0)||ext_start_status==press||ext_stop_status==press||ext_jog_status==press)
 		{

@@ -75,7 +75,6 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int DevAddress,int Value)
 			}
 			else
 			{
-				//bianpingqi_previous_speed=g_InteralMemory.Word[30];
 				bianpingqi_previous_speed=bianpingqi_speed;
 				bpqComCount=0;
 			}
@@ -187,7 +186,6 @@ void bianpingqi_jog(void)
 }
 
 void bianpingqi_speed_cal(void){
-	int ii;
 	static unsigned int y1y3delay_flag = 0;
 	unsigned int quanshu[7]={0};
 	unsigned int next_stage = 0;
@@ -213,27 +211,13 @@ void bianpingqi_speed_cal(void){
 		bianpingqi_speed_down_b = 0;
 	}	
 	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan
-		if ((at_check((dapan_round+1)) == 1 && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
-			(at_check((dapan_round))==1 && encoder1_pulse_number < jiajiansujiangemaichong_kw) ){
-				
-				for (ii = 0; ii < 6 ; ii++){
-					chudao_shoudao_finish[ii]=0;
-				}
-				
-				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
-				return;
+		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
+			(at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
+			
+			bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
+			return;
 		}
-
-		if ((at_check((dapan_round+1)) == 2 && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw)) ||
-			(at_check((dapan_round))==2)){
-				
-				for (ii = 0; ii < 6 && chudao_shoudao_finish[ii] != 1 ; ii++ );
-				if (ii == 6){
-					bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
-					return;
-				}	
-			}
-		}
+	}
 	quanshu[0] = 0;
 	quanshu[datouduan+1] = daduanquanshu;
 	quanshu[guoduduan+1] = quanshu[datouduan]+middlequanshu;

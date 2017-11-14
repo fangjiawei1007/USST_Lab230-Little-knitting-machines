@@ -480,12 +480,12 @@ void Main(void)
 				g_InteralMemory.Word[25]=g_InteralMemory.KeepWord[banci_num[a_ban][jianshu_no]];//A班产量显示
 				g_InteralMemory.Word[26]=g_InteralMemory.KeepWord[banci_num[b_ban][jianshu_no]];//B班产量显示
 				g_InteralMemory.Word[27]=g_InteralMemory.KeepWord[banci_num[c_ban][jianshu_no]];//C班产量显示
-				if (extra_part_jiansu!=0)
-					g_InteralMemory.Word[28]=g_InteralMemory.Word[31]+extra_part_quanshu/extra_part_jiansu;
-				else
-					g_InteralMemory.Word[28]=g_InteralMemory.Word[31];//每件所需圈数
-				//g_InteralMemory.Word[29]=k_motor[4]*1000;
-				//g_InteralMemory.Word[32]=bianpingqi_speed/100;
+				
+				g_InteralMemory.Word[29] = daduanquanshu;
+				g_InteralMemory.Word[30] = g_InteralMemory.Word[29]+middlequanshu;
+				g_InteralMemory.Word[32] = g_InteralMemory.Word[30]+xiaoduanquanshu;
+				g_InteralMemory.Word[33] = g_InteralMemory.Word[32]+caijiaoquanshu;
+				g_InteralMemory.Word[49] = extra_part_quanshu;
 				//////////////////////////////////////
 			}
 	

@@ -445,8 +445,8 @@ void parameter_read(void){
 
 void __irq	encoder1_process(void)
 {
-	unsigned char jj;//,signal;
-	static unsigned char error_times=0;
+	unsigned int jj,zushu;//,signal;
+	static unsigned int error_times=0;
 	static unsigned int reset_enter_times=0;
 	if (((rGPFDAT >> 1) & 0x1) && signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
@@ -454,13 +454,15 @@ void __irq	encoder1_process(void)
 		encoder1_pulse_number++;
 		
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
-			for (jj = 0 ; jj < 4 ; jj++){
-				if (chudao_start[jj] == 1 && chudao_start_status[jj] == 0){	//出刀间隔计算 by FJW
-					chudao_jiange_tmp[jj] ++;
-				}
+			for (jj = 0 ; jj < 6 ; jj++){
+				for (zushu =0; zushu <= tiaoxianzu; zushu++){
+					if (chudao_start[zushu][jj] == 1 && chudao_start_status[zushu][jj] == 0){	//出刀间隔计算 by FJW
+						chudao_jiange_tmp[zushu][jj] ++;
+					}
 
-				if (shoudao_start[jj] == 1 && shoudao_start_status[jj] == 0){	//收刀间隔计算 by FJW
-					shoudao_jiange_tmp[jj] ++;
+					if (shoudao_start[zushu][jj] == 1 && shoudao_start_status[zushu][jj] == 0){	//收刀间隔计算 by FJW
+						shoudao_jiange_tmp[zushu][jj] ++;
+					}
 				}
 			}	
 		}
@@ -514,6 +516,8 @@ void __irq	encoder1_process(void)
 				youbeng_quanjianxie_yizhuan_num++;
 			if (fenshan_quan_init_flag==1)
 				fenshan_jianxie_yizhuanquan_num++;
+			if (tiaoxianzu_flag == 1)
+				tiaoxianzu_quanshu++;
 		}
 		if ( ((rGPFDAT >> 7) & 0x1) == alarm_signal[shangduansha_port] &&//Get_X_Value(shangduansha_port)
 		    sys_force_run_button == 0 && 

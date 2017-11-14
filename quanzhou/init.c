@@ -68,10 +68,6 @@ void menu_init(void)
 		tanbu_alarm_level=level_3;
 		
 		mode_choose = seven_motor_mode; 	//Ä£Ê½Ñ¡Ôñ by FJW
-		tiaoxian_12_enter = 100;
-		tiaoxian_12_exit = 200;
-		tiaoxian_34_enter = 100;
-		tiaoxian_34_exit = 200;
 		
 		qz_guanliyuan_mima=12345;
 		a_ban_mima_kw=12345;
@@ -129,6 +125,7 @@ void menu_init(void)
 				g_InteralMemory.KeepWord[159 + 9*ii + bb] = 100;
 			}
 		}
+		tiaoxianzu_jiange = 2;
 		chudao_jiange = 10000;	//by FJW
 		shoudao_jiange = 10000; //by FJW
 		tiaoxiankaiguan_kb = 0;

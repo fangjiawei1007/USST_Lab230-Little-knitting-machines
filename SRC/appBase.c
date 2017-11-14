@@ -1041,7 +1041,7 @@ void __irq DA0_10_Process(void) // 可通过示波器确定频率
 	/* if(0xffff == (g_InteralMemory.Word[32] & 0xffff))
 	{
 		g_InteralMemory.Word[32] = 0;
-		g_InteralMemory.Word[33]++;
+		
 	}
 	else
 		g_InteralMemory.Word[32]++; */
