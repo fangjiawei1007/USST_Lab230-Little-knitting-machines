@@ -23,6 +23,9 @@ void __irq	Timer0_Proc(void)
 		reset_timer_counter = 0;
 	}
 	encoder1_speed=encoder1_speed_pulse;//10
+	if (encoder1_speed == 0){
+		forceEqual = 1;
+	}
 	encoder1_speed_pulse=0; 
 	Delay_qz_sub();
 	beep_alarm();

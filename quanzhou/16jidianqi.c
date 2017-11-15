@@ -46,8 +46,8 @@ void jidianqi_write_single(U8 which_port,U8 button_bit)
 	
 	//rUBRDIV3 = ( (int)(SYS_PCLK/16./57600+0.5) -1 );
 	//Uart_Init(0,9600);
-	if (rULCON3!=0x2B) 
-		rULCON3 =0x2B; 								//0x2b=00 101 0 11  普通 偶校验（even） 1停止位 8数据位
+	if (rULCON3!=0x03) 
+		rULCON3 =0x03; 								//0x2b=00 101 0 11  普通 偶校验（even） 1停止位 8数据位
 	auchMsg[0]=jidianqi_station_num;
 	auchMsg[1]=jidianqi_write_single_fun_num;		//3492~3491  2016.1.3 quanzhou
 	auchMsg[2]=0x00;

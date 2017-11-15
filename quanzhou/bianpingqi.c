@@ -10,15 +10,28 @@ U8 bianpingqi_run_flag;
 U8 bianpingqi_previous_run_status=0;
 unsigned int bianpingqi_speed;
 U8 bpqComCount=0;
+unsigned int speed_status = 0;
 
-void bianpingqi_RTU_WriteWord(U8 function_num,int DevAddress,int Value)
+void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 {
 	U8 auchMsg[8],SendArray[8],RecArray[8];  
 	U8 Count,waitTime; 
 	unsigned int check=0;//cc,dd,
 	int i;
+	int DevAddress;
 	U32 ErrorLoop;
 	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;
+	
+	switch (bianpingqi_zhonglei){
+	case shilin_bianpingqi:
+		DevAddress = 0x1002;break;
+	case taili_bianpingqi:
+		DevAddress = 0x2000;break;
+	case PS550_bianpingqi:
+		DevAddress = 0x1001;break;
+	default:
+		DevAddress = 0x1002;break;
+	}
 	
 	//rUBRDIV3 = ( (int)(SYS_PCLK/16./9600+0.5) -1 );
 	if (rULCON3!=0x2B) 
@@ -114,10 +127,7 @@ void bianpingqi_set_speed(unsigned int speed)
 {
 	if (bianpingqi_previous_speed!=speed&&bianpingqi_jog_status!=1&&Choose_bianpingqi_kb==CHOOSE_BIANPINGQI)
 	{
-		if (bianpingqi_zhonglei_kb == shilin_bianpingqi)
-			bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,bianpingqi_fre_add,speed);//正常用
-		else
-			bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,0x2000,speed);
+		bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,speed);//正常用
 	}
 	else if (Choose_bianpingqi_kb==CHOOSE_NOT)
 	{
@@ -151,12 +161,8 @@ void bianpingqi_jog(void)
 			{
 				bianpingqi_jog_status=1;
 				if (Choose_bianpingqi_kb==CHOOSE_BIANPINGQI){
-					if (bianpingqi_zhonglei_kb == shilin_bianpingqi)
-						bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,bianpingqi_fre_add,300);
-					else
-						bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,0x2000,300);
+						bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,300);
 				}
-					
 				else
 					bianpingqi_previous_speed=300;
  				bianpingqi_start_sub();
@@ -190,7 +196,6 @@ void bianpingqi_speed_cal(void){
 	unsigned int quanshu[7]={0};
 	unsigned int next_stage = 0;
 	unsigned int previous_stage = 0;
-	static unsigned int speed_status = 0;
 	
 	if (bianpingqi_speed_up_b == 1){
 		if (bianpingqi_fullspeed_set < 7000)
@@ -220,10 +225,10 @@ void bianpingqi_speed_cal(void){
 	}
 	quanshu[0] = 0;
 	quanshu[datouduan+1] = daduanquanshu;
-	quanshu[guoduduan+1] = quanshu[datouduan]+middlequanshu;
-	quanshu[xiaotouduan+1] = quanshu[guoduduan]+xiaoduanquanshu;
-	quanshu[fencenduan+1] = quanshu[xiaotouduan]+caijiaoquanshu;
-	quanshu[caijianduan+1] = quanshu[fencenduan]+langfeiquanshu;
+	quanshu[guoduduan+1] = quanshu[datouduan+1]+middlequanshu;
+	quanshu[xiaotouduan+1] = quanshu[guoduduan+1]+xiaoduanquanshu;
+	quanshu[fencenduan+1] = quanshu[xiaotouduan+1]+caijiaoquanshu;
+	quanshu[caijianduan+1] = quanshu[fencenduan+1]+langfeiquanshu;
 	quanshu[ewaiduan+1] = extra_part_quanshu;
 	next_stage = getStage(current_stage,NEXTSTAGE);
 	previous_stage = getStage(current_stage,PREVIOUSSTAGE);
@@ -243,6 +248,7 @@ void bianpingqi_speed_cal(void){
 	}
 	else if ( speed_status == 1 && 
 			((current_stage != ewaiduan && dapan_round <(quanshu[current_stage]+1)) || 
+			( current_stage == ewaiduan && dapan_round == quanshu[ewaiduan+1] ) ||//最后一个是因为在额外段最后减速时，dapan_round的值为最大 
 			( current_stage == ewaiduan && (dapan_round <1 || dapan_round == extra_fencen_quan_num_kw || dapan_round == (extra_part_quanshu - extra_fencen_quan_num_kw))))){
 				
 		bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
@@ -269,7 +275,9 @@ void bianpingqi_speed_cal(void){
 			}
 		}
 	}
-	else if ((next_stage == fencenduan || next_stage == caijianduan || (next_stage == ewaiduan && extra_fencen_quan_num_kw != 0)) && dapan_round >= (quanshu[current_stage+1] - bianpingqi_huanchongquan_num)){
+	else if ((next_stage == fencenduan && dapan_round >= (quanshu[next_stage] - bianpingqi_huanchongquan_num))|| 
+			 (current_stage == fencenduan && dapan_round >= (quanshu[current_stage+1] - bianpingqi_huanchongquan_num)) || 
+			 (next_stage == ewaiduan && extra_fencen_quan_num_kw != 0 && dapan_round >= (quanshu[next_stage] - bianpingqi_huanchongquan_num))){
 		
 		bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 		if (Choose_bianpingqi_kb == CHOOSE_NOT && dapan_round==(quanshu[current_stage+1] - 1) && 

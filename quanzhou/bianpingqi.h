@@ -31,10 +31,10 @@
 #define	bianpingqi_enable				1
 #define	bianpingqi_disable				0
 #define	bianpingqi_write_fun_num		0x06
-#define	bianpingqi_fre_add				0x1002
 
 #define	shilin_bianpingqi				1
 #define	taili_bianpingqi				2
+#define	PS550_bianpingqi				3
 
 /*************************************************************************************************************/
 //»­Ãæ¿Ø¼þºÅ
@@ -71,7 +71,7 @@
 
 #define	bianpingqi_jog_speed_lv				g_InteralMemory.KeepWord[3]
 
-#define	bianpingqi_zhonglei_kb				g_InteralMemory.KeepBit[37]
+#define	bianpingqi_zhonglei					g_InteralMemory.KeepWord[63]
 /*************************************************************************************************************/
 
 #define	Choose_bianpingqi_kb				g_InteralMemory.KeepBit[33]
@@ -83,7 +83,7 @@
 
 void bianpingqi_start(U8 bianpingqi_run_button);
 void bianpingqi_jog(void);
-void bianpingqi_RTU_WriteWord(U8 function_num,int DevAddress,int Value);
+void bianpingqi_RTU_WriteWord(U8 function_num,int Value);
 void bianpingqi_set_speed(unsigned int speed);
 void bianpingqi_start_sub(void);
 void bianpingqi_stop_sub(void);

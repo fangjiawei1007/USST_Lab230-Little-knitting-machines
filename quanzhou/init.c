@@ -35,7 +35,7 @@ void menu_init(void)
 	if (menu_init_flag!=1)
 	{
 		zhibusheding=2000;
-		qingchesheding=2000;
+		qingchesheding=0;
 		qingche_num_kw=0;
 		
 		youbeng_miaojianxie_fac_L=3;
@@ -103,7 +103,7 @@ void menu_init(void)
 		huanchongmaichong=1000;
 		
 		Choose_bianpingqi_kb=CHOOSE_BIANPINGQI;
-		bianpingqi_zhonglei_kb = shilin_bianpingqi;
+		bianpingqi_zhonglei = shilin_bianpingqi;
 		
 		dapan_zongzhenshu_kw=600;
 		
@@ -117,18 +117,22 @@ void menu_init(void)
 		init_stop_time_kw = 30;
 		
 		for (ii = 0; ii < tiaoshaduan_max; ii++){
-			g_InteralMemory.KeepWord[156 + 9*ii] = 0;
-			g_InteralMemory.KeepWord[157 + 9*ii] = 0;
-			g_InteralMemory.KeepWord[158 + 9*ii] = 0;
+			g_InteralMemory.KeepWord[156 + 10*ii] = 0;
+			g_InteralMemory.KeepWord[157 + 10*ii] = 0;
+			g_InteralMemory.KeepWord[158 + 10*ii] = 0;
 			g_InteralMemory.KeepBit[49 + ii] = 0;
 			for (bb = 0; bb<7; bb++){
-				g_InteralMemory.KeepWord[159 + 9*ii + bb] = 100;
+				g_InteralMemory.KeepWord[159 + 10*ii + bb] = 100;
 			}
 		}
 		tiaoxianzu_jiange = 2;
 		chudao_jiange = 10000;	//by FJW
 		shoudao_jiange = 10000; //by FJW
 		tiaoxiankaiguan_kb = 0;
+		tiaoxianzu_max = 5;
+		tiaoxianzu = 1;
+		tiaoxianzu_quanshu=0;
+		tiaoxianzu_flag = 0;
 		
 		jiajiansujiangemaichong_kw = 10000;
 		
@@ -191,7 +195,7 @@ void qz_uart_init(void)
 	rUMCON3 = 0x0;
 	rULCON3 = 0x2B;
 	rUCON3  = 0x005;
-	rUBRDIV3 = ( (int)(SYS_PCLK/16./9600+0.5) -1 );
+	//rUBRDIV3 = ( (int)(SYS_PCLK/16./9600+0.5) -1 );
 	//rUBRDIV3 = ( (int)(SYS_PCLK/16./57600+0.5) -1 );
 }
 

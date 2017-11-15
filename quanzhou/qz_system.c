@@ -560,10 +560,12 @@ void dingdanlianghua(void){
 				previous_dingdanzongshu=dingdanzongshu_kw;
 				encoder1_pulse_number=encoder1_pulse_number_save=0;//编码器计数清零
 				dapan_round=dapan_round_save=0;					//大盘圈数清零
+				speed_status = 0;
 				
-				extra_part_finish_flag=extra_part_finish;
+				extra_part_finish_flag=extra_part_unfinish;
 				extra_part_flag=extra_part_stop;
-				forceEqual = 1;
+				if (encoder1_speed == 0)
+					forceEqual = 1;
 				//lingwei_jiance_button = 1;						//压针回零 by FJW
 				
 				jianshu=0;										//件数清零

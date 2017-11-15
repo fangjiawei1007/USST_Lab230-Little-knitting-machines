@@ -1,36 +1,21 @@
 #ifndef _ENCODER1_H_
 #define _ENCODER1_H_
 
-/* #define	dachidatou_k			0.856
-#define	dachixiaotou_k			0.604
-
-#define	xiaochidatou_k			0.665
-#define	xiaochixiaotou_k		0.615 
-#define	dachidatou_k			0.428
-#define	dachixiaotou_k			0.302
-
-#define	xiaochidatou_k			0.3325
-#define	xiaochixiaotou_k		0.3075*/
-
 #define	datou					1
 #define	xiaotou					0
 #define	fencen					2
-
-
-#define pulse_divider					400
-#define	productivity_per_round			0.4
 
 /*************************************************************************************************************/
 //编码器接口 X1
 #define	encoder1_port	1
 /*************************************************************************************************************/
 //底层函数接口
-#define	encoder1_fun(X)	X?	InPulse1_Start():InPulse1_Stop()
-#define	encoder2_fun(X)	X?	InPulse2_Start():InPulse2_Stop()
-#define	encoder3_fun(X)	X?	InPulse3_Start():InPulse3_Stop()
-#define	encoder4_fun(X)	X?	InPulse4_Start():InPulse4_Stop()
-#define	encoder5_fun(X)	X?	InPulse5_Start():InPulse5_Stop()
-#define	encoder6_fun(X)	X?	InPulse6_Start():InPulse6_Stop()
+#define	encoder1_fun(X)	(X?InPulse1_Start():InPulse1_Stop())
+#define	encoder2_fun(X)	(X?InPulse2_Start():InPulse2_Stop())
+#define	encoder3_fun(X)	(X?InPulse3_Start():InPulse3_Stop())
+#define	encoder4_fun(X)	(X?InPulse4_Start():InPulse4_Stop())
+#define	encoder5_fun(X)	(X?InPulse5_Start():InPulse5_Stop())
+#define	encoder6_fun(X)	(X?InPulse6_Start():InPulse6_Stop())
 
 /*************************************************************************************************************/
 #define	encoder1_run_status_bit				13
@@ -60,7 +45,6 @@
 #define	encoder1_dangqianjian_reset			g_InteralMemory.Bit[14]
 
 #define	current_stage						g_InteralMemory.Word[11]	
-//#define	previous_current_stage				g_InteralMemory.KeepWord[93]
 
 #define	encoder1_jianshu_reset				g_InteralMemory.Bit[6]
 

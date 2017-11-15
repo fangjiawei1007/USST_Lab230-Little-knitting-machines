@@ -876,9 +876,9 @@ void KeyScan(void)
 					{
 						encoder1_pulse_number=encoder1_pulse_number_save=0;
 						dapan_round=dapan_round_save=0;
-						
+						speed_status = 0;
 						//lingwei_jiance_button = 1;		//—π’Îªÿ¡„ by FJW
-						extra_part_finish_flag=extra_part_finish;
+						extra_part_finish_flag=extra_part_unfinish;
 						extra_part_flag=extra_part_stop;
 						
 						jianshu=0;

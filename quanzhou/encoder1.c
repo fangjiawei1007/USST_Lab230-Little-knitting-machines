@@ -9,16 +9,15 @@ unsigned int dapan_round=0;
 U16	encoder1_pulse_number=0;
 
 const float k_factor[7][3]={{364,519,364},{249,309,249},{369,399,369},{264,291.6,264},{328.5,312.1,328.5},{1000,1000,1000},{1000,1000,1000}};
-//const unsigned int pre_set_par[5][3]={{500,200,500},{600,500,655},{585,640,585},{910,850,910},{675,715,675}};
 unsigned char jiansu_permite=1;
 unsigned char signal;
-unsigned char speedUpFlag=0;
-unsigned char speedDownFlag=0;
+unsigned char speedUpFlag[7]={0};
+unsigned char speedDownFlag[7]={0};
 
 unsigned char jianshu_ewaiduan_check=0;
 unsigned char reset_timer_start=0;
-unsigned int speedUpCnt=1;
-unsigned int speedDownCnt=1;
+unsigned int speedUpCnt[7]={1};
+unsigned int speedDownCnt[7]={1};
 unsigned int forceEqual = 1;
 unsigned int forceDownEqual = 0;
 unsigned int forceUpEqual = 0;
@@ -55,10 +54,17 @@ void encoder1_data_reset(void){
 	if(encoder1_dangqianjian_reset==1)
 	{
 		encoder1_pulse_number=encoder1_pulse_number_save=0;
-		extra_part_finish_flag=extra_part_finish;
+		extra_part_finish_flag=extra_part_unfinish;
 		extra_part_flag=extra_part_stop;
+		ewaiduan_fencen_status = 0;
 		dapan_round=dapan_round_save=0;
-		forceEqual = 1;
+		if (encoder1_speed == 0)
+			forceEqual = 1;
+		speed_status = 0;
+		
+		if (tiaoxiankaiguan_kb == 1){
+			tiaoxian_reset();
+		}
 		//lingwei_jiance_button = 1; //压针回零 by FJW
 	}
 	if (encoder1_jianshu_reset==1)
@@ -67,11 +73,16 @@ void encoder1_data_reset(void){
 	{
 		encoder1_pulse_number=encoder1_pulse_number_save=0;
 		dapan_round=dapan_round_save=0;
-		extra_part_finish_flag=extra_part_finish;
+		extra_part_finish_flag=extra_part_unfinish;
 		extra_part_flag=extra_part_stop;
-		forceEqual = 1;
+		ewaiduan_fencen_status = 0;
+		if (encoder1_speed == 0)
+			forceEqual = 1;
+		speed_status = 0;
 		//lingwei_jiance_button = 1;		//压针回零 by FJW
-		
+		if (tiaoxiankaiguan_kb == 1){
+			tiaoxian_reset();
+		}
 		jianshu=0;
 	}
 	if (songshaliang_data_reset==1)
@@ -114,30 +125,32 @@ void SpeedChange(const unsigned int* kMotor){
 			k_motor[i] = kMotor[i];
 			previousKMotor[i] = kMotor[i];
 			previousKMotorCompare[i] = kMotor[i];
+			speedUpFlag[i] = 0;
+			speedDownFlag[i] = 0;
+			speedUpCnt[i] = 1;
+			speedDownCnt[i] = 1;
 		}
 		forceEqual = 0;
 	}
 	else{
 		for ( i = 0; i<7 ; i++){
-			if (speedUpCnt == speedUpMax){
+			if (speedUpCnt[i] >= speedUpMax && speedUpFlag[i] == 1){
 				k_motor[i] = kMotor[i];
 				previousKMotor[i] = kMotor[i];
-				if (i == 6){
-					speedUpCnt = 1;
-				}
-				continue;
+				speedUpFlag[i] = 0;
+				speedUpCnt[i] = 1;
 			}
-			if (speedDownCnt == speedDownMax){
+			if (speedDownCnt[i] >= speedDownMax && speedDownFlag[i] == 1){
 				k_motor[i] = kMotor[i];
 				previousKMotor[i] = kMotor[i];
-				if (i == 6){
-					speedDownCnt = 1;
-				}
-				continue;
+				speedDownFlag[i] = 0;
+				speedDownCnt[i] = 1;
 			}
 			if (previousKMotorCompare[i] != kMotor[i]){ //作为如果在变化完成之前，若改变了目标速度，则从当前速度重新从1,2,3开始变化到目标速度
-				speedUpCnt = 1;
-				speedDownCnt = 1;
+				speedUpCnt[i] = 1;
+				speedDownCnt[i] = 1;
+				speedDownFlag[i] = 0;
+				speedUpFlag[i] = 0;
 				previousKMotorCompare[i] = kMotor[i];
 				previousKMotor[i] = k_motor[i];
 			}
@@ -146,13 +159,11 @@ void SpeedChange(const unsigned int* kMotor){
 					k_motor[i] = kMotor[i];
 					previousKMotor[i] = kMotor[i];
 					previousKMotorCompare[i] = kMotor[i];
-					if ( i == 6){
-						forceUpEqual = 0;
-					}
 				}
 				else{
-					k_motor[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt/speedUpMax);
-					speedUpFlag = 1;
+					k_motor[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt[i]/speedUpMax);
+					speedUpFlag[i] = 1;
+					speedDownFlag[i] = 0;
 				}
 			}
 			else if (previousKMotor[i] > kMotor[i]){
@@ -160,19 +171,19 @@ void SpeedChange(const unsigned int* kMotor){
 					k_motor[i] = kMotor[i];
 					previousKMotor[i] = kMotor[i];
 					previousKMotorCompare[i] = kMotor[i];
-					if ( i == 6){
-						forceDownEqual = 0;
-					}
 				}
 				else{
-					k_motor[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt/speedDownMax);
-					speedDownFlag = 1;
+					k_motor[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt[i]/speedDownMax);
+					speedDownFlag[i] = 1;
+					speedUpFlag[i] = 0;
 				}
 			}
 			else if (k_motor[i] != kMotor[i]){
 				k_motor[i] = kMotor[i];
 			}
 		}
+		forceUpEqual = 0;
+		forceDownEqual = 0;
 	}
 }
 
@@ -219,7 +230,7 @@ unsigned int getStage(const unsigned int stage,int direction){
 		if (requestStage > ewaiduan){
 			requestStage = datouduan;
 		}
-		if ( validRound & 1<<requestStage ){
+		if ( validRound & (1<<requestStage) ){
 			return requestStage;
 		}			
 	}	
@@ -277,7 +288,8 @@ void songsha_fre_change(void){
 	}
 	if (extra_part_flag==extra_part_stop)
 	{
-		extra_part_finish_flag=extra_part_unfinish;	
+		extra_part_finish_flag=extra_part_unfinish;
+		ewaiduan_fencen_status = 0;
 		if (dapan_round<daduanquanshu || daduanquanshu == 9999){
 			current_stage=datouduan;
 			i = between_check(dapan_round);
@@ -352,8 +364,8 @@ void songsha_fre_change(void){
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu)){
 			current_stage=caijianduan;
 			for (bb=0;bb<7;bb++){//裁剪圈不调线
-				kMotorTarget[bb] = (getKMotor(bb,current_stage,PREVIOUSSTAGE)+
-								   (getKMotor(bb,current_stage,NEXTSTAGE)-getKMotor(bb,current_stage,PREVIOUSSTAGE) )
+				kMotorTarget[bb] = (getKMotor(bb,fencenduan,PREVIOUSSTAGE)+
+								   (getKMotor(bb,current_stage,NEXTSTAGE)-getKMotor(bb,fencenduan,PREVIOUSSTAGE) )
 									*(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu)/langfeiquanshu);
 			}
 			SpeedChange(kMotorTarget);
@@ -404,6 +416,7 @@ void songsha_fre_change(void){
 		bianpingqi_speed_cal();
 		if (dapan_round>=extra_part_quanshu){
 			extra_part_flag=extra_part_stop;
+			ewaiduan_fencen_status = 0;
 			if (jianshu>=zhibusheding || (previous_dingdanzongshu!=0&&dingdan_lianghua_num_kw>=previous_dingdanzongshu))
 				jianshu_ewaiduan_check=1;
 			dapan_round=0;
@@ -448,6 +461,7 @@ void __irq	encoder1_process(void)
 	unsigned int jj,zushu;//,signal;
 	static unsigned int error_times=0;
 	static unsigned int reset_enter_times=0;
+	static unsigned int speedChangeCnt[2][7]={1};
 	if (((rGPFDAT >> 1) & 0x1) && signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
 		encoder1_speed_pulse++;
@@ -455,7 +469,7 @@ void __irq	encoder1_process(void)
 		
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
 			for (jj = 0 ; jj < 6 ; jj++){
-				for (zushu =0; zushu <= tiaoxianzu; zushu++){
+				for (zushu =0; zushu < tiaoxianzu; zushu++){
 					if (chudao_start[zushu][jj] == 1 && chudao_start_status[zushu][jj] == 0){	//出刀间隔计算 by FJW
 						chudao_jiange_tmp[zushu][jj] ++;
 					}
@@ -480,6 +494,25 @@ void __irq	encoder1_process(void)
 			}
 		}
 		//rGPEDAT |= (0x7 << 4);
+		for (jj = 0; jj < 7; jj ++){
+			if (speedUpFlag[jj]==1){
+				if (huanchongmaichong!=0&&speedUpCnt[jj]<speedUpMax&&
+				++speedChangeCnt[0][jj]%huanchongmaichong==0)
+					speedUpCnt[jj]++;
+				else if (huanchongmaichong==0){
+					speedUpCnt[jj]=speedUpMax;
+					speedUpFlag[jj]= 0;
+					speedChangeCnt[0][jj] = 1;
+				}
+				else if (speedUpCnt[jj] >= speedUpMax){
+					speedUpFlag[jj]=0;
+					speedChangeCnt[0][jj] = 1;
+				}	
+			}
+			else{
+				speedChangeCnt[0][jj] = 1;
+			}
+		}
 	}
 	else if(signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
@@ -516,8 +549,11 @@ void __irq	encoder1_process(void)
 				youbeng_quanjianxie_yizhuan_num++;
 			if (fenshan_quan_init_flag==1)
 				fenshan_jianxie_yizhuanquan_num++;
-			if (tiaoxianzu_flag == 1)
+			if (tiaoxianzu_flag == 1){
 				tiaoxianzu_quanshu++;
+				jiajiaStatus = 0;
+			}
+				
 		}
 		if ( ((rGPFDAT >> 7) & 0x1) == alarm_signal[shangduansha_port] &&//Get_X_Value(shangduansha_port)
 		    sys_force_run_button == 0 && 
@@ -554,29 +590,25 @@ void __irq	encoder1_process(void)
 			reset_enter_times = 0;
 		}
 		main_enter_flag = 0;				//用以做主程序循环正常检测
-		if (speedUpFlag==1){
-			if (huanchongmaichong!=0&&speedUpCnt<speedUpMax&&
-			encoder1_pulse_number%huanchongmaichong==0)
-				speedUpCnt++;
-			else if (huanchongmaichong==0){
-				speedUpCnt=speedUpMax;
-				speedUpFlag=0;
+		for (jj = 0; jj < 7; jj ++){
+			if (speedDownFlag[jj]==1){
+				if (huanchongmaichong!=0&&speedDownCnt[jj]<speedDownMax&&
+				++speedChangeCnt[1][jj]%huanchongmaichong==0)
+					speedDownCnt[jj]++;
+				else if (huanchongmaichong==0){
+					speedDownCnt[jj]=speedDownMax;
+					speedDownFlag[jj]=0;
+					speedChangeCnt[1][jj] = 1;
+				}
+				else if (speedDownCnt[jj] >= speedDownMax){
+					speedDownFlag[jj]=0;
+					speedChangeCnt[1][jj] = 1;
+				}
 			}
-			else if (speedUpCnt >= speedUpMax){
-				speedUpFlag=0;
-			}	
-		}
-		if (speedDownFlag==1){
-			if (huanchongmaichong!=0&&speedDownCnt<speedDownMax&&
-			encoder1_pulse_number%huanchongmaichong==0)
-				speedDownCnt++;
-			else if (huanchongmaichong==0){
-				speedDownCnt=speedDownMax;
-				speedDownFlag=0;
+			else{
+				speedChangeCnt[1][jj] = 1;
 			}
-			else if (speedDownCnt >= speedDownMax){
-				speedDownFlag=0;
-			}
+				
 		}
 	}
 	rEINTPEND=(1<<1); 

@@ -156,14 +156,14 @@ extern unsigned int shoudao_start_status[6][6];	//调线功能 by FJW
 extern unsigned int chudao_jiange_tmp[6][6];		//出刀间隔记录 by FJW
 extern unsigned int shoudao_jiange_tmp[6][6];		//收刀间隔记录 by FJW
 
-extern	unsigned int tongxunzhen;
-extern unsigned int shinengwei[6];	
-extern unsigned int chudao_shoudao_status[6][6];
+//extern	unsigned int tongxunzhen[6];
+//extern unsigned int shinengwei[6];	
+//extern unsigned int chudao_shoudao_status[6][6];
 extern unsigned int forceEqual;
+extern unsigned int speed_status;
 extern unsigned int ewaiduan_fencen_status;
-extern unsigned int tiaoxianzu_flag ;
-extern unsigned int tiaoxianzu_quanshu;
-extern unsigned int tiaoxianzu;
+extern unsigned int jiajiaStatus;
+
 
 
 extern TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];

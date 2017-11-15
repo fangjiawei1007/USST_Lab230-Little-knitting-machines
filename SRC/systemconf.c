@@ -434,28 +434,6 @@ void DataSave_Load (void)	// 读取掉电保护数据
 
 }
 
-void qz_err_stop(void)
-{
-	U8 auchMsg[8];  
-	U8 Count; 
-	if (rULCON3!=0x2B) 
-		rULCON3 =0x2B; 								//0x2b=00 101 0 11  普通 偶校验（even） 1停止位 8数据位
-	auchMsg[0]=bianpingqi_station_num;
-	auchMsg[1]=bianpingqi_write_fun_num;		
-	auchMsg[2]=0x10;
-	auchMsg[3]=0x01;
-	auchMsg[4]=0x00;
-	auchMsg[5]=0x80;
-	auchMsg[6]=(CRC(auchMsg,6)) & 0xff;
-	auchMsg[7]=(CRC(auchMsg,6))>>8;
-	rGPHDAT |= 0x1000;	//GPH12	+Write
-	for(Count=0;Count<8;Count++)         
-	{
-		while(!(rUTRSTAT3 & 0x4));  
-		WrUTXH3(auchMsg[Count]);
-	}
-
-}
 void __irq DataSave_IntHandle(void)
 {
 	INT8U *PageBuff;
