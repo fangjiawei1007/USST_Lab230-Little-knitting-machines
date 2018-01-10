@@ -17,6 +17,7 @@ unsigned int jiajiaStatus = 0;
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
+
 void tiaoxian_init(void)	//调线初始化 by FJW
 {
 	int ii,bb;
@@ -81,12 +82,16 @@ void tiaoxian_reset(void){
 	tiaoxianzu_quanshu=0;
 }
 
+
 int between_check(unsigned int roundShineng){
 	int i;
+	
+	//check函数主要用于调线功能,若未打开调线功能，则直接返回-1；
 	if (tiaoxiankaiguan_kb == 0)
 		return -1;
+	
 	for(i=0;i<8;i++){
-		if ( roundShineng >= *tiaoxianduan[i].kaishiquanshu								//大于下限
+		if (roundShineng >= *tiaoxianduan[i].kaishiquanshu							//大于下限
 		&& *tiaoxianduan[i].jieshuquanshu											//对应上限不为零
 		&& (roundShineng < *tiaoxianduan[i].jieshuquanshu							//小于上限
 		|| 	*tiaoxianduan[i].jieshuquanshu == (daduanquanshu + middlequanshu + xiaoduanquanshu + caijiaoquanshu + langfeiquanshu))){

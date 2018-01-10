@@ -1,15 +1,15 @@
 #include"includes.h"
-U32 encoder1_speed_pulse=0;
-U32	encoder1_speed=0;
+U32 encoder1_speed_pulse=0;						//用于计算speed的脉冲数
+U32	encoder1_speed=0;							//用于计算speed的脉冲数(大盘速度)的tmp值
 
-volatile unsigned int k_motor[7]={0};
+volatile unsigned int k_motor[7]={0};			//电机K值存放的数组(实际)
 unsigned int kMotorTarget[7]={0};
-volatile unsigned int motor_factor[7]={0};
-unsigned int dapan_round=0;
+volatile unsigned int motor_factor[7]={0};		//用于和1000000比较
+unsigned int dapan_round=0;						//大盘转了多少圈的监测值
 U16	encoder1_pulse_number=0;
 
 const float k_factor[7][3]={{364,519,364},{249,309,249},{369,399,369},{264,291.6,264},{328.5,312.1,328.5},{1000,1000,1000},{1000,1000,1000}};
-unsigned char jiansu_permite=1;
+unsigned char jiansu_permite=1;					//大盘超速了之后减速
 unsigned char signal;
 unsigned char speedUpFlag[7]={0};
 unsigned char speedDownFlag[7]={0};
@@ -18,17 +18,31 @@ unsigned char jianshu_ewaiduan_check=0;
 unsigned char reset_timer_start=0;
 unsigned int speedUpCnt[7]={1};
 unsigned int speedDownCnt[7]={1};
-unsigned int forceEqual = 1;
+unsigned int forceEqual = 1;		//作用：送纱电机变速的时候强制相等
+									//不通过变速
 unsigned int forceDownEqual = 0;
 unsigned int forceUpEqual = 0;
 
-unsigned int ewaiduan_fencen_status = 0;
+unsigned int ewaiduan_fencen_status = 0;		//ewaiduan_fencen_status=1时，表示使用额外段的分层
 
 #define	reset_time_100ms				4
 
+/*************************************************
+Function(函数名称): encoder1_data_process(void)
+Description(函数功能、性能等的描述): 当大盘速度超过设定的最大速度，通过通讯调整变频器，使大盘降速
+Calls (被本函数调用的函数清单): delay_qz(U8 delay_rank,U32 delay_t,U8 status);bianpingqi_set_speed(U32 speed)
+Called By (调用本函数的函数清单): main()
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void encoder1_data_process(void){
-	yuanpan_speed=encoder1_speed*600/encoder1_cal_factor;
+	yuanpan_speed=encoder1_speed*600/encoder1_cal_factor;	//计算大盘速度
 	if (Choose_bianpingqi_kb==CHOOSE_BIANPINGQI){
 		if (yuanpan_speed>=max_speed){
 			delay_qz(3,15,1);
@@ -50,14 +64,31 @@ void encoder1_data_process(void){
 	}
 }
 
+/*************************************************
+Function(函数名称): encoder1_data_reset(void)
+Description(函数功能、性能等的描述):参数清零;清零主要是为了将编码器的记录值清零，
+								并且将dapan_round清零，这样songsha_freq_change就可以重新工作
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void encoder1_data_reset(void){
 	if(encoder1_dangqianjian_reset==1)
 	{
+		dapan_round=dapan_round_save=0;
 		encoder1_pulse_number=encoder1_pulse_number_save=0;
+		
 		extra_part_finish_flag=extra_part_unfinish;
 		extra_part_flag=extra_part_stop;
 		ewaiduan_fencen_status = 0;
-		dapan_round=dapan_round_save=0;
+		
 		if (encoder1_speed == 0)
 			forceEqual = 1;
 		speed_status = 0;
@@ -73,6 +104,7 @@ void encoder1_data_reset(void){
 	{
 		encoder1_pulse_number=encoder1_pulse_number_save=0;
 		dapan_round=dapan_round_save=0;
+		
 		extra_part_finish_flag=extra_part_unfinish;
 		extra_part_flag=extra_part_stop;
 		ewaiduan_fencen_status = 0;
@@ -116,10 +148,33 @@ void encoder1_data_reset(void){
 	}
 }
 
+
+/*************************************************
+Function(函数名称): SpeedChange(const unsigned int* kMotor)
+Description(函数功能、性能等的描述): 保证各个阶段的速度变化不突变，通过前后两个阶段的K值的变化来比较
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input: const unsigned int* kMotor
+	   kMotor为外部传参，K值数组
+Output(对输出参数的说明):
+Return: 
+Others: 第一个作用：上电直接将K值设定到位，不通过变速实现 2018.01.07
+	    第二个作用：改变第一次K值
+	    第三个作用(类似第一个)：强制降速
+	    第四个作用：在外部强制改变K值的情况下，重新进行变速实现。
+Author:王德铭
+Modified:新增局部变量k_motor_cal[7],用于计算中间变量，提升_irq encoder1_process()中k_motor的使用效率 by FJW 2018.1.10
+Commented:方佳伟
+*************************************************/
 void SpeedChange(const unsigned int* kMotor){
 	static unsigned int previousKMotor[7]={0};
 	static unsigned int previousKMotorCompare[7]={0};
+	unsigned int k_motor_cal[7]={0};				//作为计算值k_motor_cal[7]的中间变量
+	
 	int i;
+	
+	//上电第一次强制将速度加到K值，不通过变速执行
 	if (forceEqual == 1){
 		for ( i = 0; i<7 ; i++){
 			k_motor[i] = kMotor[i];
@@ -132,8 +187,14 @@ void SpeedChange(const unsigned int* kMotor){
 		}
 		forceEqual = 0;
 	}
+	
+	//七路电机第一次变化k值，主要是为了将speedDownFlag[]/speedUpFlag[]置1，
+	//在_irq encoder1_process()中,进行多次变换(irq中speedDownFlag[])
 	else{
 		for ( i = 0; i<7 ; i++){
+			
+			//7次加速/减速结束以后，speedUpFlag[n]/speedDownFlag[n]置0，
+			//speedUpCnt[n]/speedDownCnt[n]重置
 			if (speedUpCnt[i] >= speedUpMax && speedUpFlag[i] == 1){
 				k_motor[i] = kMotor[i];
 				previousKMotor[i] = kMotor[i];
@@ -146,7 +207,9 @@ void SpeedChange(const unsigned int* kMotor){
 				speedDownFlag[i] = 0;
 				speedDownCnt[i] = 1;
 			}
-			if (previousKMotorCompare[i] != kMotor[i]){ //作为如果在变化完成之前，若改变了目标速度，则从当前速度重新从1,2,3开始变化到目标速度
+			
+			//作为如果在变化完成之前，若改变了目标速度，则从当前速度重新从1,2,3开始变化到目标速度
+			if (previousKMotorCompare[i] != kMotor[i]){ 
 				speedUpCnt[i] = 1;
 				speedDownCnt[i] = 1;
 				speedDownFlag[i] = 0;
@@ -154,30 +217,53 @@ void SpeedChange(const unsigned int* kMotor){
 				previousKMotorCompare[i] = kMotor[i];
 				previousKMotor[i] = k_motor[i];
 			}
+			
+			//变速之后，flag置1，第一次变速开始
 			if (previousKMotor[i] < kMotor[i]){
+				//forceUpEqual未使用
 				if (forceUpEqual == 1){
 					k_motor[i] = kMotor[i];
 					previousKMotor[i] = kMotor[i];
 					previousKMotorCompare[i] = kMotor[i];
 				}
+				
 				else{
-					k_motor[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt[i]/speedUpMax);
+					/**算式使用中间变量更为合理，因为k_motor为中断中直接使用的值；by FJW**/
+					k_motor_cal[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt[i]/speedUpMax);
+					
+					/**当计算的k值与实际的k值不一样时再去进行变换 by FJW**/
+					if(k_motor_cal[i] != k_motor[i])
+					{
+						k_motor[i] = k_motor_cal[i];
+					}
+					
 					speedUpFlag[i] = 1;
 					speedDownFlag[i] = 0;
 				}
 			}
 			else if (previousKMotor[i] > kMotor[i]){
+				//强制降速，外部过渡段会使用
 				if (forceDownEqual == 1){
 					k_motor[i] = kMotor[i];
 					previousKMotor[i] = kMotor[i];
 					previousKMotorCompare[i] = kMotor[i];
 				}
 				else{
-					k_motor[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt[i]/speedDownMax);
+					/**算式使用中间变量更为合理，因为k_motor为中断中直接使用的值；by FJW**/
+					k_motor_cal[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt[i]/speedDownMax);
+					
+					/**当计算的k值与实际的k值不一样时再去进行变换 by FJW**/
+					if(k_motor_cal[i] != k_motor[i])
+					{
+						k_motor[i] = k_motor_cal[i];
+					}
+					
 					speedDownFlag[i] = 1;
 					speedUpFlag[i] = 0;
 				}
 			}
+			
+			//容错设置
 			else if (k_motor[i] != kMotor[i]){
 				k_motor[i] = kMotor[i];
 			}
@@ -187,28 +273,50 @@ void SpeedChange(const unsigned int* kMotor){
 	}
 }
 
+/*************************************************
+Function(函数名称): getStage(void)
+Description(函数功能、性能等的描述): 获得需要的stage，用于判断前后所需要的k值，
+								  以消除前后速度变化过大问题
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): bianpingqi_speed_cal();at_check();getKMotor();
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): stage：所需要的阶段的基础阶段
+														  direction：所需要的基础阶段的变化阶段
+Output(对输出参数的说明):
+Return: requestStage(所需要得到的stage)
+Others: 本函数的思想是：
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 unsigned int getStage(const unsigned int stage,int direction){
 	int requestStage = datouduan;
 	unsigned char validRound = 0x00;
+	
+	//获取当前stage值
 	if (direction == CURRENT){
 		return stage;
 	}
+	
+	/******************获取有效段数，判断哪些段是有效的(额外段较为特殊)****************/
 	if (daduanquanshu != 0){
 		validRound |= 1<<datouduan;
-	}
+	}	
 	if (middlequanshu != 0){
 		validRound |= 1<<guoduduan;
-	}
+	}	
 	if (xiaoduanquanshu != 0){
 		validRound |= 1<<xiaotouduan;
-	}
+	}	
 	if (caijiaoquanshu != 0){
 		validRound |= 1<<fencenduan;
-	}
+	}	
 	if (langfeiquanshu != 0){
 		validRound |= 1<<caijianduan;
 	}
-	if (extra_part_quanshu != 0){
+	
+	//额外段较特殊，会有两种情况
+	if(extra_part_quanshu != 0){
 		if (direction == NEXTSTAGE){
 			if (extra_part_quanshu!=0 && extra_part_jiansu!=0 && jianshu!=0 && (jianshu+1)%extra_part_jiansu==0){
 				
@@ -222,27 +330,55 @@ unsigned int getStage(const unsigned int stage,int direction){
 			}
 		}
 	}
-	
-	for( requestStage=((int)stage + direction);;requestStage += direction){
+
+/*************************************************************************/
+
+
+/**********判断是否该段为有效段，若为有效段则返回该段，
+		   若为无效段，则返回下一个段(取决于Previous/Next)************/
+	for(requestStage=((int)stage + direction);;requestStage += direction){
+		
+		//两个边界
 		if (requestStage < datouduan){
 			requestStage = ewaiduan;
 		}
 		if (requestStage > ewaiduan){
 			requestStage = datouduan;
 		}
+		
 		if ( validRound & (1<<requestStage) ){
 			return requestStage;
 		}			
 	}	
 }
 
+/*************************************************
+Function(函数名称): getKMotor(void)
+Description(函数功能、性能等的描述): 获取各个电机的跟踪系数(7路电机)
+Calls (被本函数调用的函数清单): getStage(stage,direction)
+Called By (调用本函数的函数清单): songsha_fre_change();
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): bb:第bb个电机；
+															stage：当前所处的段数；
+															direction：可填参数CURRENT;PREVIOUS;NEXTSTAGE
+															其中后两个参数是给调用的函数getStage(stage,direction)所用
+Output(对输出参数的说明):
+Return: k_factor[bb][x]*rate_different[bb][x]————即蔡老师所说的K值
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 int getKMotor(const unsigned char bb,const unsigned int stage,int direction){
 	int requestStage = 0;
 	
 	requestStage = getStage(stage,direction);
+	
+	//如果需要的stage是额外段，那么返回大头段的速度，因为
 	if (requestStage == ewaiduan){
 		return (k_factor[bb][datou]*rate_different[bb][datou]);
 	}
+	
+	//在各个段获得所需要的k值
 	else if (requestStage != guoduduan && requestStage != caijianduan){
 		if (requestStage == datouduan)
 			return (k_factor[bb][datou]*rate_different[bb][datou]);
@@ -253,6 +389,11 @@ int getKMotor(const unsigned char bb,const unsigned int stage,int direction){
 		else
 			return (k_factor[bb][datou]*rate_different[bb][datou]);
 	}
+	
+	/**此处为过渡段或者裁剪段的功能，由于此二段为变速运动，
+	   所以必须知道其开始速度以及结束速度，此处for循环，
+	   必须在过渡段和裁剪段使用PREVIOUS||NEXT，不然会死循环
+	**/
 	else{
 		for (;requestStage == guoduduan || requestStage == caijianduan;){
 			requestStage = getStage(requestStage,direction);
@@ -268,36 +409,70 @@ int getKMotor(const unsigned char bb,const unsigned int stage,int direction){
 	}
 }
 
+
+/*************************************************
+Function(函数名称): songsha_fre_change(void)
+Description(函数功能、性能等的描述): 1.K值的变化
+								 2.Speed_change不突变
+								 3.大盘的速度的改变(变频器)
+Calls (被本函数调用的函数清单): wdt_feed_dog();between_check();
+							getKMotor(const unsigned char bb,const unsigned int stage,int direction);
+							SpeedChange(const unsigned int* kMotor);bianpingqi_speed_cal();
+Called By (调用本函数的函数清单): stepmotor_init();KeyBoardScan();void Main(void)
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void songsha_fre_change(void){
 	unsigned char bb;
 	int i;
 	wdt_feed_dog();main_enter_flag = 1;
+	//所有圈数放在g_InteralMemory.Word[31]中
 	g_InteralMemory.Word[31]=daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu;
+	
+	//容错：将大头圈数一定要设置
 	if (daduanquanshu == 0 && xiaoduanquanshu == 0 && caijiaoquanshu == 0)
 		daduanquanshu=100;
+	
+	/***重要：额外段进入条件：额外段圈数不为0，额外段件数不为0，已织件数不为0，
+			 已织件数%额外段需要件数==0，标志位为0
+	***/
 	if (extra_part_quanshu!=0 && extra_part_jiansu!=0 && jianshu!=0 && \
 	   jianshu%extra_part_jiansu==0 && extra_part_finish_flag==extra_part_finish){
 		extra_part_flag=extra_part_start;
 		extra_part_finish_flag=extra_part_unfinish;
 	}
+	
+	//额外段工作时，上限到达||(额外段件数==0)||(额外段圈数==0)的情况下，停止使用额外段
 	if (extra_part_flag!=extra_part_stop && (jianshu==0 || extra_part_jiansu==0 || extra_part_quanshu==0))
 	{
 		dapan_round=0;
 		extra_part_finish_flag=extra_part_finish;
 		extra_part_flag=extra_part_stop;
 	}
+	
+	//不进行额外段的工作之后，为正常的工作状态
 	if (extra_part_flag==extra_part_stop)
 	{
 		extra_part_finish_flag=extra_part_unfinish;
 		ewaiduan_fencen_status = 0;
+		
+	//当前段为大头段
 		if (dapan_round<daduanquanshu || daduanquanshu == 9999){
 			current_stage=datouduan;
 			i = between_check(dapan_round);
+			//i ！= -1 为调线的功能代码
 			if ( i != -1){
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
 				}
 			}
+			//else 为无调线工作代码，获得大头段的各个K值
 			else{
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT);
@@ -306,6 +481,8 @@ void songsha_fre_change(void){
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
 		}
+		
+	//当前段为过渡段
 		else if (dapan_round<(daduanquanshu+middlequanshu)){
 			current_stage=guoduduan;
 			i = between_check(dapan_round);
@@ -319,16 +496,19 @@ void songsha_fre_change(void){
 			else{
 				for (bb=0;bb<7;bb++){
 			
+					/**K值计算 K_need = (K1 - (K1-K2)*(x/y))**/
 					kMotorTarget[bb]=	(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
-										(getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE) )
+										(getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE))
 										*(dapan_round-daduanquanshu)/middlequanshu); 
 				}
 			}
 			
-			forceDownEqual=1;
+			forceDownEqual=1;			//强制降到n段减速的第1个阶段的K值
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
 		}
+		
+	//当前段为小头段
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu)){
 			current_stage=xiaotouduan;
 			i = between_check(dapan_round);
@@ -345,6 +525,8 @@ void songsha_fre_change(void){
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
 		}
+		
+	//当前段为分层段
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu)){
 			current_stage=fencenduan;
 			i = between_check(dapan_round);
@@ -361,9 +543,12 @@ void songsha_fre_change(void){
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
 		}
+		
+	//当前段为裁剪段
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu+langfeiquanshu)){
 			current_stage=caijianduan;
 			for (bb=0;bb<7;bb++){//裁剪圈不调线
+				//裁剪段的初值和小头段的工况相同，和分层段的K值不同，
 				kMotorTarget[bb] = (getKMotor(bb,fencenduan,PREVIOUSSTAGE)+
 								   (getKMotor(bb,current_stage,NEXTSTAGE)-getKMotor(bb,fencenduan,PREVIOUSSTAGE) )
 									*(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu)/langfeiquanshu);
@@ -371,6 +556,7 @@ void songsha_fre_change(void){
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
 		}
+		
 		else
 		{
 			jianshu++;										//正常作用
@@ -378,12 +564,16 @@ void songsha_fre_change(void){
 			if (banci_status_kw!=s_ban)
 				dingdan_lianghua_num_kw++;					//订单量化计数，只有在改变订单号后会清零,无班次时不增加班次订单计数
 			dapan_round=0;
-			extra_part_finish_flag=extra_part_finish;
+			extra_part_finish_flag=extra_part_finish;		//额外段也结束
 		}
 	}
+	
+	//以下均为挡片段(额外段)，额外段开始的时候，dapan_round已经清零
 	else{
-		current_stage=ewaiduan;	//以下均为挡片段
+		current_stage=ewaiduan;	
 		i = between_check(dapan_round);
+		
+		//额外段分层部分：主要作用ewaiduan_fencen_status = 1;，在bianpingqi_speed_cal()中使用
 		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>=(extra_part_quanshu-extra_fencen_quan_num_kw))	{
 			
 			if ( i != -1){
@@ -398,6 +588,8 @@ void songsha_fre_change(void){
 			}
 			ewaiduan_fencen_status = 1;
 		}
+		
+		//额外段不分层部分
 		else{
 			
 			if ( i != -1){
@@ -414,16 +606,36 @@ void songsha_fre_change(void){
 		}
 		SpeedChange(kMotorTarget);
 		bianpingqi_speed_cal();
+		
+		//额外段运行结束之后的置位
 		if (dapan_round>=extra_part_quanshu){
 			extra_part_flag=extra_part_stop;
 			ewaiduan_fencen_status = 0;
+			
+			//
 			if (jianshu>=zhibusheding || (previous_dingdanzongshu!=0&&dingdan_lianghua_num_kw>=previous_dingdanzongshu))
 				jianshu_ewaiduan_check=1;
+			
 			dapan_round=0;
 		}
 	}
 }
 
+/*************************************************
+Function(函数名称): parameter_save(void)
+Description(函数功能、性能等的描述): 将变量存入flash中kw,encoder1_pulse_number，dapan_round
+								  songsha1_num[0~4]
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): menu_init();main();
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void parameter_save(void){
 	INT8U *PageBuff;
 	int Block;
@@ -447,6 +659,21 @@ void parameter_save(void){
 	
 }
 
+/*************************************************
+Function(函数名称): parameter_read(void)
+Description(函数功能、性能等的描述): 读取flash中kw的变量,变量为：encoder1_pulse_number_save，dapan_round_save，
+								  songsha1_num，songsha2_num，songsha3_num，songsha4_num
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): stepmotor_init();
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void parameter_read(void){
 	encoder1_pulse_number=encoder1_pulse_number_save;
 	dapan_round=dapan_round_save;
@@ -456,11 +683,12 @@ void parameter_read(void){
 	songsha_num[3]=songsha4_num;
 }
 
+
 void __irq	encoder1_process(void)
 {
 	unsigned int jj,zushu;//,signal;
 	static unsigned int error_times=0;
-	static unsigned int reset_enter_times=0;
+	static unsigned int reset_enter_times=0;	//未使用
 	static unsigned int speedChangeCnt[2][7]={1};
 	if (((rGPFDAT >> 1) & 0x1) && signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)

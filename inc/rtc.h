@@ -10,7 +10,16 @@
 #define BCD_TO_BIN(val) (((val)&15) + ((val)>>4)*10)
 #define BIN_TO_BCD(val) ((((val)/10)<<4) + (val)%10)                     
 
+/*****出厂时间 by FJW*******/
+#define product_init_status		g_InteralMemory.KeepWord[450]
+#define product_year			g_InteralMemory.KeepWord[451]
+#define product_month			g_InteralMemory.KeepWord[452]
+#define product_date			g_InteralMemory.KeepWord[453]
+#define product_hour			g_InteralMemory.KeepWord[454]
+#define product_minute			g_InteralMemory.KeepWord[455]
+#define product_second			g_InteralMemory.KeepWord[456]
 
+/***************************/
 
 struct rtc_time 
 {

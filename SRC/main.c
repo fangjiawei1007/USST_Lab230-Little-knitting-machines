@@ -354,6 +354,8 @@ void Main(void)
 				songsha_fre_change();
 				encoder1_data_process();
 				shachang_xianshi();
+				
+			/**********要求：停机之后把风扇和油泵关掉；大盘开始后又再打开***********/			
 				if (bianpingqi_previous_run_status==0 && jidianqi_shut==0)
 				{
 					jidianqi_shut=1;
@@ -366,6 +368,7 @@ void Main(void)
 					youben_permite_button=1;			
 					fengshan_permite_button=1;			//2016.11.2
 				}
+			/************************************************************************/
 				jidianqi_fun();
 				encoder1_data_reset();
 				parameter_save();

@@ -26,7 +26,7 @@
 #define	ext_jog_port					15
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define	shangduansha_status				g_InteralMemory.Bit[37]
+#define	shangduansha_status				g_InteralMemory.Bit[37]			
 #define	anquanmen_status				g_InteralMemory.Bit[38]
 #define	queyou_status					g_InteralMemory.Bit[39]
 #define	tanzhen_status					g_InteralMemory.Bit[41]
@@ -38,15 +38,15 @@
 #define	ext_jog_status					g_InteralMemory.Bit[46]
 
 
-#define	shangduansha_alarm_level		g_InteralMemory.KeepWord[95]
-#define	anquanmen_alarm_level			g_InteralMemory.KeepWord[96]
-#define	queyou_alarm_level				g_InteralMemory.KeepWord[97]
-#define	tanzhen_alarm_level				g_InteralMemory.KeepWord[98]
-#define	tanbu_alarm_level				g_InteralMemory.KeepWord[100]
+#define	shangduansha_alarm_level		g_InteralMemory.KeepWord[95]	//断纱报警级别设置
+#define	anquanmen_alarm_level			g_InteralMemory.KeepWord[96]	//缺油报警级别设置
+#define	queyou_alarm_level				g_InteralMemory.KeepWord[97]	//安全门报警级别设置
+#define	tanzhen_alarm_level				g_InteralMemory.KeepWord[98]	//探针报警级别设置
+#define	tanbu_alarm_level				g_InteralMemory.KeepWord[100]	//探布报警级别设置
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define jishu_max_flag					g_InteralMemory.Bit[15]
 
-#define	shangduansha_alarm_sig_kb		g_InteralMemory.KeepBit[28]
+#define	shangduansha_alarm_sig_kb		g_InteralMemory.KeepBit[28]		
 #define	anquanmen_alarm_sig_kb			g_InteralMemory.KeepBit[29]
 #define	queyou_alarm_sig_kb				g_InteralMemory.KeepBit[30]
 #define	tanzhen_alarm_sig_kb			g_InteralMemory.KeepBit[31]

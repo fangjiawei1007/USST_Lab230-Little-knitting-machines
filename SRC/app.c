@@ -68,6 +68,8 @@ void App_Init(void)
 		tiaoxian_init();// by FJW
 	//wdt_init_reset();
 	wdt_feed_dog();main_enter_flag = 1;
+	
+	//X1~X7µÄÂö³åÊıÇåÁã
 	for(i=0; i<7; i++)
 	{
 		InPulseCount[i] = 0;

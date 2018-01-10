@@ -5,10 +5,10 @@
 #define	tiaoxianzu_flag					(g_InteralMemory.KeepBit[26])
 
 #define chudao_jiange					(g_InteralMemory.KeepWord[151]) //出刀间隔
-#define shoudao_jiange					(g_InteralMemory.KeepWord[152]) //出刀间隔
+#define shoudao_jiange					(g_InteralMemory.KeepWord[152]) //收刀间隔
 
-#define	tiaoxianzu_jiange				g_InteralMemory.KeepWord[99]
-#define	tiaoxianzu_max					g_InteralMemory.KeepWord[61]
+#define	tiaoxianzu_jiange				g_InteralMemory.KeepWord[99]	//调线间隔圈数
+#define	tiaoxianzu_max					g_InteralMemory.KeepWord[61]	//调线组数
 #define	tiaoxianzu						g_InteralMemory.KeepWord[93]
 #define	tiaoxianzu_quanshu				g_InteralMemory.KeepWord[62]
 

@@ -10,8 +10,22 @@ U8 bianpingqi_run_flag;
 U8 bianpingqi_previous_run_status=0;
 unsigned int bianpingqi_speed;
 U8 bpqComCount=0;
-unsigned int speed_status = 0;
+unsigned int speed_status = 0;		//speed_status == 1 表示已经降速下来，之后需要延续一圈即可
 
+/*************************************************
+Function(函数名称): bianpingqi_RTU_WriteWord(U8 function_num,int Value)
+Description(函数功能、性能等的描述): 通讯写入
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 {
 	U8 auchMsg[8],SendArray[8],RecArray[8];  
@@ -48,7 +62,7 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 	{
 		  SendArray[i]=auchMsg[i];
 	}
-	rGPHDAT |= 0x1000;	//GPH12	+Write
+	rGPHDAT |= 0x1000;	//GPH12	+Write，使用MAX485芯片需要改变位
 	Delay(DELAY_TIME_RTU);
 	for(Count=0;Count<8;Count++)         
 	{
@@ -65,12 +79,20 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 			}
 		}
 	}
+	
+	
 	rGPHDAT &= 0xefff;	//GPH12	-Read
 	Count = 0;
+	/**20次读取uart的值，读到值直接退出循环**/
 	while((RecArray[0]=qz_Uart_Getch())!=bianpingqi_station_num && Count<=20) 
 	{
 		Count++;
 	}
+	
+	/***栈号正确之后，check判断读到的帧是否有4个是正确的，
+		如果是正确的那么直接将bianpingqi_previous_speed=bianpingqi_speed;即外部不继续通讯
+		eg：if(bianpingqi_previous_speed!=speed)
+	***/
 	if(RecArray[0]==bianpingqi_station_num)
 	{
 		for (Count=1;Count<8;Count++)
@@ -78,7 +100,7 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
  			RecArray[Count]=qz_Uart_Getch();
 			if (RecArray[Count]==SendArray[Count])
 			{
-				check++;
+				check++;	
 			}
 		}
 		if (check>=4){
@@ -95,6 +117,11 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 		else
 			bpqComCount++;
 	}
+	
+	/***栈号一直不正确，bpqComCount会判断5次，即该通讯协议会进来5次，
+		直接将bianpingqi_previous_speed=bianpingqi_speed;以保证外部不继续通讯
+		eg：if(bianpingqi_previous_speed!=speed)
+	***/
 	else
 		bpqComCount++;
 	if (bpqComCount>=4){
@@ -103,8 +130,24 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 	}
 }
 
+
+/*************************************************
+Function(函数名称): bianpingqi_start_sub(void)
+Description(函数功能、性能等的描述): GPIO控制变频器开始，并设置status标志状态。
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): bianpingqi_start();bianpingqi_jog();
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void bianpingqi_start_sub(void)
 {
+	/***如果外部TS选择控制变频器，则调用时将Y3置1(变频器STR端口);Y1置0(变频器STF端口)***/
 	if (Choose_bianpingqi_kb == CHOOSE_BIANPINGQI){
 	rGPBDAT &= ~(1<<1);
 	rGPBDAT |= 1<<3;
@@ -112,17 +155,49 @@ void bianpingqi_start_sub(void)
 	bianpingqi_previous_run_status=1;
 }
 
+/*************************************************
+Function(函数名称): bianpingqi_stop_sub(void)
+Description(函数功能、性能等的描述): GPIO控制变频器开始，
+								 并设置status标志状态以及bianpingqi_previous_speed。
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): bianpingqi_start();bianpingqi_jog();__irq	encoder1_process();
+							   bianpingqi_init();main();__irq DataSave_IntHandle(void);
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 该函数被多次调用，其需要注意的是在main函数起初被调用了；
+	    掉电保存处__irq DataSave_IntHandle(void)调用了。
+
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void bianpingqi_stop_sub(void)
 {
+	/***如果外部TS选择控制变频器，则调用时将Y3置零(变频器STR端口);Y1置1(变频器STF端口)***/
 	if (Choose_bianpingqi_kb == CHOOSE_BIANPINGQI){
-		rGPBDAT &= ~(1<<3);
+		rGPBDAT &= ~(1<<3);		
 		rGPBDAT |= 1<<1;
 	}
 	bianpingqi_previous_speed=0;
 	bianpingqi_previous_run_status=0;
 }
 
+/*************************************************
+Function(函数名称): bianpingqi_set_speed(unsigned int speed)
+Description(函数功能、性能等的描述): 485写入变频器的速度值
+Calls (被本函数调用的函数清单): bianpingqi_RTU_WriteWord()
+Called By (调用本函数的函数清单): encoder1_data_process();
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void bianpingqi_set_speed(unsigned int speed)
 {
 	if (bianpingqi_previous_speed!=speed&&bianpingqi_jog_status!=1&&Choose_bianpingqi_kb==CHOOSE_BIANPINGQI)
@@ -191,12 +266,29 @@ void bianpingqi_jog(void)
 	}
 }
 
+/*************************************************
+Function(函数名称): bianpingqi_speed_cal(void)
+Description(函数功能、性能等的描述): 1.大盘减速，因为变频器是控制大盘的
+								2.变频器加减速；
+								3.分层段/额外段有分层段：大盘先要减速->匀速一圈->加速到fencen_speed
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): songsha_fre_change();
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void bianpingqi_speed_cal(void){
 	static unsigned int y1y3delay_flag = 0;
-	unsigned int quanshu[7]={0};
+	unsigned int quanshu[7]={0};	
 	unsigned int next_stage = 0;
 	unsigned int previous_stage = 0;
 	
+	/***********变频器加减速************/
 	if (bianpingqi_speed_up_b == 1){
 		if (bianpingqi_fullspeed_set < 7000)
 			bianpingqi_fullspeed_set +=100;
@@ -206,6 +298,7 @@ void bianpingqi_speed_cal(void){
 			bianpingqi_tiaoxian_speed_set += 100;
 		bianpingqi_speed_up_b = 0;
 	}
+	
 	if (bianpingqi_speed_down_b == 1){
 		if (bianpingqi_fullspeed_set > 0)
 			bianpingqi_fullspeed_set -=100;
@@ -214,7 +307,10 @@ void bianpingqi_speed_cal(void){
 		if (bianpingqi_tiaoxian_speed_set > 0)
 			bianpingqi_tiaoxian_speed_set -= 100;
 		bianpingqi_speed_down_b = 0;
-	}	
+	}		
+	/*************************************************************/
+
+	//调线
 	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan
 		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
 			(at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
@@ -223,6 +319,11 @@ void bianpingqi_speed_cal(void){
 			return;
 		}
 	}
+	
+	/**quanshu[x+1]，后面的功能代码的next_stage其实是表示的current_stage，因为其没有+1，
+	   eg：quanshu[guoduduan] 其实为大头段的圈数，而quanshu[guoduduan+1]表示过渡段圈数 
+	**/
+	
 	quanshu[0] = 0;
 	quanshu[datouduan+1] = daduanquanshu;
 	quanshu[guoduduan+1] = quanshu[datouduan+1]+middlequanshu;
@@ -232,7 +333,9 @@ void bianpingqi_speed_cal(void){
 	quanshu[ewaiduan+1] = extra_part_quanshu;
 	next_stage = getStage(current_stage,NEXTSTAGE);
 	previous_stage = getStage(current_stage,PREVIOUSSTAGE);
+
 	
+	//不使用降速则直接减速
 	if (bianpingqi_huanchongquan_num == 0 || bianpingqi_delta_num >= 100){
 		if (current_stage == fencenduan || ewaiduan_fencen_status == 1){
 			bianpingqi_speed=bianpingqi_fencen_speed_set;
@@ -246,10 +349,19 @@ void bianpingqi_speed_cal(void){
 			y1y3delay_flag = 0;
 		}
 	}
+	
+	/**分层段/额外段匀速需要进入该段，进入条件： 0.speed_status == 1; 只有在下一段是分层段/额外段减速之后才会进入此段elseif
+										    1.当前不是额外段(是小头段)，在分层段的第一圈会保持该段速度一圈
+										    2.当前段为额外段，额外段最后一圈是降速之后需要一直匀速
+										    3.当前段为额外段，额外段第一圈匀速(dapan_round <1)(注意：额外段圈数重新计数);
+														    大盘圈数==额外分层圈数;
+														    大盘圈数等于(额外段总圈数-额外段分层圈)
+	**/
 	else if ( speed_status == 1 && 
 			((current_stage != ewaiduan && dapan_round <(quanshu[current_stage]+1)) || 
 			( current_stage == ewaiduan && dapan_round == quanshu[ewaiduan+1] ) ||//最后一个是因为在额外段最后减速时，dapan_round的值为最大 
-			( current_stage == ewaiduan && (dapan_round <1 || dapan_round == extra_fencen_quan_num_kw || dapan_round == (extra_part_quanshu - extra_fencen_quan_num_kw))))){
+			( current_stage == ewaiduan && (dapan_round <1 || dapan_round == extra_fencen_quan_num_kw || 
+			  dapan_round == (extra_part_quanshu - extra_fencen_quan_num_kw))))){
 				
 		bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 		if (Choose_bianpingqi_kb == CHOOSE_NOT && dianci_button == 0){
@@ -275,9 +387,16 @@ void bianpingqi_speed_cal(void){
 			}
 		}
 	}
+	
+	/**分层段/额外段之前需要进入该段，进入条件：1.当前阶段是小头段并且下一个阶段是分层段，在小头段结束前(小头总圈数-缓冲圈数)进行降速
+										    2.当前阶段是分层段，在分层段结束前(分层圈数-缓冲圈数)进行降速
+										    3.当前阶段是裁剪段并且下一个阶段是额外段，在裁剪段结束前(裁剪段总圈数-缓冲圈数)进行降速
+										    4.将speed_status置1，使得分层段的速度能够匀速走一段
+	**/
 	else if ((next_stage == fencenduan && dapan_round >= (quanshu[next_stage] - bianpingqi_huanchongquan_num))|| 
 			 (current_stage == fencenduan && dapan_round >= (quanshu[current_stage+1] - bianpingqi_huanchongquan_num)) || 
-			 (next_stage == ewaiduan && extra_fencen_quan_num_kw != 0 && dapan_round >= (quanshu[next_stage] - bianpingqi_huanchongquan_num))){
+			 (next_stage == ewaiduan && extra_fencen_quan_num_kw != 0 && 
+			 dapan_round >= (quanshu[next_stage] - bianpingqi_huanchongquan_num))){
 		
 		bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 		if (Choose_bianpingqi_kb == CHOOSE_NOT && dapan_round==(quanshu[current_stage+1] - 1) && 
@@ -288,8 +407,16 @@ void bianpingqi_speed_cal(void){
 		}
 		speed_status = 1;
 	}
+	
+	/**额外段需要进入该段，进入条件：1.当前阶段额外段，并且额外段的分层段的圈数不为0
+								 2.当前阶段是分层段，在分层段结束前(分层圈数-缓冲圈数)进行降速
+								 3.当前阶段是裁剪段并且下一个阶段是额外段，在裁剪段结束前(裁剪段总圈数-缓冲圈数)进行降速
+								 4.将speed_status置1，使得分层段的速度能够匀速走一段
+	**/
 	else if (current_stage == ewaiduan && extra_fencen_quan_num_kw != 0 && 
-			(dapan_round == (extra_fencen_quan_num_kw -1) || dapan_round == (extra_part_quanshu - extra_fencen_quan_num_kw -1) || dapan_round == (extra_part_quanshu -1))){
+			(dapan_round == (extra_fencen_quan_num_kw -1) || 
+			 dapan_round == (extra_part_quanshu - extra_fencen_quan_num_kw -1) || 
+			 dapan_round == (extra_part_quanshu -1))){
 		
 		bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 		if (Choose_bianpingqi_kb == CHOOSE_NOT && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw) || jiajiansujiangemaichong_kw == 0){
@@ -299,6 +426,8 @@ void bianpingqi_speed_cal(void){
 		}
 		speed_status = 1;
 	}
+	
+	//正常的大盘速度改变的阶段，bianpingqi_fencen_speed_set/bianpingqi_fullspeed_set(全速或者分层速度)
 	else{
 		if (current_stage == fencenduan || ewaiduan_fencen_status == 1){
 			bianpingqi_speed=bianpingqi_fencen_speed_set;

@@ -45,33 +45,33 @@
 #define	bianpingqi_speed_to_fre_word		19
 
 #define bianpingqi_fullspeed_set_kword		1
-#define bianpingqi_fullspeed_set			g_InteralMemory.KeepWord[1]
+#define bianpingqi_fullspeed_set			g_InteralMemory.KeepWord[1]			//大盘全速运行速度
 
 #define	bianpingqi_fencen_speed_set_kword	60
-#define	bianpingqi_fencen_speed_set			g_InteralMemory.KeepWord[60]
+#define	bianpingqi_fencen_speed_set			g_InteralMemory.KeepWord[60]		//大盘分层运行速度
 
-#define	bianpingqi_tiaoxian_speed_set		g_InteralMemory.KeepWord[155]
+#define	bianpingqi_tiaoxian_speed_set		g_InteralMemory.KeepWord[155]		//调线开始大盘速度
 
 #define	bianpingqi_delta_num_kword			14
-#define	bianpingqi_delta_num				g_InteralMemory.KeepWord[14]
+#define	bianpingqi_delta_num				g_InteralMemory.KeepWord[14]		//大盘减速百分比
 
 #define	bianpingqi_huanchongquan_num_kword	15
-#define	bianpingqi_huanchongquan_num		g_InteralMemory.KeepWord[15]
+#define	bianpingqi_huanchongquan_num		g_InteralMemory.KeepWord[15]		//缓冲圈数
 
 #define	bianpingqi_jog_speed_lv_kword		3
 /*************************************************************************************************************/
-#define	bianpingqi_jog_button				g_InteralMemory.Bit[3]
-#define bianpingqi_stop_button				g_InteralMemory.Bit[7]
-#define	bianpingqi_start_button				g_InteralMemory.Bit[2]
+#define	bianpingqi_jog_button				g_InteralMemory.Bit[3]				//点动按钮
+#define bianpingqi_stop_button				g_InteralMemory.Bit[7]				//停止按钮
+#define	bianpingqi_start_button				g_InteralMemory.Bit[2]				//运行按钮
 
-#define	bianpingqi_speed_up_b				g_InteralMemory.Bit[13]
-#define bianpingqi_speed_down_b				g_InteralMemory.Bit[4]
+#define	bianpingqi_speed_up_b				g_InteralMemory.Bit[13]				//变频器加速按钮
+#define bianpingqi_speed_down_b				g_InteralMemory.Bit[4]				//变频器减速按钮
 
 #define	bianpingqi_speed_to_fre				g_InteralMemory.Word[19]
 
 #define	bianpingqi_jog_speed_lv				g_InteralMemory.KeepWord[3]
 
-#define	bianpingqi_zhonglei					g_InteralMemory.KeepWord[63]
+#define	bianpingqi_zhonglei					g_InteralMemory.KeepWord[63]		//变频器类型选择
 /*************************************************************************************************************/
 
 #define	Choose_bianpingqi_kb				g_InteralMemory.KeepBit[33]

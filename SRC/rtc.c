@@ -197,8 +197,6 @@ void RTC_SetTime(void)
 
 	dt.tm_year = year = g_InteralMemory.Word[320];
 	dt.tm_mon = month = g_InteralMemory.Word[321];
-	//rBCDDATE = g_InteralMemory.Word[326];
-	//dt.tm_wday = g_InteralMemory.Word[326];
 	dt.tm_mday = date = g_InteralMemory.Word[322];	
 	dt.tm_hour = hour = g_InteralMemory.Word[323];
 	dt.tm_min = min = g_InteralMemory.Word[324];
@@ -212,26 +210,32 @@ void RTC_SetTime(void)
 		if(!(g_InteralMemory.Word[320]==0 && g_InteralMemory.Word[321]==0 
 			&& g_InteralMemory.Word[322]==0 && g_InteralMemory.Word[323]==0))
 		{			
-		/*	if(pcf8563_set_datetime(&dt))
 			{
-				if(UART_PrintStr && 0x23==rUBRDIV1) // 115200
-					Uart_Printf("Set RTC failed!\n\r");
-			}
-			else
-			*/{
-				rRTCCON  = rRTCCON  | 0x1;		//RTC Control enable
+					rRTCCON  = rRTCCON  | 0x1;		//RTC Control enable
 
 			    	rBCDYEAR =( ((year/10%10)<<4) + (year%10) );
 			    	rBCDMON  =( ((month/10%10)<<4)+ (month%10));
-				//rBCDDAY  = rBCDDAY  & ~(0x7)  | 0x3;		//SUN:1 MON:2 TUE:3 WED:4 THU:5 FRI:6 SAT:7
 			    	rBCDDAY  = g_InteralMemory.Word[63]  & 0x7;		//SUN:1 MON:2 TUE:3 WED:4 THU:5 FRI:6 SAT:7
 			    	rBCDDATE =( ((date/10%10)<<4) + (date%10) );		
 			    	rBCDHOUR =( ((hour/10%10)<<4) + (hour%10) );
 			    	rBCDMIN  =( ((min/10%10)<<4)  + (min%10)  );
 			    	rBCDSEC  =( ((sec/10%10)<<4)  + (sec%10)  );     	
 
-				rRTCCON  = rRTCCON  & ~(0x1);	//RTC Control disable
+					rRTCCON  = rRTCCON  & ~(0x1);	//RTC Control disable
 
+				/******修改出厂时间设置 by FJW 2018.1.10******/
+				if(product_init_status!=1)
+				{
+					product_year = year;	
+					product_month = month;	
+					product_date = date;	
+					product_hour = hour;	
+					product_minute = min;
+					product_second = sec;
+					
+					product_init_status = 1;
+				}
+				/***********************************************/
 				g_InteralMemory.Word[PING_CTRL]=65;//回主选单
 			}
 		}		

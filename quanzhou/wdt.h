@@ -11,7 +11,7 @@
 #define 	rWTDAT		(*(volatile unsigned int *)WTDAT)
 #define 	rWTCNT		(*(volatile unsigned int *)WTCNT) */
 
-#define	reset_time_kw					g_InteralMemory.KeepWord[148]
+#define	reset_time_kw					g_InteralMemory.KeepWord[148]		//复位时间间隔
 
 
 void wdt_init_reset(void);

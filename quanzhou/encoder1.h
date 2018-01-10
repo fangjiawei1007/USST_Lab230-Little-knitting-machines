@@ -24,14 +24,14 @@
 #define	current_stage_word					11
 
 #define	encoder1_pulse_number_save_kword	2
-#define	encoder1_pulse_number_save			g_InteralMemory.KeepWord[2]
+#define	encoder1_pulse_number_save			g_InteralMemory.KeepWord[2]			//已发出脉冲数
 
 #define	dapan_round_save_kword				7
-#define	dapan_round_save					g_InteralMemory.KeepWord[7]
+#define	dapan_round_save					g_InteralMemory.KeepWord[7]			
 
-#define	total_quanshu						g_InteralMemory.KeepWord[13]
+#define	total_quanshu						g_InteralMemory.KeepWord[13]		//编织总圈数低位
 
-#define	jianshu								g_InteralMemory.KeepWord[44]
+#define	jianshu								g_InteralMemory.KeepWord[44]		//已织件数
 
 #define	xiamian							0
 #define	shangmian						1
@@ -42,51 +42,51 @@
 
 /*************************************************************************************************************/
 
-#define	encoder1_dangqianjian_reset			g_InteralMemory.Bit[14]
+#define	encoder1_dangqianjian_reset			g_InteralMemory.Bit[14]			//当前件圈数清零
 
-#define	current_stage						g_InteralMemory.Word[11]	
+#define	current_stage						g_InteralMemory.Word[11]		
 
-#define	encoder1_jianshu_reset				g_InteralMemory.Bit[6]
+#define	encoder1_jianshu_reset				g_InteralMemory.Bit[6]			//件数清零
 
-#define	encoder1_zonggongquanshu_reset		g_InteralMemory.Bit[8]
+#define	encoder1_zonggongquanshu_reset		g_InteralMemory.Bit[8]			//全清零(不包括当班产量)
 
 /*************************************************************************************************************/
 
-#define	daduanquanshu						g_InteralMemory.KeepWord[4]
+#define	daduanquanshu						g_InteralMemory.KeepWord[4]		//大头圈数
 
-#define	middlequanshu						g_InteralMemory.KeepWord[5]
+#define	middlequanshu						g_InteralMemory.KeepWord[5]		//过渡圈数
 
-#define	xiaoduanquanshu						g_InteralMemory.KeepWord[6]
+#define	xiaoduanquanshu						g_InteralMemory.KeepWord[6]		//小头圈数
+                                                                                
+#define	caijiaoquanshu						g_InteralMemory.KeepWord[16]	//分层圈数
+                                                                           
+#define	langfeiquanshu						g_InteralMemory.KeepWord[26]	//裁剪圈数
 
-#define	caijiaoquanshu						g_InteralMemory.KeepWord[16]
+#define	encoder1_cal_factor					g_InteralMemory.KeepWord[76]	//编码器数据设置
 
-#define	langfeiquanshu						g_InteralMemory.KeepWord[26]
+#define	songshaliang_data_reset				g_InteralMemory.Bit[10]			//当班产量清零
 
-#define	encoder1_cal_factor					g_InteralMemory.KeepWord[76]
+#define	max_speed							g_InteralMemory.KeepWord[90]	//大盘最大运行速度
 
-#define	songshaliang_data_reset				g_InteralMemory.Bit[10]
+#define	extra_part_jiansu					g_InteralMemory.KeepWord[94]	//挡片间歇件数(做几件之后做额外段)
+#define	extra_part_quanshu					g_InteralMemory.KeepWord[101]	//挡片圈数(额外段圈数)
+#define	extra_fencen_quan_num_kw			g_InteralMemory.KeepWord[102]	//挡片分层工艺圈数(额外段分层圈数)
 
-#define	max_speed							g_InteralMemory.KeepWord[90]
+#define	extra_part_flag						g_InteralMemory.KeepBit[15]			//
+#define	extra_part_finish_flag				g_InteralMemory.KeepBit[16]			//
 
-#define	extra_part_jiansu					g_InteralMemory.KeepWord[94]
-#define	extra_part_quanshu					g_InteralMemory.KeepWord[101]
-#define	extra_fencen_quan_num_kw			g_InteralMemory.KeepWord[102]
+#define	huanchongmaichong					g_InteralMemory.KeepWord[146]	//缓冲脉冲数
+#define	speedUpMax							g_InteralMemory.KeepWord[147]	//加速次数
+#define	speedDownMax						g_InteralMemory.KeepWord[138]	//减速次数
 
-#define	extra_part_flag						g_InteralMemory.KeepBit[15]
-#define	extra_part_finish_flag				g_InteralMemory.KeepBit[16]
-
-#define	huanchongmaichong					g_InteralMemory.KeepWord[146]
-#define	speedUpMax							g_InteralMemory.KeepWord[147]
-#define	speedDownMax						g_InteralMemory.KeepWord[138]
-
-#define	xitong_total_num_upper_kw			g_InteralMemory.KeepWord[128]
+#define	xitong_total_num_upper_kw			g_InteralMemory.KeepWord[128]	//已编织总圈数
 #define	total_qingling_b					g_InteralMemory.Bit[66]
 
 
 
 #define	save_button_b						g_InteralMemory.Bit[68]
 
-#define	jiajiansujiangemaichong_kw			g_InteralMemory.KeepWord[154]
+#define	jiajiansujiangemaichong_kw			g_InteralMemory.KeepWord[154]	//加减速间隔脉冲
 
 #define	extra_part_start	1
 #define	extra_part_stop		0
@@ -97,7 +97,7 @@
 #define	PREVIOUSSTAGE		-1
 #define	CURRENT 			0
 
-#define	datouduan			0
+#define	datouduan			0	//
 #define	guoduduan			1
 #define	xiaotouduan			2
 #define	fencenduan			3

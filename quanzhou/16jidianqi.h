@@ -56,7 +56,6 @@
 #define	youbeng_status_bit				31
 #define	penyou24v_status_bit			32
 
-//#define	qigang_status_bit				33
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define	fenshan_button					g_InteralMemory.KeepBit[fenshan_button_kbit]

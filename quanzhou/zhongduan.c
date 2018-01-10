@@ -9,6 +9,21 @@ unsigned char emer_stop_flag=0;
 unsigned char privilege_run_flag=0;
 
 unsigned char alarm_signal[max_port+1]={0};
+
+/*************************************************
+Function(函数名称): zhongduan_fun(void)
+Description(函数功能、性能等的描述): 
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void zhongduan_fun(void)
 {
 	U8 i,err_flag=0;
@@ -19,15 +34,22 @@ void zhongduan_fun(void)
 	alarm_signal[queyou_port]=queyou_alarm_sig_kb;
 	alarm_signal[tanzhen_port]=tanzhen_alarm_sig_kb;
 	alarm_signal[tanbu_port]=tanbu_alarm_sig_kb;
+	
 	if (hongdeng_status==0)
 		shangduansha_status=Get_X_Value(shangduansha_port) ^ alarm_signal[shangduansha_port];
 	else
 		shangduansha_status=alarm;
+	
 	anquanmen_status=		(Get_X_Value(anquanmen_port)^alarm_signal[anquanmen_port]) &
 							(Get_X_Value(anquanmen2_port)^alarm_signal[anquanmen_port]);
+	
 	queyou_status=			Get_X_Value(queyou_port) ^ alarm_signal[queyou_port];						
+	
 	tanzhen_status=			Get_X_Value(tanzhen_port) ^ alarm_signal[tanzhen_port];
+	
 	tanbu_status=			Get_X_Value(tanbu_port) ^ alarm_signal[tanbu_port];
+	
+	
 	for(i=6;i<=12;i++)
 	{
 		if (i==shangduansha_port && hongdeng_status==1)
@@ -64,18 +86,14 @@ void zhongduan_fun(void)
 						{
 							emer_stop_flag=0;
 							run_permite_flag=0;
-							/* qz_error_status=1;
-							continue; */
+							
 						}
 						qz_error_status=1;
 					}
 					else
 					{
 						err_flag=0;
-						/* emer_stop_flag=0;
-						run_permite_flag=1;
-						qz_error_status=0;
-						continue; */
+						
 					}
 					break;
 				case shangduansha_port:
@@ -102,18 +120,14 @@ void zhongduan_fun(void)
 							{
 								emer_stop_flag=0;
 								run_permite_flag=0;
-								/* qz_error_status=1;
-								continue; */
+								
 							}
 							qz_error_status=1;
 						}
 						else
 						{
 							err_flag=0;
-							/* emer_stop_flag=0;
-							run_permite_flag=1;
-							qz_error_status=0;
-							continue; */
+							
 						}
 						break;
 					}
@@ -138,18 +152,14 @@ void zhongduan_fun(void)
 						{
 							emer_stop_flag=0;
 							run_permite_flag=0;
-							/* qz_error_status=1;
-							continue; */
+							
 						}
 						qz_error_status=1;
 					}
 					else
 					{
 						err_flag=0;
-						/* emer_stop_flag=0;
-						run_permite_flag=1;
-						qz_error_status=0;
-						continue; */
+						
 					}
 					break;
 				case tanzhen_port:
@@ -172,18 +182,13 @@ void zhongduan_fun(void)
 						{
 							emer_stop_flag=0;
 							run_permite_flag=0;
-							/* qz_error_status=1;
-							continue; */
+							
 						}
 						qz_error_status=1;
 					}
 					else
 					{
 						err_flag=0;
-						/* emer_stop_flag=0;
-						run_permite_flag=1;
-						qz_error_status=0;
-						continue; */
 					}
 					break;
 				case tanbu_port:
@@ -206,18 +211,14 @@ void zhongduan_fun(void)
 						{
 							emer_stop_flag=0;
 							run_permite_flag=0;
-							/* qz_error_status=1;
-							continue; */
+							
 						}
 						qz_error_status=1;
 					}
 					else
 					{
 						err_flag=0;
-					/*   emer_stop_flag=0;
-						run_permite_flag=1;
-						qz_error_status=0;
-						continue;*/
+					
  					}
 					break;
 			}
@@ -269,18 +270,6 @@ void zhongduan_fun(void)
 		run_permite_flag=0;
 	}
 	
-	/* if (current_stage == 0 && Get_X_Value(11) == uncover && err_flag!=1)
-	{
-		err_flag=1;
-		previous_error_status_w=9;
-		if (privilege_run_flag==0)
-			alarm_disp(16);
-		qz_error_status=1;
-		emer_stop_flag=1;
-		run_permite_flag=0;
-	} */
-	
-	
 	if (i>max_port && err_flag==0)
 	{
 		emer_stop_flag=0;
@@ -318,6 +307,8 @@ void alarm_disp(U8 which_alarm)
 	delay_qz(0,10,1);	
 	//beep_alarm();
 }
+
+
 void beep_alarm(void)
 {
 	if (delay_fac.delay_permit[0]==1)

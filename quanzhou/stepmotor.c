@@ -8,11 +8,23 @@
 unsigned int rate_different[7][3]={0};
 unsigned char check_time=0;
 
+
+/*************************************************
+Function(函数名称): qz_assert(void)
+Description(函数功能、性能等的描述): 本来想做参数有效性判断；后面觉得没必要。(函数其实没卵用，但是屏上可以做一个小的校验)
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void qz_assert(void)
 {
-	/* if (daduanzhijin>max_daduanzhijin || xiaoduanzhijin<min_xiaoduanzhijin || length>max_length || length<min_length
-	   ||daduanzhijin<xiaoduanzhijin) */
-	//if ((xiaoduanquanshu<bianpingqi_huanchongquan_num) || (caijiaoquanshu<(bianpingqi_huanchongquan_num+1)))
 	if(0)
 	{
 		if (check_time==0)

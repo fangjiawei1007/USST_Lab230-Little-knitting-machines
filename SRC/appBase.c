@@ -588,17 +588,36 @@ void InPulse15_Stop(void)
 //////	高速脉冲输入初始化     //////////////
 //////	IN 1~6   6路高速输入	IN7     //////////////
 ////////////////////////////////////////////////
+
+/*************************************************
+Function(函数名称): Pulse_In_Init(void)
+Description(函数功能、性能等的描述): X口初始化
+Calls (被本函数调用的函数清单): InPulse1_Stop();
+Called By (调用本函数的函数清单): app.c
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): InPulse1_Stop();
+Output(对输出参数的说明):
+Return: None
+Others: None
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
+
 void Pulse_In_Init(void)	
 {
 	DWORD tmp;
 	
+	//配置X1为中断模式
 	tmp = rGPFCON & (~(0x3<< 2)); //& (~(0x3<< 12)) & (~(0x3<< 14));& (~(0x3<< 4)) & (~(0x3<< 6)) & (~(0x3<< 8)) & (~(0x3<< 10))
 	rGPFCON = tmp | (0x2<<2);//| (0x2<<12) | (0x2<<14);	| (0x2<<4)| (0x2<<6) | (0x2<<8)  | (0x2<<10)
+	
 	//GPF1~7 up down disable x1-x7
 	rGPFUDP &=  (~(0x3<< 2)) & (~(0x3<< 4)) & (~(0x3<< 6)) & (~(0x3<< 8)) & (~(0x3<< 10)) & (~(0x3<< 12)) & (~(0x3<< 14));
-	//	GPG 0 1 2---up down disable---  X9 X10 X11 X12 X13 X14 X15
+	//GPG 0 1 2---up down disable---  X9 X10 X11 X12 X13 X14 X15
     rGPGUDP &= (~(0x3<< 0)) & (~(0x3<< 2))& (~(0x3<< 4)) & (~(0x3<< 6))& (~(0x3<< 8))& (~(0x3<< 10))& (~(0x3<< 12))& (~(0x3<< 14));
 	
+	//配置X11为中断模式，压针零位传感器
 	tmp = rGPGCON &(~(0x3<<6));						//by FJW
 	rGPGCON = tmp | (0x2<<6);						//SET GPG3 AS EINT X11	//by FJW
 	
@@ -646,8 +665,8 @@ void Pulse_In_Init(void)
 	//pISR_EINT3= (U32)PulseIn_3_Process;				// X3
 	//pISR_EINT4_7= (U32)PulseIn_4_7_Process;			// X4_6
 	pISR_EINT1= (U32)encoder1_process;				// X1	
-	pISR_EINT2= (U32)encoder2_process;				// X1	
-	pISR_EINT3= (U32)encoder3_process;				// X1	
+	pISR_EINT2= (U32)encoder2_process;				// X2	
+	pISR_EINT3= (U32)encoder3_process;				// X3	
 	pISR_EINT4_7= (U32)pwrDownHandler;
 	//pISR_EINT8_23= (U32)pressing_zero_process;		//压针零位 By FJW
 	rGPFDAT=0Xff;
@@ -677,53 +696,7 @@ void Pulse_In_Init(void)
  void __irq PulseOut_1_Process(void)
 {
 	OutPulse_Counter[1]++;	
-	/* if (OutPulse_Counter[1]%2==0)
-	{
-		for(jj=0;jj<3;jj++)
-		{
-			motor_factor[jj] += k_motor[jj];
-			if (motor_factor[jj]>=1)
-			{
-				//rGPEDAT &= ~(0x1f);
-				rGPEDAT &= ~(1<<jj);
-				motor_factor[jj] -= 1;
-			}
-		}
-	}
-	else
-	{
-		rGPEDAT |= (0x07);
-		encoder1_speed_pulse++;
-		encoder1_pulse_number++;
-	} */
 	
-	/* rGPEDAT ^= 1<<5; //BY FJW 压针 Y9的GPIO直接操作
-	
-	if(jog_positive_status == 1 || jog_negative_status == 1)
-	{
-	
-		if (OutPulse_Counter[1]%2==0){
-			if(positive_button == 1)								//正向压针脉冲记录
-			jiaodu_monitor++;
-			if(negative_button == 1)
-			jiaodu_monitor--;
-		}
-		// else{
-		
-		//}
-		
-		if (OutPulse_Counter[1] >= multiply*2){
-			
-			PulseOut_1_Stop();
-		}
-	
-	}
-	
-
-	if (lingwei_jiance_cover == 1 && lingwei_jiance_uncover == 0 && Get_X_Value(11)==uncover)//init_zero_start==1 &&
-	{
-		huiling_length_tmp ++;
-	} */
 	
 	ClearPending((U32)BIT_TIMER1);
 	
@@ -967,7 +940,20 @@ void PulseOut_3_Stop(void)
 	
 }
 
+/*************************************************
+Function(函数名称): Pulse_Out_Init(void)
+Description(函数功能、性能等的描述): 配置输出口(TOUT(PWM)或者OutPut)
+Calls (被本函数调用的函数清单): PulseOut_1_Stop;
+Called By (调用本函数的函数清单): app.c
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 /////////////////////////////////////////////////
 //////	高速脉冲输出初始化     //////////////
 //////	OUT 1~3   3路高速输出 //////////////
@@ -975,7 +961,7 @@ void PulseOut_3_Stop(void)
 void Pulse_Out_Init()	
 {
 	DWORD tmp;
-	
+	/***以下为配置输出口的GPIO***/
     //set GPB1 2 3 as TOUT
 	// tmp = rGPBCON & (~(0x3<< 2)) & (~(0x3<< 4))& (~(0x3<< 6));
 	// rGPBCON = tmp | (0x2<<2) | (0x2<<4) | (0x2<<6);		
@@ -983,7 +969,8 @@ void Pulse_Out_Init()
 	//set GPB1 2 3 as 普通输出Output
 	tmp = rGPBCON & (~(0x3<< 2)) & (~(0x3<< 4))& (~(0x3<< 6));
 	rGPBCON = tmp | (0x1<<2) | (0x1<<4) | (0x1<<6);	
-	
+
+	/***以下为配置三个定时器***/
 	// Timer1 Initialize	----HS Out1
 	pISR_TIMER1 = (int)PulseOut_1_Process;	// Timer ISR for HS Out1	2016.1.2 quanzhou 
 	//pISR_TIMER1 = (int)bianpingqi_motor_pulse_handler;
@@ -993,13 +980,9 @@ void Pulse_Out_Init()
 	rTCFG1 |= (0x0 << 4); 	// Interrupt, Mux0=1/2
 	//rTCNTB1 = 30;    //30.27273	// Timer input clock Frequency = PCLK / {prescaler value+1} / {divider value}	100K
 	//rTCMPB1 = 15;
-	
-	 
-	
-	PulseOut_1_Stop();
-	
 
-	
+	PulseOut_1_Stop();
+
 	
 	// Timer2 Initialize	----HS Out2
 	//pISR_TIMER2 = (int)PulseOut_2_Process;	// Timer ISR for HS Out2
@@ -1008,15 +991,9 @@ void Pulse_Out_Init()
 	rTCFG1 &= ~(0xf << 8); 
 	rTCFG1 |= (0x0 << 8); 	// Interrupt, Mux0=1/2
 	
-	
- 	
 	PulseOut_2_Stop(); 
-	
-	
-	
-	
-	
 
+	
 	// Timer3 Initialize	----HS Out3
  	//pISR_TIMER3 = (int)PulseOut_3_Process;	// Timer ISR for HS Out3
 	rTCFG0 &= ~(0xff << 8); 

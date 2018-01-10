@@ -132,7 +132,7 @@ void __irq Timer2_Proc(void)
 void Timer0_Init(void)
 {
 
-	rSRCPND1 = rSRCPND1 | ((U32)0x1<<10);   //清空定时器0源请求     ///TJ 位值为1
+	rSRCPND1 = rSRCPND1 | ((U32)0x1<<10);    //清空定时器0源请求     ///TJ 位值为1
 	rINTPND1 = rINTPND1 | ((U32)0x1<<10);    //清空定时器0中断请求
 	
 	//pISR_TIMER0 = (int)Timer0_Proc;	// Timer ISR for DA

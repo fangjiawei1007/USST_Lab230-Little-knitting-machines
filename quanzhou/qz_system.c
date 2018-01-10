@@ -181,12 +181,26 @@ void fenshan_sys_fun(void){
 	fenshan_fun();
 }
 
+/*************************************************
+Function(函数名称): qz_guanliyuan(void)
+Description(函数功能、性能等的描述): 管理员密码进入管理员界面
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void qz_guanliyuan(void){
 	if (guanliyuan_jiemian_queding==1)
 	{
 		if (qz_mima_shuru==qz_guanliyuan_mima)
 		{
-			g_InteralMemory.Word[PING_CTRL]=6;
+			g_InteralMemory.Word[PING_CTRL]=6;	//跳转至6号画面：管理员大头
 			qz_mima_shuru=0;
 		}
 		else	
@@ -206,6 +220,20 @@ void qz_guanliyuan(void){
 		c_ban_mima_kw=12345;
 }
 
+/*************************************************
+Function(函数名称): shachang_xianshi(void)
+Description(函数功能、性能等的描述): 先不看
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void shachang_xianshi(void){
 	unsigned char i;
 	for (i=0;i<7;i++)
@@ -617,15 +645,7 @@ void __irq pwrDownHandler(void)
 	// Eint5	// 高速输入X5
 	else if ( !( rEINTMASK >>5  & 0x1 )  && (rEINTPEND & (1<<5)) )//取消屏蔽标志+挂起有效	
 	{
-		/* for (;pwrOffCount<=10;pwrOffCount++);
-		if(((rGPFDAT >> 5) & 0x1)==0){
-			bianpingqi_stop_sub();
-			bianpingqi_start_button=0;
-			bianpingqi_stop_button=0;
-			bianpingqi_jog_button=0;
-			bianpingqi_run_flag=0;
-			bianpingqi_jog_status=0;
-		} */
+		
 		rEINTPEND=(1<<5);		
 	}
 	// Eint6	// 高速输入X6

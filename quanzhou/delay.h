@@ -8,7 +8,7 @@
 #define	delay_4_count				delay_fac.delay_flag[4]
 #define	delay_5_count				delay_fac.delay_flag[5]
 
-#define	init_stop_time_kw			g_InteralMemory.KeepWord[149]
+#define	init_stop_time_kw			g_InteralMemory.KeepWord[149]			//改机开机停机时间0.1s
 
 typedef struct 
 {

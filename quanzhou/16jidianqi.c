@@ -36,6 +36,20 @@ char qz_Uart_Getch(void)
 	
 }
 
+/*************************************************
+Function(函数名称): jidianqi_write_single(U8 which_port,U8 button_bit)
+Description(函数功能、性能等的描述): 继电器板的通讯协议
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void jidianqi_write_single(U8 which_port,U8 button_bit)
 {
 	U8 auchMsg[8],SendArray[8],RecArray[8];  
@@ -47,7 +61,7 @@ void jidianqi_write_single(U8 which_port,U8 button_bit)
 	//rUBRDIV3 = ( (int)(SYS_PCLK/16./57600+0.5) -1 );
 	//Uart_Init(0,9600);
 	if (rULCON3!=0x03) 
-		rULCON3 =0x03; 								//0x2b=00 101 0 11  普通 偶校验（even） 1停止位 8数据位
+		rULCON3 =0x03; 								//0x03=00 000 0 011  普通 无校验 1停止位 8数据位
 	auchMsg[0]=jidianqi_station_num;
 	auchMsg[1]=jidianqi_write_single_fun_num;		//3492~3491  2016.1.3 quanzhou
 	auchMsg[2]=0x00;
@@ -90,10 +104,17 @@ void jidianqi_write_single(U8 which_port,U8 button_bit)
 	}
 	rGPHDAT &= 0xefff;	//GPH12	-Read
 	Count = 0;
+	/**20次读取uart的值，读到值直接退出循环**/
 	while ((RecArray[0]=qz_Uart_Getch())!=jidianqi_station_num && Count<=20)
 	{
 		Count++;
 	}
+	
+	/***栈号正确之后，jdqcheck判断读到的帧是否有4个是正确的，
+		如果是正确的那么直接将status置1，即外部不继续通讯
+		eg：if (hongdeng_button!=hongdeng_status)
+	***/
+	
 	if (RecArray[0]==jidianqi_station_num){
 		for (Count=1;Count<8;Count++)
 		{
@@ -103,8 +124,8 @@ void jidianqi_write_single(U8 which_port,U8 button_bit)
 			}
 		}
 		if (jdqCheck>=4){
-			if (g_InteralMemory.Bit[button_bit]==1)
-				g_InteralMemory.Bit[button_bit+9]=1;
+			if (g_InteralMemory.Bit[button_bit]==1)	//button == 1
+				g_InteralMemory.Bit[button_bit+9]=1;//status == 1
 			else
 				g_InteralMemory.Bit[button_bit+9]=0;
 			jdqComCount[which_port]=0;
@@ -112,6 +133,11 @@ void jidianqi_write_single(U8 which_port,U8 button_bit)
 		else
 			jdqComCount[which_port]++;
 	}
+	
+	/***栈号一直不正确，jdqComCount[which_port]会判断5次，即该通讯协议会进来5次，
+		直接将status置为所需要的位，以保证外部不继续通讯
+		eg：if (hongdeng_button!=hongdeng_status)
+	***/
 	else
 		jdqComCount[which_port]++;
 	if (jdqComCount[which_port]>=5){
@@ -211,31 +237,31 @@ void jidianqi_write_fenshan(U8 which_port)
 
 void hongdeng_fun(void)
 {
-	if (hongdeng_button!=hongdeng_status && jdqComCount[dianci]==0)
+	if (hongdeng_button!=hongdeng_status)// && jdqComCount[dianci]==0
 		jidianqi_write_single(hongdeng,hongdeng_button_bit);
 }
 
 void huangdeng_fun(void)
 {
-	if (huangdeng_button!=huangdeng_status && jdqComCount[dianci]==0)
+	if (huangdeng_button!=huangdeng_status)// && jdqComCount[dianci]==0
 		jidianqi_write_single(huangdeng,huangdeng_button_bit);
 }
 
 void lvdeng_fun(void)
 {
-	if(lvdeng_button!=lvdeng_status && jdqComCount[dianci]==0)
+	if(lvdeng_button!=lvdeng_status )//&& jdqComCount[dianci]==0
 		jidianqi_write_single(lvdeng,lvdeng_button_bit);
 }
 
 void zhaobudeng_fun(void)
 {
-	if(zhaobudeng_button!=zhaobudeng_status && jdqComCount[dianci]==0)
+	if(zhaobudeng_button!=zhaobudeng_status )//&& jdqComCount[dianci]==0
 		jidianqi_write_single(zhaobudeng,zhaobudeng_button_bit);
 }
 
 void zhaomingdeng_fun(void)
 {
-	if (zhaomingdeng_button!=zhaomingdeng_status && jdqComCount[dianci]==0)
+	if (zhaomingdeng_button!=zhaomingdeng_status )//&& jdqComCount[dianci]==0
 		jidianqi_write_single(zhaomingdeng,zhaomingdeng_button_bit);
 }
 
@@ -251,22 +277,37 @@ void dianci_fun(void)
 
 void youbeng_fun(void)
 {
-	if(youbeng_button!=youbeng_status && jdqComCount[dianci]==0)
+	if(youbeng_button!=youbeng_status)// && jdqComCount[dianci]==0
 		jidianqi_write_single(youbeng,youbeng_button_bit);
 }
 
 void penyou24v_fun(void)
 {
-	if(penyou24v_button!=penyou24v_status && jdqComCount[dianci]==0)
+	if(penyou24v_button!=penyou24v_status)// && jdqComCount[dianci]==0
 		jidianqi_write_single(penyou24v,penyou24v_button_bit);
 }
 
 void fenshan_fun(void)
 {
-	if(fenshan_button!=fenshan_status && jdqComCount[dianci]==0)
+	if(fenshan_button!=fenshan_status)// && jdqComCount[dianci]==0
 		jidianqi_write_fenshan(fenshan);
 }
 
+
+/*************************************************
+Function(函数名称): jidianqi_fun(void)
+Description(函数功能、性能等的描述): 通讯写入，使得继电器运作(除了电磁阀以外)
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void jidianqi_fun(void)
 {
 	hongdeng_fun();
