@@ -850,6 +850,7 @@ void KeyScan(void)
 	
 		default:
 			//rINTMSK|=BIT_EINT1;
+			/***泉州项目显示修改此处***/
 			if(xianshi_flag==1)
 			{
 				if ((X_result>200&&X_result<440) && (Y_result>150&&Y_result<330))

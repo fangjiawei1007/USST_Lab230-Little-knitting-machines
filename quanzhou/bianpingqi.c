@@ -6,8 +6,8 @@ unsigned int	bianpingqi_previous_speed=0;
 U8 bianpingqi_previous_jog_speed=0;
 U8 bianpingqi_jog_status=0;
 
-U8 bianpingqi_run_flag;
-U8 bianpingqi_previous_run_status=0;
+U8 bianpingqi_run_flag;							//变频器开始动作flag
+U8 bianpingqi_previous_run_status=0;			//变频器开始运作之后将此置1
 unsigned int bianpingqi_speed;
 U8 bpqComCount=0;
 unsigned int speed_status = 0;		//speed_status == 1 表示已经降速下来，之后需要延续一圈即可
@@ -226,12 +226,31 @@ void bianpingqi_start(U8 bianpingqi_run_button)
 	}
 }
 
+/*************************************************
+Function(函数名称): bianpingqi_jog(void)
+Description(函数功能、性能等的描述): 变频器点动
+Calls (被本函数调用的函数清单): bianpingqi_RTU_WriteWord();bianpingqi_start_sub();
+							 bianpingqi_stop_sub();
+Called By (调用本函数的函数清单): Main()
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void bianpingqi_jog(void)
 {
-	if ((bianpingqi_run_flag==0 && ext_stop_status!=press) || qz_error_status==1)//正常情况下，按了急停键就不应该再进入
+	/**正常情况下，按了急停键就不应该再进入(ext_stop_status!=press)**/
+	if ((bianpingqi_run_flag==0 && ext_stop_status!=press) || 
+		 qz_error_status==1)
 	{
+		/***外部按钮按下之后，开始运动，所以此处均使用g_InteralMemory.Bit[n]***/
 		if (bianpingqi_jog_button==1 || ext_jog_status==press)
 		{
+			/************变频器之前未运动，开始运动*************/
 			if (bianpingqi_previous_run_status!=1)
 			{
 				bianpingqi_jog_status=1;
@@ -243,6 +262,8 @@ void bianpingqi_jog(void)
  				bianpingqi_start_sub();
 				//bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,0x1001,(int)(1<<2));
 			}
+			
+			/**********??????????????????????????????????????************/
 			if(Pen_status==Pen_status_up && ext_jog_status!=press)
 			{
 				bianpingqi_jog_status=0;
@@ -251,6 +272,8 @@ void bianpingqi_jog(void)
 				bianpingqi_jog_button=0;
 			}
 		}
+		
+		/****外部按钮送掉，点动停止****/
 		if (ext_jog_status!=press && bianpingqi_jog_status==1 && bianpingqi_jog_button==0)
 		{
 			bianpingqi_jog_status=0;
@@ -259,6 +282,8 @@ void bianpingqi_jog(void)
 			
 		}
 	}
+	
+	/****外部按键停止之后，就变频器停止****/
 	else if (ext_stop_status==press && qz_error_status==0){
 		bianpingqi_jog_status=0;
 		bianpingqi_jog_button=0;

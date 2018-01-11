@@ -550,6 +550,7 @@
                     <Header RelativePath=".\quanzhou\tiaosha.h" />
                     <Header RelativePath=".\quanzhou\wdt.h" />
                     <Header RelativePath=".\quanzhou\zhongduan.h" />
+                    <Header RelativePath="C:\Users\Col: %ld, Ch: %ld" />
                 </File>
                 <File RelativePath=".\quanzhou\encoder1.h" FileType="4" />
                 <File RelativePath=".\quanzhou\encoder2.c" FileType="1" Output="encoder2.o">

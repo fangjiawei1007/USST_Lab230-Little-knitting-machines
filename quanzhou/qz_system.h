@@ -65,8 +65,8 @@
 #define songsha_4								g_InteralMemory.KeepWord[89]		//送纱电机4总送纱量
 
 
-#define	sys_permite_button						g_InteralMemory.Bit[11]		
-#define	sys_force_run_button					g_InteralMemory.Bit[12]
+#define	sys_permite_button						g_InteralMemory.Bit[11]				//管理员界面：电机
+#define	sys_force_run_button					g_InteralMemory.Bit[12]				//管理员界面：强迫运行
 #define	fengshan_permite_button					g_InteralMemory.Bit[33]
 #define	youben_permite_button					g_InteralMemory.Bit[36]	
 #define	youben_choose							g_InteralMemory.KeepBit[13]					

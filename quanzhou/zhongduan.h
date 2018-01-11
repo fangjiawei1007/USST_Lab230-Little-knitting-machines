@@ -33,10 +33,10 @@
 #define	xiaduansha_status				g_InteralMemory.Bit[42]
 #define	tanbu_status					g_InteralMemory.Bit[43]
 
-#define	ext_start_status				g_InteralMemory.Bit[44]
-#define	ext_stop_status					g_InteralMemory.Bit[45]
-#define	ext_jog_status					g_InteralMemory.Bit[46]
-
+#define	ext_start_status				g_InteralMemory.Bit[44]		//Get_X_Value(ext_start_port);(外部输入X13—外部开始信号)
+#define	ext_stop_status					g_InteralMemory.Bit[45]		//Get_X_Value(ext_stop_port);(外部输入X14—外部停止信号)
+#define	ext_jog_status					g_InteralMemory.Bit[46]		//Get_X_Value(ext_jog_port);(外部输入X15—外部点动信号)
+                                                                     
 
 #define	shangduansha_alarm_level		g_InteralMemory.KeepWord[95]	//断纱报警级别设置
 #define	anquanmen_alarm_level			g_InteralMemory.KeepWord[96]	//缺油报警级别设置

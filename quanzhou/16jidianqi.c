@@ -150,6 +150,20 @@ void jidianqi_write_single(U8 which_port,U8 button_bit)
 	jdqComCount[which_port]=0;
 }
 
+/*************************************************
+Function(函数名称): jidianqi_write_fenshan(U8 which_port)
+Description(函数功能、性能等的描述): 风扇的通讯协议(没什么用)，具体注释参考上一个函数
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void jidianqi_write_fenshan(U8 which_port)
 {
 	U8 auchMsg[8],SendArray[8],RecArray[8];  
@@ -235,6 +249,23 @@ void jidianqi_write_fenshan(U8 which_port)
 	jdqComCount[which_port]=0;
 }
 
+
+/*************************************************
+Function(函数名称): xxxx_fun(void)
+Description(函数功能、性能等的描述): 控制外部设备(除了电磁阀均通过通讯完成)，
+								判断进入的条件if (hongdeng_button!=hongdeng_status)均从通讯中会置位，
+								如果不成功会多次通讯
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:jdqComCount[dianci]并无实际意义，将其全部注释;by FJW 2018.1.10
+Commented:方佳伟
+*************************************************/
 void hongdeng_fun(void)
 {
 	if (hongdeng_button!=hongdeng_status)// && jdqComCount[dianci]==0
@@ -267,6 +298,7 @@ void zhaomingdeng_fun(void)
 
 void dianci_fun(void)
 {
+	//只打一次电磁阀，不能够一直开，不然可能会发热(其实一直Set也无所谓)
 	if(dianci_button!=dianci_status){
 		Set_Y_Value(11,dianci_button);
 		dianci_status=dianci_button;

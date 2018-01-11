@@ -10,7 +10,7 @@ U16	encoder1_pulse_number=0;
 
 const float k_factor[7][3]={{364,519,364},{249,309,249},{369,399,369},{264,291.6,264},{328.5,312.1,328.5},{1000,1000,1000},{1000,1000,1000}};
 unsigned char jiansu_permite=1;					//大盘超速了之后减速
-unsigned char signal;
+unsigned char signal;							//读取X2的状态值
 unsigned char speedUpFlag[7]={0};
 unsigned char speedDownFlag[7]={0};
 
@@ -783,6 +783,7 @@ void __irq	encoder1_process(void)
 			}
 				
 		}
+		
 		if ( ((rGPFDAT >> 7) & 0x1) == alarm_signal[shangduansha_port] &&//Get_X_Value(shangduansha_port)
 		    sys_force_run_button == 0 && 
 			shangduansha_alarm_level!=level_0){
@@ -804,6 +805,9 @@ void __irq	encoder1_process(void)
 				error_times=0;
 			}
 		}
+		
+	
+	/*******RTC部分，防止while(1)循环已经不进了，但是中断服务程序却还在使用,此时要将变频器停止*******/
 		if (main_enter_flag == 0){
 			reset_timer_start = 1;
 			reset_enter_times ++;
@@ -818,6 +822,8 @@ void __irq	encoder1_process(void)
 			reset_enter_times = 0;
 		}
 		main_enter_flag = 0;				//用以做主程序循环正常检测
+/**************************************************************************************************/		
+		
 		for (jj = 0; jj < 7; jj ++){
 			if (speedDownFlag[jj]==1){
 				if (huanchongmaichong!=0&&speedDownCnt[jj]<speedDownMax&&

@@ -378,16 +378,19 @@ void Main(void)
 				dingdanlianghua();
 				zhongduan_fun();
 				qigang_fun();
+				
+			/*****qz_error_status==1,在zhongduan_fun(void);encoder1_process()中也有将qz_error_status=1*****/
 				if (qz_error_status==1)
 				{
 					huangdeng_button=1;
 					huangdeng_fun();
 					Set_Y_Value(2,0);
+					
+					/***以下两段均是停止变频器，一个是通过外部IO，一个是通过通讯写位***/
 					if (emer_stop_flag==1&&privilege_run_flag==0)
 					{
 						if (bianpingqi_previous_run_status==1)
-							bianpingqi_stop_sub();
-							//bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,0x1001,(int)(1<<7));
+							bianpingqi_stop_sub();	
 					}
 					if (run_permite_flag==0&&privilege_run_flag==0)
 					{
@@ -399,6 +402,8 @@ void Main(void)
 						if(emer_stop_flag==0)
 							bianpingqi_start(bianpingqi_run_flag);
 					}
+					
+					
 					if (shangduansha_status==alarm)
 					{
 						delay_qz(1,20,1);
@@ -412,6 +417,9 @@ void Main(void)
 						hongdeng_fun();
 					}
 				}
+				
+				/**qz_error_status==0,在zhongduan_fun(void)中，
+				   正常工作的时候;function.c的KeyScan(void)中，点击确定之后**/
 				else 
 				{
 					huangdeng_button=0;
@@ -423,22 +431,30 @@ void Main(void)
 						
 					delay_qz(0,10,0);
 					delay_qz(1,20,0);
+					
+					/**关闭蜂鸣器**/
 					if(beep_status==1)
 					{
 						Beep(0);
 						beep_status=0;
 					}
+					/**关闭红灯**/
 					if (hongdeng_status==1)
 					{
 						hongdeng_button=0;
 						hongdeng_fun();
 					}
+					
+					/**外部显示/无上断纱错误警报**/
 					if (xianshi_flag==1&&qz_cuowu_cishu[shangduansha_port]==0&&privilege_run_flag==0)
 					{
 						DisplayUserScr(CurrentScrNum);
 						xianshi_flag=0;
 					}
 				}
+			/***********************************************************************************************/	
+				
+			/*****************************管理员电机按钮，开始运动*****************************************/
 				if (sys_permite_button==1)
 				{
 					if (run_permite_flag==1)
@@ -450,7 +466,8 @@ void Main(void)
 						bianpingqi_set_speed(bianpingqi_speed);
 						bianpingqi_start(bianpingqi_run_flag);
 					}
-					if (run_permite_flag==1 || sys_force_run_button==1 || (ext_stop_status==press&&qz_error_status==1)){//privilege_run_flag==1
+					if (run_permite_flag==1 || sys_force_run_button==1 || 
+					   (ext_stop_status==press&&qz_error_status==1)){
 						if (ext_stop_status==press && qz_error_status==1){
 							privilege_run_flag = 1;
 							sys_force_run_button=1;
@@ -458,11 +475,15 @@ void Main(void)
 						bianpingqi_jog();
 					}
 				}
+				/**管理员电机按钮未被按下时，变频器不带动大盘运动**/
 				else
 				{
 					bianpingqi_run_flag=0;
 					bianpingqi_start(bianpingqi_run_flag);
 				}
+			/**********************************************************************************************/	
+			
+				
 				if (youben_choose==youben_old)
 					youbeng_sys_fun();
 				else

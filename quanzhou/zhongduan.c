@@ -4,9 +4,10 @@ U8	xianshi_flag=0;
 unsigned char qz_error_status=0;
 unsigned int qz_cuowu_cishu[max_port+1]={0};
 unsigned char beep_status=0;
-unsigned char run_permite_flag=0;
+unsigned char run_permite_flag=0;			//大盘允许运行标志位;1->允许运行;0->不允许运行;
+											//外部输入口没有警报时置1
 unsigned char emer_stop_flag=0;
-unsigned char privilege_run_flag=0;
+unsigned char privilege_run_flag=0;			//强迫运行标志位
 
 unsigned char alarm_signal[max_port+1]={0};
 
@@ -28,6 +29,8 @@ void zhongduan_fun(void)
 {
 	U8 i,err_flag=0;
 	//alarm_signal[5]=anquanmen_alarm_sig_kb;
+	
+	/**以下的数组的值均为0**/
 	alarm_signal[6]=anquanmen_alarm_sig_kb;
 	alarm_signal[shangduansha_port]=shangduansha_alarm_sig_kb;
 	alarm_signal[anquanmen_port]=anquanmen_alarm_sig_kb;
@@ -35,6 +38,7 @@ void zhongduan_fun(void)
 	alarm_signal[tanzhen_port]=tanzhen_alarm_sig_kb;
 	alarm_signal[tanbu_port]=tanbu_alarm_sig_kb;
 	
+	//输入口异或0，相同为0不同为1;
 	if (hongdeng_status==0)
 		shangduansha_status=Get_X_Value(shangduansha_port) ^ alarm_signal[shangduansha_port];
 	else
@@ -52,14 +56,17 @@ void zhongduan_fun(void)
 	
 	for(i=6;i<=12;i++)
 	{
+		//上断纱错误
 		if (i==shangduansha_port && hongdeng_status==1)
 		{
 			err_flag=1;
 			qz_error_status=1;
 			break;
 		}
+		//X11未使用
 		if (i==11)
 			continue;
+		
 		if(Get_X_Value(i)==alarm_signal[i])
 		{
 			err_flag=1;
@@ -225,12 +232,17 @@ void zhongduan_fun(void)
 			if (err_flag==1)
 				break;
 		}
+		
+		/**X口无警报**/
 		else
 		{
 			qz_cuowu_cishu[i]=0;
 		}
 			
 	}
+	
+	/**额外段完成之后，外部停止标志位置1,14号字模是：
+	**/
 	if (((jianshu_ewaiduan_check==1 && dingdan_lianghua_num_kw>=previous_dingdanzongshu) || \
 	   (dingdan_lianghua_num_kw>=previous_dingdanzongshu&&extra_part_jiansu==0) || \
 	   (dingdan_lianghua_num_kw>=previous_dingdanzongshu && extra_part_jiansu!=0 && jianshu%extra_part_jiansu!=0))\
@@ -244,6 +256,9 @@ void zhongduan_fun(void)
 		emer_stop_flag=1;
 		run_permite_flag=0;
 	}
+	
+	/**额外段完成之后，并且件数到达上限，jishu_max_flag = 1，外部停止标志位置1,13号字模是：
+	**/
 	if (((jianshu_ewaiduan_check==1&&jianshu>=zhibusheding) || \
 	   (jianshu>=zhibusheding&&extra_part_jiansu==0) || \
 	   (jianshu>=zhibusheding && extra_part_jiansu!=0 && jianshu%extra_part_jiansu!=0))&&err_flag!=1)
@@ -251,7 +266,7 @@ void zhongduan_fun(void)
 		err_flag=1;
 		previous_error_status_w=6;
 		if (privilege_run_flag==0)
-			alarm_disp(13);
+			alarm_disp(13);			//strcpy(Info_qz[6],jianshu_max);
 		jishu_max_flag=0;
 		qz_error_status=1;
 		emer_stop_flag=1;
@@ -259,6 +274,9 @@ void zhongduan_fun(void)
 	}
 	else
 		jishu_max_flag=1;
+	
+	/**清车圈数完成之后(eg:转了n圈之后，停机)，外部停止标志位置1,15号字模是：
+	**/
 	if (qingche_num_kw>=qingchesheding && qingchesheding!=0 &&err_flag!=1)
 	{
 		err_flag=1;
@@ -270,6 +288,7 @@ void zhongduan_fun(void)
 		run_permite_flag=0;
 	}
 	
+	/**容错**/
 	if (i>max_port && err_flag==0)
 	{
 		emer_stop_flag=0;
@@ -283,6 +302,21 @@ void zhongduan_fun(void)
 	ext_jog_status=			Get_X_Value(ext_jog_port);	
 }
 
+
+/*************************************************
+Function(函数名称): alarm_disp(U8 which_alarm)
+Description(函数功能、性能等的描述): 报警显示界面，同时打开报警蜂鸣器的延时
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void alarm_disp(U8 which_alarm)
 {
 	//char Info[10][10];  //CharString:“下载完毕”
@@ -292,23 +326,34 @@ void alarm_disp(U8 which_alarm)
 	LeftY = 150;
 	if(xianshi_flag==0)
 	{
-		//	Lcd_Clr(7);                                 //This Instruction can be removed  
-		//CurrentScrNum = 0xff11;
 		Lcd_Fill_Box (LeftX, LeftY, 440, 330, 4);
-		//Lcd_Fill_Box (LeftX, LeftY, 440, 330, GREEN);
+		//*(Info_qz+which_alarm-min_port)为zhongduan_init()中的字模数组
 		Lcd_DispHZ_On_Button(LeftX,LeftY+20,440,300,5,13,4,3,0,1,0,0,*(Info_qz+which_alarm-min_port));
-		//Lcd_DispHZ_On_Button(LeftX,LeftY+20,440,300,4,BLACK,GREEN,3,0,1,0,0,Info);
+
 		Lcd_Button(LeftX+65,LeftY+95,375,305,7,3,RAISE);
-		//Lcd_Button(LeftX+65,LeftY+95,375,305,BLUE,3,RAISE);
+		
 		Lcd_DispHZ_On_Button(LeftX+45, LeftY+95, 395, 305,2, 0, 7,2,0,0,0,3,QueDing);
-		//Lcd_DispHZ_On_Button(LeftX+45, LeftY+95, 395, 305,2, BLACK, BLUE,2,0,0,0,3,QueDing);
+		
 		xianshi_flag=1;
 	}
-	delay_qz(0,10,1);	
-	//beep_alarm();
+	delay_qz(0,10,1);	//打开beep_alarm用
+	
 }
 
+/*************************************************
+Function(函数名称): beep_alarm(void)
+Description(函数功能、性能等的描述): 跳出警报界面后开始报警响声，在function.c中的KeyScan(void)函数中消除警报
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void beep_alarm(void)
 {
 	if (delay_fac.delay_permit[0]==1)
