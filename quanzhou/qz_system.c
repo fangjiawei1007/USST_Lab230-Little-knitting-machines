@@ -1,6 +1,6 @@
 #include"includes.h"
 
-U8 previous_youbeng_status=1;
+U8 previous_youbeng_status=1;		//1->油泵连续;	2->油泵秒间歇; 3->油泵圈间歇
 U8 previous_fenshan_status=1;
 
 U8 youbeng_quan_init_flag=0;
@@ -26,16 +26,35 @@ int banci_mima_shuru;
 unsigned char first_banci_flag;
 INT16U previous_dingdanbianhao;
 INT16U previous_dingdanzongshu;
+
+/*************************************************
+Function(函数名称): youbeng_sys_fun(void)
+Description(函数功能、性能等的描述): 打开/关闭油泵;配置油泵的多种状态(3)种状态
+Calls (被本函数调用的函数清单): delay_qz();youbeng_fun();
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void youbeng_sys_fun(void)
 {
-	U32	youbeng_work_fac;
+	U32	youbeng_work_fac;	//间歇时间变量
+	
+	/************保证油泵打开***********/
 	if (youbeng_lianxu_button!=1 && youbeng_miaojianxie_button!=1 && youbeng_quanjianxie_button!=1)
 	{
 		youbeng_lianxu_button=1;
 		previous_youbeng_status=1;
 	}
+	
 	switch (previous_youbeng_status)
 	{
+		/**********************case 1:打开油泵秒间歇/圈间歇**********************/
 		case 1:
 				if (youbeng_miaojianxie_button==1||youbeng_quanjianxie_button==1)
 				{
@@ -45,6 +64,8 @@ void youbeng_sys_fun(void)
 					else
 						previous_youbeng_status=3;
 				}break;
+				
+		/**********************case 2:打开油泵连续/圈间歇**********************/		
 		case 2:
 				if (youbeng_lianxu_button==1||youbeng_quanjianxie_button==1)
 				{
@@ -54,6 +75,8 @@ void youbeng_sys_fun(void)
 					else
 						previous_youbeng_status=3;
 				}break;
+		
+		/**********************case 3:打开油泵连续/秒间歇**********************/			
 		case 3:
 				if (youbeng_lianxu_button==1||youbeng_miaojianxie_button==1)
 				{
@@ -64,20 +87,29 @@ void youbeng_sys_fun(void)
 						previous_youbeng_status=2;
 				}break;
 	}
+	
+	/**************当大盘转起来之后，油泵就开始工作(即youben_permite_button置1了)****************/
 	if (youben_permite_button==1)
 	{
+		/***************油泵连续运行***************/
 		if (previous_youbeng_status==1)
 		{
 			youbeng_quan_init_flag=0;
 			youbeng_quanjianxie_yizhuan_num=0;
+			
+		/******油泵连续运行，即无延时时间******/
 			if (delay_fac.delay_permit[2]==1)
 				delay_qz(2,0,0);
 			youbeng_button=1;
 		}
+		
+		/***************油泵秒间歇运行**************/
 		else if (previous_youbeng_status==2)
 		{
 			youbeng_quan_init_flag=0;
 			youbeng_quanjianxie_yizhuan_num=0;
+			
+		/********油泵秒间歇运行，即延时x秒后进行********/
 			youbeng_work_fac=(youbeng_miaojianxie_fac_L+youbeng_miaojianxie_fac_H)*10;
 			delay_qz(2,youbeng_work_fac,1);
 			if (delay_2_count<(youbeng_miaojianxie_fac_L*10))
@@ -85,20 +117,26 @@ void youbeng_sys_fun(void)
 			else if (delay_2_count<youbeng_work_fac)
 				youbeng_button=0;
 		}
+		
+		/***************油泵圈间歇运行**************/
 		else if (previous_youbeng_status==3)
 		{
 			youbeng_quan_init_flag=1;
-			if (delay_fac.delay_permit[2]==1)
+			if (delay_fac.delay_permit[2]==1)//圈间歇需要在encoder1_process中进行圈数++，所以需要把定时器关掉
 				delay_qz(2,0,0);
 			youbeng_work_fac=youbeng_quanjianxie_fac_L+youbeng_quanjianxie_fac_H;
+			
+		/********油泵圈间歇运行，即每经过x圈之后进行********/	
 			if (youbeng_quanjianxie_yizhuan_num<youbeng_quanjianxie_fac_L)
 				youbeng_button=1;
-			else	if (youbeng_quanjianxie_yizhuan_num<youbeng_work_fac)
+			else if (youbeng_quanjianxie_yizhuan_num<youbeng_work_fac)
 				youbeng_button=0;
 			else
 				youbeng_quanjianxie_yizhuan_num=0;
 		}
 	}
+	
+	/**************当大盘停机之后，油泵就停止工作(即youben_permite_button置0了)****************/
 	else
 	{
 		if (delay_fac.delay_permit[2]==1)
@@ -108,6 +146,21 @@ void youbeng_sys_fun(void)
 	youbeng_fun();
 }
 
+
+/*************************************************
+Function(函数名称): Pulse_In_Init(void)
+Description(函数功能、性能等的描述): 
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void fenshan_sys_fun(void){
 	U32	fenshan_work_fac;
 	if (fenshan_lianxu_button!=1 && fenshan_jianxie_1_button!=1 && fenshan_jianxie_2_button!=1)
@@ -159,7 +212,7 @@ void fenshan_sys_fun(void){
 			fenshan_work_fac=fenshan_jianxie_fac_H+fenshan_jianxie_fac_L;
 			if (fenshan_jianxie_yizhuanquan_num<fenshan_jianxie_fac_L)
 				fenshan_button=1;
-			else	if (fenshan_jianxie_yizhuanquan_num<fenshan_work_fac)
+			else if (fenshan_jianxie_yizhuanquan_num<fenshan_work_fac)
 				fenshan_button=0;
 			else
 				fenshan_jianxie_yizhuanquan_num=0;
@@ -170,7 +223,7 @@ void fenshan_sys_fun(void){
 			fenshan_work_fac=fenshan_jianxie_fac_H+fenshan_jianxie_fac_L;
 			if (fenshan_jianxie_yizhuanquan_num<fenshan_jianxie_fac_H)
 				fenshan_button=1;
-			else	if (fenshan_jianxie_yizhuanquan_num<fenshan_work_fac)
+			else if (fenshan_jianxie_yizhuanquan_num<fenshan_work_fac)
 				fenshan_button=0;
 			else
 				fenshan_jianxie_yizhuanquan_num=0;
@@ -293,6 +346,21 @@ void shachang_xianshi(void){
 	}
 }
 
+
+/*************************************************
+Function(函数名称): youbeng_new_way(void)
+Description(函数功能、性能等的描述): 点滴型油泵使用方法(暂时没有用到)
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void youbeng_new_way(void){
 	U32	youbeng_work_fac;
 	if (youbeng_lianxu_button!=1 && youbeng_miaojianxie_button!=1 && youbeng_quanjianxie_button!=1)
@@ -302,12 +370,15 @@ void youbeng_new_way(void){
 	}
 	switch (previous_youbeng_status)
 	{
+		/*********case 1:不成立，因为没有previous_youbeng_status！=1********/
 		case 1:
 				youbeng_miaojianxie_button=1;
 				previous_youbeng_status=2;
 				break;
+		
+		/*********case 2:圈间歇，此处仅仅将previous_youbeng_status置位********/
 		case 2:
-				if (youbeng_lianxu_button==1||youbeng_quanjianxie_button==1)
+				if(youbeng_lianxu_button==1||youbeng_quanjianxie_button==1)
 				{
 					youbeng_miaojianxie_button=0;
 					if (youbeng_lianxu_button==1)
@@ -319,6 +390,8 @@ void youbeng_new_way(void){
 					else
 						previous_youbeng_status=3;
 				}break;
+				
+		/*********case 3:秒间歇********/
 		case 3:
 				if (youbeng_lianxu_button==1||youbeng_miaojianxie_button==1)
 				{
@@ -333,17 +406,23 @@ void youbeng_new_way(void){
 						previous_youbeng_status=2;
 				}break;
 	}
+	
+	
 	if (youben_permite_button==1)
 	{
 		if (previous_youbeng_status==1)
 		{
 			previous_youbeng_status=2;
 		}
-		else	if (previous_youbeng_status==2)
+		
+		/**油泵秒间歇**/
+		else if (previous_youbeng_status==2)
 		{
 			youbeng_quan_init_flag=0;
 			youbeng_quanjianxie_yizhuan_num=0;
 			youbeng_work_fac=youbeng_miaojianxie_fac_H*10;
+			
+			/******每(youbeng_work_fac-1)*100ms秒后，点滴型油泵开关******/
 			if (youbeng_finish_dida==1)
 				delay_qz(2,youbeng_work_fac,1);
 			if (delay_2_count>=(youbeng_work_fac-1))
@@ -351,6 +430,8 @@ void youbeng_new_way(void){
 				youbeng_finish_dida=0;
 				delay_qz(2,youbeng_work_fac,0);
 			}
+
+	/***********点滴型喷100ms/停200ms****************************/
 			if (youbeng_finish_dida==0)
 			{
 				delay_qz(4,30,1);
@@ -365,6 +446,8 @@ void youbeng_new_way(void){
 					youbeng_button=0;
 				}
 				youbeng_fun();
+				
+	/************点滴型喷油完成*********************/	
 				if (youbeng_dida_num>=dida_num)
 				{
 					youbeng_finish_dida=1;
@@ -373,6 +456,8 @@ void youbeng_new_way(void){
 				}
 			}
 		}
+		
+		/**油泵圈间歇**/
 		else if (previous_youbeng_status==3)
 		{
 			if (youbeng_finish_dida==1)
@@ -409,6 +494,8 @@ void youbeng_new_way(void){
 			}
 		}
 	}
+	
+	
 	else
 	{
 		if (delay_fac.delay_permit[2]==1)

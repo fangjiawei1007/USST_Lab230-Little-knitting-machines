@@ -68,7 +68,8 @@
 #define	sys_permite_button						g_InteralMemory.Bit[11]				//管理员界面：电机
 #define	sys_force_run_button					g_InteralMemory.Bit[12]				//管理员界面：强迫运行
 #define	fengshan_permite_button					g_InteralMemory.Bit[33]
-#define	youben_permite_button					g_InteralMemory.Bit[36]	
+#define	youben_permite_button					g_InteralMemory.Bit[36]				//无外部控件，通过main.c中
+																					//if (bianpingqi_previous_run_status==0 && jidianqi_shut==0)条件进行修改
 #define	youben_choose							g_InteralMemory.KeepBit[13]					
 #define	dida_num								g_InteralMemory.KeepWord[91]			//点滴次数
 #define	xifenshu								g_InteralMemory.KeepWord[92]			//送纱电机细分数

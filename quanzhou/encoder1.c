@@ -773,7 +773,7 @@ void __irq	encoder1_process(void)
 				xitong_total_num_upper_kw++;
 				total_quanshu=0;
 			}		
-			if (youbeng_quan_init_flag==1)
+			if (youbeng_quan_init_flag==1)	//ÓÍ±ÃÈ¦¼äÐª:È¦Êý++
 				youbeng_quanjianxie_yizhuan_num++;
 			if (fenshan_quan_init_flag==1)
 				fenshan_jianxie_yizhuanquan_num++;

@@ -210,6 +210,23 @@ void bianpingqi_set_speed(unsigned int speed)
 	}
 }
 
+
+/*************************************************
+Function(函数名称): bianpingqi_start(U8 bianpingqi_run_button)
+Description(函数功能、性能等的描述): 通过外部IO控制变频器的启停，通过传入的参数bianpingqi_run_button
+								  即变频器的控制要与标志位相同，如果不同则进行改变IO口，即完成互斥。
+								  互斥即当外部改变，内部才开始改变。
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void bianpingqi_start(U8 bianpingqi_run_button)
 {		
 	if (bianpingqi_run_button==1&&bianpingqi_previous_run_status==0&&bianpingqi_jog_status==0)

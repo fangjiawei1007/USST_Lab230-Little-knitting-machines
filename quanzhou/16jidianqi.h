@@ -67,7 +67,7 @@
 #define	zhaomingdeng_button				g_InteralMemory.Bit[zhaomingdeng_button_bit]
 #define	dianci_button					g_InteralMemory.Bit[dianci_button_bit]
 
-#define	youbeng_button					g_InteralMemory.Bit[youbeng_button_bit]
+#define	youbeng_button					g_InteralMemory.Bit[youbeng_button_bit]			//无外部控件，内部作为标志位使用的变量(类似于局部变量使用)
 #define	penyou24v_button				g_InteralMemory.Bit[penyou24v_button_bit]
 //#define	qigang_button					g_InteralMemory.Bit[qigang_button_bit]			
  
