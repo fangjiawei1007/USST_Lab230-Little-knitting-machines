@@ -148,8 +148,8 @@ void youbeng_sys_fun(void)
 
 
 /*************************************************
-Function(函数名称): Pulse_In_Init(void)
-Description(函数功能、性能等的描述): 
+Function(函数名称): fenshan_sys_fun(void)
+Description(函数功能、性能等的描述): 风扇间歇(思路与youbeng_sys_fun()类似)
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): 
 
@@ -168,6 +168,7 @@ void fenshan_sys_fun(void){
 		fenshan_lianxu_button=1;
 		previous_fenshan_status=1;
 	}
+	
 	switch (previous_fenshan_status)
 	{
 		case 1:
@@ -198,6 +199,7 @@ void fenshan_sys_fun(void){
 						previous_fenshan_status=2;
 				}break;
 	}
+	
 	if (fengshan_permite_button==1)
 	{
 		if (previous_fenshan_status==1)
@@ -431,7 +433,7 @@ void youbeng_new_way(void){
 				delay_qz(2,youbeng_work_fac,0);
 			}
 
-	/***********点滴型喷100ms/停200ms****************************/
+			/***********点滴型喷100ms/停200ms****************************/
 			if (youbeng_finish_dida==0)
 			{
 				delay_qz(4,30,1);
@@ -447,7 +449,7 @@ void youbeng_new_way(void){
 				}
 				youbeng_fun();
 				
-	/************点滴型喷油完成*********************/	
+				/************点滴型喷油完成*********************/	
 				if (youbeng_dida_num>=dida_num)
 				{
 					youbeng_finish_dida=1;
@@ -462,15 +464,20 @@ void youbeng_new_way(void){
 		{
 			if (youbeng_finish_dida==1)
 				youbeng_quan_init_flag=1;
+			/******油泵圈间歇需要将定时器关闭******/
 			if (delay_fac.delay_permit[2]==1)
 				delay_qz(2,0,0);
-			youbeng_work_fac=youbeng_quanjianxie_fac_H;
+			
+			youbeng_work_fac=youbeng_quanjianxie_fac_H;//油泵圈数计算			
+			
 			if (youbeng_quanjianxie_yizhuan_num>=youbeng_work_fac)
 			{
 				youbeng_finish_dida=0;
 				youbeng_quanjianxie_yizhuan_num=0;
 				youbeng_quan_init_flag=0;
 			}
+			
+			/*************此处同youbeng_sys_fun()中的注释*************/
 			if (youbeng_finish_dida==0)
 			{
 				delay_qz(4,30,1);
@@ -495,7 +502,7 @@ void youbeng_new_way(void){
 		}
 	}
 	
-	
+	/***关闭油泵***/
 	else
 	{
 		if (delay_fac.delay_permit[2]==1)

@@ -40,7 +40,7 @@
 #define	youbeng_miaojianxie_fac_L				g_InteralMemory.KeepWord[19]		//油泵秒间歇运行时间
 #define	youbeng_miaojianxie_fac_H				g_InteralMemory.KeepWord[20]        //油泵秒间歇停止时间
 #define	youbeng_quanjianxie_fac_L				g_InteralMemory.KeepWord[21]        //油泵圈间歇运行圈数
-#define	youbeng_quanjianxie_fac_H				g_InteralMemory.KeepWord[22]        //油泵秒间歇停止权属
+#define	youbeng_quanjianxie_fac_H				g_InteralMemory.KeepWord[22]        //油泵秒间歇停止圈数
 #define	fenshan_jianxie_fac_L					g_InteralMemory.KeepWord[23]        //风扇工作圈数
 #define	fenshan_jianxie_fac_H					g_InteralMemory.KeepWord[24]        //风扇间歇圈数
 #define	fenshan_jianxie_yizhuanquan_num			g_InteralMemory.KeepWord[25]        

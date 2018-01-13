@@ -454,7 +454,7 @@ void Main(void)
 				}
 			/***********************************************************************************************/	
 				
-			/*****************************管理员电机按钮，开始运动*****************************************/
+			/*****************************管理员电机按钮，开始运动(电机开始运动的地方)*****************************************/
 				if (sys_permite_button==1)
 				{
 					if (run_permite_flag==1)
@@ -488,6 +488,9 @@ void Main(void)
 					youbeng_sys_fun();
 				else
 					youbeng_new_way();
+			
+			/******************************************************************************************************************/
+				
 				fenshan_sys_fun();
 				
 				/* if(mode_choose == yazheng_mode)
@@ -498,6 +501,8 @@ void Main(void)
 				{
 					tiaoxian();
 				}
+				
+				
 				dangban_jianshu_dis_w=*banci[jianshu_no];//当班产量显示
 				g_InteralMemory.Word[23]=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 				g_InteralMemory.Word[24]=dapan_round;
@@ -510,7 +515,7 @@ void Main(void)
 				g_InteralMemory.Word[32] = g_InteralMemory.Word[30]+xiaoduanquanshu;
 				g_InteralMemory.Word[33] = g_InteralMemory.Word[32]+caijiaoquanshu;
 				g_InteralMemory.Word[49] = extra_part_quanshu;
-				//////////////////////////////////////
+				/************************************************************************************************************/
 			}
 	
 

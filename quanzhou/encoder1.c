@@ -4,9 +4,9 @@ U32	encoder1_speed=0;							//用于计算speed的脉冲数(大盘速度)的tmp值
 
 volatile unsigned int k_motor[7]={0};			//电机K值存放的数组(实际)
 unsigned int kMotorTarget[7]={0};
-volatile unsigned int motor_factor[7]={0};		//用于和1000000比较
+volatile unsigned int motor_factor[7]={0};		//用于和1000000比较，仅仅是一个中间变量
 unsigned int dapan_round=0;						//大盘转了多少圈的监测值
-U16	encoder1_pulse_number=0;
+U16	encoder1_pulse_number=0;					//编码器发出的脉冲数计算
 
 const float k_factor[7][3]={{364,519,364},{249,309,249},{369,399,369},{264,291.6,264},{328.5,312.1,328.5},{1000,1000,1000},{1000,1000,1000}};
 unsigned char jiansu_permite=1;					//大盘超速了之后减速
@@ -152,6 +152,10 @@ void encoder1_data_reset(void){
 /*************************************************
 Function(函数名称): SpeedChange(const unsigned int* kMotor)
 Description(函数功能、性能等的描述): 保证各个阶段的速度变化不突变，通过前后两个阶段的K值的变化来比较
+								 K值改变了之后，那么就会进入此函数，进行speed_up_MAX段速度的改变.
+								 过渡段/裁剪段的变速为K值的改变，与dapan_round有关，和此处无关。
+								 (songsha_fre_change)大盘转一圈，外部目标K值改变。
+								 (SpeedChange)K_Motor值改变，在此处会进行多段的k_motor值->k_Motor。
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): 
 
@@ -163,6 +167,8 @@ Others: 第一个作用：上电直接将K值设定到位，不通过变速实现 2018.01.07
 	    第二个作用：改变第一次K值
 	    第三个作用(类似第一个)：强制降速
 	    第四个作用：在外部强制改变K值的情况下，重新进行变速实现。
+		
+		区别变速段与speed_Change段的变速
 Author:王德铭
 Modified:新增局部变量k_motor_cal[7],用于计算中间变量，提升_irq encoder1_process()中k_motor的使用效率 by FJW 2018.1.10
 Commented:方佳伟
@@ -193,7 +199,7 @@ void SpeedChange(const unsigned int* kMotor){
 	else{
 		for ( i = 0; i<7 ; i++){
 			
-			//7次加速/减速结束以后，speedUpFlag[n]/speedDownFlag[n]置0，
+			//speedUpMax次加速/减速结束以后，speedUpFlag[n]/speedDownFlag[n]置0，
 			//speedUpCnt[n]/speedDownCnt[n]重置
 			if (speedUpCnt[i] >= speedUpMax && speedUpFlag[i] == 1){
 				k_motor[i] = kMotor[i];
@@ -683,18 +689,42 @@ void parameter_read(void){
 	songsha_num[3]=songsha4_num;
 }
 
+/*************************************************
+Function(函数名称): __irq	encoder1_process(void)
+Description(函数功能、性能等的描述): 编码器中断函数(电机运动的关键，通过编码器实现速度环控制)
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 中断函数不应该过多，会导致中断函数无法执行完，而导致未知结果的重大错误。
+	   所以应该避免任何中断函数的开销，具体表现为：浮点型运算的开销以及函数调用的开销；
+        循环次数(时间复杂度);判断条件的开销也在考虑范围之内。
+																		——by FJW
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void __irq	encoder1_process(void)
 {
 	unsigned int jj,zushu;//,signal;
 	static unsigned int error_times=0;
 	static unsigned int reset_enter_times=0;	//未使用
 	static unsigned int speedChangeCnt[2][7]={1};
+	
+	/**********此处为上升沿中断(((rGPFDAT >> 1) & 0x1)保证了其上升沿读出来的数值是1)
+			  signal!=((rGPFDAT >> 2) & 0x1 此条件用来进行消抖(具体是停机的时候，
+			  增量式编码器的性质，导致外部抖动会造成编码器信号一直存在，导致电机运动)
+			  此种方法可以省去对中断信号的延时进入，因为通过编码器B相判断。
+			  所以此方法只能用于双边沿的中断。
+	**********/
 	if (((rGPFDAT >> 1) & 0x1) && signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
-		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
+		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)，获得B相信号
 		encoder1_speed_pulse++;
-		encoder1_pulse_number++;
+		encoder1_pulse_number++;	//编码器脉冲数记录
 		
+		/**调线功能**/
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
 			for (jj = 0 ; jj < 6 ; jj++){
 				for (zushu =0; zushu < tiaoxianzu; zushu++){
@@ -708,43 +738,65 @@ void __irq	encoder1_process(void)
 				}
 			}	
 		}
+		
+		/**将7组电机分为上下沿两次进行判断，以减小每次循环次数(上半部分)**/
 		for (jj=0;jj<4;jj++)
 		{
 			motor_factor[jj] += k_motor[jj];
+			
+			/***拉低4个电机电平(或者拉高，具体看原理图，有修改过)***/
 			if (motor_factor[jj]>=1000000)
 			{
 				rGPEDAT &= ~(1<<jj);
 				motor_factor[jj] -= 1000000;
-				songsha_num[jj]++;
+				songsha_num[jj]++;			//shachang_xianshi()中调用，用于纱长显示
 			}
+			
+			/***拉高3个电机电平(或者拉低，具体看原理图，有修改过)，
+				并且优化占空比(步进电机的响应时间会变长一些，但是一个周期之内不影响)
+			***/
 			if (jj != 3 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
 				rGPEDAT |= (1<<(jj + 4));
 			}
 		}
 		//rGPEDAT |= (0x7 << 4);
+		/********7组电机的K值的变化之后，从K_Current多次变化到->K_Target;
+				具体的改变在Speed_Change()中求解
+		**********/
 		for (jj = 0; jj < 7; jj ++){
 			if (speedUpFlag[jj]==1){
 				if (huanchongmaichong!=0&&speedUpCnt[jj]<speedUpMax&&
 				++speedChangeCnt[0][jj]%huanchongmaichong==0)
 					speedUpCnt[jj]++;
+				/***不通过变速达到K_Target，直接从K_Current->K_Target***/
 				else if (huanchongmaichong==0){
 					speedUpCnt[jj]=speedUpMax;
 					speedUpFlag[jj]= 0;
 					speedChangeCnt[0][jj] = 1;
 				}
+				/***加速次数到达之后，将Flag置0，speedChangeCnt置1***/
 				else if (speedUpCnt[jj] >= speedUpMax){
 					speedUpFlag[jj]=0;
 					speedChangeCnt[0][jj] = 1;
 				}	
 			}
+			
 			else{
 				speedChangeCnt[0][jj] = 1;
 			}
 		}
 	}
+	
+	/**********此处为下降沿中断(((rGPFDAT >> 1) & 0x1)保证了其上升沿读出来的数值是1)
+			  signal!=((rGPFDAT >> 2) & 0x1 此条件用来进行消抖(具体是停机的时候，
+			  增量式编码器的性质，导致外部抖动会造成编码器信号一直存在，导致电机运动)
+			  此种方法可以省去对中断信号的延时进入，因为通过编码器B相判断。
+			  所以此方法只能用于双边沿的中断。
+	**********/
 	else if(signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
-		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)
+		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)，获得B相信号
 		
+		/**将7组电机分为上下沿两次进行判断，以减小每次循环次数(下半部分)**/
 		for (jj=4;jj<8;jj++)
 		{
 			if (jj != 7){
@@ -760,10 +812,14 @@ void __irq	encoder1_process(void)
 				rGPEDAT |= (1<<(jj - 4));
 			}
 		}
+		
+		/**************************************************************/
 		//rGPEDAT |= (0xf);
 		
 		
 		rWTCNT = reset_time_kw;	//wdt_feed_dog();
+		
+		/*********大盘转一圈之后所需要的标志位以及圈数++*********/
 		if (encoder1_pulse_number>=encoder1_cal_factor){
 			dapan_round++;
 			encoder1_pulse_number=0;
@@ -772,11 +828,17 @@ void __irq	encoder1_process(void)
 			if (total_quanshu>65530){
 				xitong_total_num_upper_kw++;
 				total_quanshu=0;
-			}		
+			}
+			
+			/***youbeng_sys_fun()中调用***/
 			if (youbeng_quan_init_flag==1)	//油泵圈间歇:圈数++
 				youbeng_quanjianxie_yizhuan_num++;
+			
+			/***fenshan_sys_fun()中调用***/
 			if (fenshan_quan_init_flag==1)
 				fenshan_jianxie_yizhuanquan_num++;
+			
+			/**调线功能**/
 			if (tiaoxianzu_flag == 1){
 				tiaoxianzu_quanshu++;
 				jiajiaStatus = 0;
@@ -784,13 +846,14 @@ void __irq	encoder1_process(void)
 				
 		}
 		
+		/**上断纱错误连着5个脉冲都错误，那么就停机**/
 		if ( ((rGPFDAT >> 7) & 0x1) == alarm_signal[shangduansha_port] &&//Get_X_Value(shangduansha_port)
 		    sys_force_run_button == 0 && 
 			shangduansha_alarm_level!=level_0){
 			error_times++;
 			if (error_times >= 5){
-				rGPBDAT &= ~(1<<3);
-				rGPBDAT |= 1<<1;
+				rGPBDAT &= ~(1<<3); //Y3置0
+				rGPBDAT |= 1<<1;	//Y1置1
 				bianpingqi_previous_speed=0;
 				bianpingqi_previous_run_status=0;
 			
@@ -824,6 +887,7 @@ void __irq	encoder1_process(void)
 		main_enter_flag = 0;				//用以做主程序循环正常检测
 /**************************************************************************************************/		
 		
+		/*********Speed_Change()中降速阶段，与上升沿中断相对称*********/
 		for (jj = 0; jj < 7; jj ++){
 			if (speedDownFlag[jj]==1){
 				if (huanchongmaichong!=0&&speedDownCnt[jj]<speedDownMax&&
