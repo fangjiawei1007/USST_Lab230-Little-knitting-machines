@@ -7,7 +7,25 @@ DELAY_STRUCTURE delay_fac;
 U8 init_stop_status=0;
 unsigned int reset_timer_counter=0;
 
+/*************************************************
+Function(函数名称): __irq	Timer0_Proc(void)
+Description(函数功能、性能等的描述): Timer0中断服务程序：1.不使用变频器的情况下，防止屏死机，但是中断程序还在运行
+													  2.WDT计数，用于encoder1.c中，用于main函数已经不进入，
+														但是中断函数还在进入，将大盘停止
+													  3.实时计算大盘速度的脉冲数记录,即完成速度的计算
+													  4.非阻塞式延时：delay_qz(U8 delay_rank,U32 delay_t,U8 status)
+													  5.外部报警(delay_qz(0,30,1))调用函数
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void __irq	Timer0_Proc(void)
 {
 	static unsigned int init_enter_times=0;
@@ -29,7 +47,7 @@ void __irq	Timer0_Proc(void)
 	
 	//WDT
 	if (reset_timer_start == 1){
-		reset_timer_counter ++;
+		reset_timer_counter ++;		//WDT中断中累加到一定的数目之后，会使外部大盘停下
 	}
 	else{
 		reset_timer_counter = 0;
@@ -145,3 +163,30 @@ void delay_qz(U8 delay_rank,U32 delay_t,U8 status)
 	delay_fac.delay_time_qz[delay_rank]=delay_t;
 	delay_fac.delay_permit[delay_rank]=status;
 }
+
+
+
+/************************非阻塞式Delay基本用法***********************************/
+/**
+{
+	delay_qz(n,t,1);						//n号定时器,t段时间,1表示开启
+	int x;								//x：延时中间时间段
+	if (delay_fac.delay_permit[n]==1)
+	{
+		if (delay_0_count<(t-x))
+		{
+			//此处添加功能代码
+		}
+		else
+		{
+			//此处添加功能代码
+		}
+		
+	}
+}
+
+{
+	delay_qz(n,t,0);						//关闭n号定时器
+}
+
+**/

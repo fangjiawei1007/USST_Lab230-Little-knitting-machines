@@ -3,6 +3,23 @@
 #define jidianqi_station_num	22
 
 U8 jdqComCount[8]={0};
+
+
+/*************************************************
+Function(函数名称): qz_Uart_Getch(void)
+Description(函数功能、性能等的描述): 串口获得字符:此函数是通过Uart_Getch(void)移植得来，
+								 用于通讯协议read中
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 char qz_Uart_Getch(void)
 {
 	//INT8U temp=0;
@@ -254,7 +271,8 @@ void jidianqi_write_fenshan(U8 which_port)
 Function(函数名称): xxxx_fun(void)
 Description(函数功能、性能等的描述): 控制外部设备(除了电磁阀均通过通讯完成)，
 								判断进入的条件if (hongdeng_button!=hongdeng_status)均从通讯中会置位，
-								如果不成功会多次通讯
+								如果不成功会多次通讯，其中需要注意的是：hongdeng_button为内部改变的
+								变量(即定义的一个变量而已)，而非外部按钮。
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): 
 

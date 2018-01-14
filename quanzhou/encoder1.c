@@ -287,7 +287,7 @@ Calls (被本函数调用的函数清单):
 Called By (调用本函数的函数清单): bianpingqi_speed_cal();at_check();getKMotor();
 
 Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): stage：所需要的阶段的基础阶段
-														  direction：所需要的基础阶段的变化阶段
+													    direction：所需要的基础阶段的变化阶段
 Output(对输出参数的说明):
 Return: requestStage(所需要得到的stage)
 Others: 本函数的思想是：
@@ -419,7 +419,7 @@ int getKMotor(const unsigned char bb,const unsigned int stage,int direction){
 /*************************************************
 Function(函数名称): songsha_fre_change(void)
 Description(函数功能、性能等的描述): 1.K值的变化
-								 2.Speed_change不突变
+								 2.Speed_change(),使得k_current->k_target不突变
 								 3.大盘的速度的改变(变频器)
 Calls (被本函数调用的函数清单): wdt_feed_dog();between_check();
 							getKMotor(const unsigned char bb,const unsigned int stage,int direction);
@@ -870,7 +870,7 @@ void __irq	encoder1_process(void)
 		}
 		
 	
-	/*******RTC部分，防止while(1)循环已经不进了，但是中断服务程序却还在使用,此时要将变频器停止*******/
+	/*******WDT部分，防止while(1)循环已经不进了，但是中断服务程序却还在使用,此时要将变频器停止*******/
 		if (main_enter_flag == 0){
 			reset_timer_start = 1;
 			reset_enter_times ++;

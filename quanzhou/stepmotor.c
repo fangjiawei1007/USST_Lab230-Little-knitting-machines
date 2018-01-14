@@ -25,16 +25,7 @@ Commented:方佳伟
 *************************************************/
 void qz_assert(void)
 {
-	if(0)
-	{
-		if (check_time==0)
-		{
-			alarm_disp_assert();
-			check_time=1;
-		}
-
-	}
-	else
+	
 	{
 		rate_different[0][datou]=datou_rate_different_1;
 		rate_different[1][datou]=datou_rate_different_2;
@@ -99,7 +90,20 @@ void qz_assert(void)
 	}
 }
 
+/*************************************************
+Function(函数名称): alarm_disp_assert(void)
+Description(函数功能、性能等的描述): 此功能没有用到，此函数没有调用
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
 void alarm_disp_assert(void)
 {
 	char Info_assert[]={42,68,40,75,20,77,46,83,33,43};  //CharString:“下载完毕”
@@ -110,16 +114,14 @@ void alarm_disp_assert(void)
 	LeftY = 150;
 	if(xianshi_flag==0)
 	{
-		//Lcd_Clr(7);                                 //This Instruction can be removed  
-		//CurrentScrNum = 0xff11;
 		Lcd_Fill_Box (LeftX, LeftY, 440, 330, 4);
-		//Lcd_Fill_Box (LeftX, LeftY, 440, 330, GREEN);
+	
 		Lcd_DispHZ_On_Button(LeftX,LeftY+20,440,300,5,13,4,3,0,1,0,0,Info_assert);
-		//Lcd_DispHZ_On_Button(LeftX,LeftY+20,440,300,4,BLACK,GREEN,3,0,1,0,0,Info);
+		
 		Lcd_Button(LeftX+65,LeftY+95,375,305,7,3,RAISE);
-		//Lcd_Button(LeftX+65,LeftY+95,375,305,BLUE,3,RAISE);
+		
 		Lcd_DispHZ_On_Button(LeftX+45, LeftY+95, 395, 305,2, 0, 7,2,0,0,0,3,QueDing);
-		//Lcd_DispHZ_On_Button(LeftX+45, LeftY+95, 395, 305,2, BLACK, BLUE,2,0,0,0,3,QueDing);
+		
 		xianshi_flag=1;
 	}
 }

@@ -107,6 +107,7 @@ int between_check(unsigned int roundShineng){
 	return -1;
 }
 
+
 unsigned int at_check(unsigned int roundShineng){
 	int i;
 	if (tiaoxianzu_quanshu != 0 && tiaoxianzu_jiange != 0 && tiaoxianzu_quanshu % tiaoxianzu_jiange ==0 && jiajiaStatus == 0){
@@ -191,6 +192,7 @@ unsigned int at_check(unsigned int roundShineng){
 	return 0;
 }
 
+
 unsigned int tiqushuzi(INT16U channal_choose){
 	int i;
 	unsigned int wei[5];
@@ -232,6 +234,7 @@ unsigned int tiqushuzi(INT16U channal_choose){
 	return weizhi;
 }
 
+
 void shinengpanduan(void){
 	int i;
 	unsigned int weizhi = 0x00;
@@ -248,6 +251,7 @@ void shinengpanduan(void){
 		}
 	}
 }
+
 
 void tiaoxian(void)
 {
@@ -294,6 +298,7 @@ void tiaoxian(void)
 			tongxunnum[zushu] = 0;
 	}
 }
+
 
 unsigned int tiaoxian_jidianqi_write(unsigned int zushu)
 {
@@ -419,6 +424,7 @@ unsigned int tiaoxian_jidianqi_write(unsigned int zushu)
 		return 0;
 }
 
+
 void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 {
 		if(chudao_start[zushu][i] == 0 && shoudao_start[zushu][i] == 0)
@@ -461,6 +467,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			chudao_shoudao_status[zushu][i] = 0;
 		}
 }
+
 
 void weisha(unsigned int i,unsigned int zushu)
 {

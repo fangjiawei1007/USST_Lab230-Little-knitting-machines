@@ -729,7 +729,7 @@ void dingdanlianghua(void){
 }
 
 
-void __irq pwrDownHandler(void)
+void __irq pwrDownHandler(void)	//X4-X7的中断服务程序绑定的新名字，但是目前没有用到
 {
 	//U8 pwrOffCount;
 	if ( !( rEINTMASK >>4  & 0x1 )  && (rEINTPEND & (1<<4)) )//取消屏蔽标志+挂起有效
