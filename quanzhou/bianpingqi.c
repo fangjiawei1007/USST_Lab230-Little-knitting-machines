@@ -43,6 +43,7 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 		DevAddress = 0x2000;break;
 	case PS550_bianpingqi:
 		DevAddress = 0x1001;break;
+	
 	default:
 		DevAddress = 0x1002;break;
 	}
@@ -280,7 +281,7 @@ void bianpingqi_jog(void)
 				//bianpingqi_RTU_WriteWord(bianpingqi_write_fun_num,0x1001,(int)(1<<2));
 			}
 			
-			/**********??????????????????????????????????????************/
+			/******判断是否外部有触摸屏幕，如果没有触摸，并且外部按下，则变频器停止******/
 			if(Pen_status==Pen_status_up && ext_jog_status!=press)
 			{
 				bianpingqi_jog_status=0;
@@ -353,6 +354,7 @@ void bianpingqi_speed_cal(void){
 	/*************************************************************/
 
 	//调线
+	/**************************************************************/
 	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan
 		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
 			(at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){

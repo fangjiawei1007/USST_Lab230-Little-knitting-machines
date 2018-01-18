@@ -257,7 +257,7 @@ void zhongduan_fun(void)
 		run_permite_flag=0;
 	}
 	
-	/**额外段完成之后，并且件数到达上限，jishu_max_flag = 1，外部停止标志位置1,13号字模是：
+	/**额外段完成之后，并且件数到达上限，jishu_max_flag = 0，外部停止标志位置1,13号字模是：
 	**/
 	if (((jianshu_ewaiduan_check==1&&jianshu>=zhibusheding) || \
 	   (jianshu>=zhibusheding&&extra_part_jiansu==0) || \

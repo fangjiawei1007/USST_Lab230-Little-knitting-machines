@@ -35,6 +35,7 @@
 #define	shilin_bianpingqi				1
 #define	taili_bianpingqi				2
 #define	PS550_bianpingqi				3
+#define PS3000_bianpinqi				4
 
 /*************************************************************************************************************/
 //»­Ãæ¿Ø¼þºÅ

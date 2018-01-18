@@ -728,11 +728,13 @@ void __irq	encoder1_process(void)
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
 			for (jj = 0 ; jj < 6 ; jj++){
 				for (zushu =0; zushu < tiaoxianzu; zushu++){
-					if (chudao_start[zushu][jj] == 1 && chudao_start_status[zushu][jj] == 0){	//出刀间隔计算 by FJW
+					if (chudao_start[zushu][jj] == 1 && 
+						chudao_start_status[zushu][jj] == 0){	//出刀间隔计算 by FJW
 						chudao_jiange_tmp[zushu][jj] ++;
 					}
 
-					if (shoudao_start[zushu][jj] == 1 && shoudao_start_status[zushu][jj] == 0){	//收刀间隔计算 by FJW
+					if (shoudao_start[zushu][jj] == 1 && 
+						shoudao_start_status[zushu][jj] == 0){	//收刀间隔计算 by FJW
 						shoudao_jiange_tmp[zushu][jj] ++;
 					}
 				}

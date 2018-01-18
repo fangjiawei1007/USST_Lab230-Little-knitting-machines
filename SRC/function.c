@@ -850,29 +850,32 @@ void KeyScan(void)
 	
 		default:
 			//rINTMSK|=BIT_EINT1;
-			/***泉州项目显示修改此处***/
+			/***泉州小圆机：外部X口有信号之后，进入zhongduan.c中的小键盘跳出后显示***/
 			if(xianshi_flag==1)
 			{
+				/***按下确定键按钮之后***/
 				if ((X_result>200&&X_result<440) && (Y_result>150&&Y_result<330))
 				{
-			    	//rINTMSK|=BIT_EINT1;
-					//DisplayDLCompleteScr1(1);
-					Lcd_Button(265,245,375,305,7,3,INSERT);
+			    	
+					Lcd_Button(265,245,375,305,7,3,INSERT);//显示出按下去的样子
+					
 					Beep(1);
-					Delay(BEEP_DELAY);//for(w=0;w<BEEP_DELAY;w++);
+					Delay(BEEP_DELAY);
 					Beep(0);
-					//while(bTSP_DownFlag);
+					
 					wdt_feed_dog();main_enter_flag = 1;
-					//rINTMSK &=~(BIT_GLOBAL|BIT_EINT1);
+					
 					X_result=0;
 					Y_result=0;
-					flag = 0;	
+					flag = 0;
 					xianshi_flag=0;
 					privilege_run_flag=1;
 					delay_qz(0,10,0);
 					Beep(0);
 					qz_error_status=0;
 					DisplayUserScr(CurrentScrNum);
+					
+					/**件数达到上限，外部触发报警界面**/
 					if (jishu_max_flag==0)
 					{
 						encoder1_pulse_number=encoder1_pulse_number_save=0;
@@ -885,8 +888,11 @@ void KeyScan(void)
 						jianshu=0;
 						jianshu_ewaiduan_check=0;
 					}
+					
 					if (previous_dingdanzongshu!=0 && dingdan_lianghua_num_kw>=previous_dingdanzongshu)
 						g_InteralMemory.Word[PING_CTRL]=18;
+					
+					/****清车圈数达到上限****/
 					if (qingche_num_kw>=qingchesheding)
 					{
 						qingche_num_kw=0;
@@ -898,7 +904,7 @@ void KeyScan(void)
 			{
 				UserScrKeyScan();break;
 			}
-			//rINTMSK &=~(BIT_GLOBAL|BIT_EINT1);
+			
 	}
 }
 
@@ -1261,7 +1267,7 @@ int KeyBoard(int Max,int Min,U8 DigitPos,U8 DigitNumb)
 	return Result;
 }
 
-
+//小键盘：数值button 0~9:弹出的时候
 double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 {
 	char Str[10]={0};
@@ -1289,6 +1295,8 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 	while(1)
 	{	
 		count++;
+		
+	/***泉州小圆机：外部中断的判断;计算中断所需要的K值;改变变频器的速度(风险项);调线功能;若外部出错则直接跳出小键盘***/	
 		zhongduan_fun();
 		songsha_fre_change();
 		if(tiaoxiankaiguan_kb == 1)
@@ -1297,10 +1305,13 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 		}
 		bianpingqi_set_speed(bianpingqi_speed);
 		wdt_feed_dog();main_enter_flag = 1;
-		if ((qz_error_status==1&&privilege_run_flag==0)||ext_start_status==press||ext_stop_status==press||ext_jog_status==press)
+		if ((qz_error_status==1&&privilege_run_flag==0)||ext_start_status==press||
+			 ext_stop_status==press||ext_jog_status==press)
 		{
 			return -1;
 		}
+	/**********************************************************************************************************************/	
+		
 		/*if(count > 2000000)
 		{
 			count = 0;
@@ -1313,7 +1324,7 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 			KeyBoard_Refresh();
 		}
 	
-		if(flag==1&&(qz_error_status==0 || privilege_run_flag==1))
+		if(flag==1&&(qz_error_status==0 || privilege_run_flag==1))//增加泉州小圆机进入条件
 		{
 			CalibrateXY();
 			if(X_result>=10+KEYBOARDOFFSET && X_result<=80+KEYBOARDOFFSET && Y_result>=165&&Y_result<=230)   //button 1

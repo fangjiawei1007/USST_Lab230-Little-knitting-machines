@@ -10,7 +10,7 @@
 #define	tiaoxianzu_jiange				g_InteralMemory.KeepWord[99]	//调线间隔圈数
 #define	tiaoxianzu_max					g_InteralMemory.KeepWord[61]	//调线组数
 #define	tiaoxianzu						g_InteralMemory.KeepWord[93]
-#define	tiaoxianzu_quanshu				g_InteralMemory.KeepWord[62]
+#define	tiaoxianzu_quanshu				g_InteralMemory.KeepWord[62]	//
 
 #define Y9								9
 #define Y10								10
@@ -20,11 +20,11 @@
 #define	choose_not_ewaiduan				0
 
 typedef struct{
-	INT16U* kaishiquanshu;
-	INT16U* jieshuquanshu;
-	INT16U* channal_choose;
-	unsigned char* ewaiduan_choose;
-	INT16U* fangdabeishu[7];
+	INT16U* kaishiquanshu;				//调线开始圈数
+	INT16U* jieshuquanshu;				//调线结束圈数
+	INT16U* channal_choose;				//通道数选择(选择第几组刀)
+	unsigned char* ewaiduan_choose;		//额外段选择
+	INT16U* fangdabeishu[7];			//放大倍数：调线的时候，各个电机的速度不一样(百分比)
 }TIAOXIANDUAN;
 
 
@@ -35,7 +35,7 @@ void weisha(unsigned int i,unsigned int zushu);
 unsigned int tiaoxian_jidianqi_write(unsigned int zhushu);
 int between_check(unsigned int roundShineng);
 unsigned int at_check(unsigned int roundShineng);
-void tiaoxian_init(void); //by FJW 调线功能
+void tiaoxian_init(void); 				//by FJW 调线功能
 void tiaoxian_reset(void);
 
 #endif
