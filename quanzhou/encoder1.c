@@ -183,7 +183,8 @@ void SpeedChange(const unsigned int* kMotor){
 	//上电第一次强制将速度加到K值，不通过变速执行
 	if (forceEqual == 1){
 		for ( i = 0; i<7 ; i++){
-			k_motor[i] = kMotor[i];
+			//k_motor[i] = kMotor[i];
+			k_motor_cal[i] = kMotor[i];
 			previousKMotor[i] = kMotor[i];
 			previousKMotorCompare[i] = kMotor[i];
 			speedUpFlag[i] = 0;
@@ -238,10 +239,10 @@ void SpeedChange(const unsigned int* kMotor){
 					k_motor_cal[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt[i]/speedUpMax);
 					
 					/**当计算的k值与实际的k值不一样时再去进行变换 by FJW**/
-					if(k_motor_cal[i] != k_motor[i])
+					/* if(k_motor_cal[i] != k_motor[i])
 					{
 						k_motor[i] = k_motor_cal[i];
-					}
+					} */
 					
 					speedUpFlag[i] = 1;
 					speedDownFlag[i] = 0;
@@ -259,10 +260,10 @@ void SpeedChange(const unsigned int* kMotor){
 					k_motor_cal[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt[i]/speedDownMax);
 					
 					/**当计算的k值与实际的k值不一样时再去进行变换 by FJW**/
-					if(k_motor_cal[i] != k_motor[i])
+					/* if(k_motor_cal[i] != k_motor[i])
 					{
 						k_motor[i] = k_motor_cal[i];
-					}
+					} */
 					
 					speedDownFlag[i] = 1;
 					speedUpFlag[i] = 0;
@@ -276,6 +277,15 @@ void SpeedChange(const unsigned int* kMotor){
 		}
 		forceUpEqual = 0;
 		forceDownEqual = 0;
+	}
+	
+	/**将中间判断的值放到，最后判断是否k值有改变，如果有改变则改变其k值**/
+	for(i = 0;i<7;i++)
+	{
+		if(k_motor_cal[i] != k_motor[i])
+		{
+			k_motor[i] = k_motor_cal[i];
+		}
 	}
 }
 

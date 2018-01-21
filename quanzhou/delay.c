@@ -30,7 +30,9 @@ void __irq	Timer0_Proc(void)
 {
 	static unsigned int init_enter_times=0;
 
-	/**不使用变频器的情况下，防止屏死机，但是中断程序还在运行**/
+	/**不使用变频器的情况下，开机时，需要先拉低电平，过一段时间再将电平拉高
+									防止屏死机，但是中断程序还在运行
+	**/
 	if (Choose_bianpingqi_kb==CHOOSE_NOT && 
 	    init_enter_times < init_stop_time_kw && 
 		init_stop_status == 0){

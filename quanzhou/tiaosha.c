@@ -5,7 +5,7 @@ unsigned int shoudao_start_status[6][6] = {0};
 unsigned int chudao_start[6][6] = {0};
 unsigned int shoudao_start[6][6] = {0};
 unsigned int chudao_shoudao_status[6][6] = {0};
-unsigned int kaiguan[6][6] = {0x00};	
+unsigned int kaiguan[6][6] = {0x00};			//外部通讯帧的具体实现	
 unsigned int shinengwei[6]={0};	
 unsigned int tongxunzhen[6] = {0xffff};
 unsigned int tongxunstart[6] = {0};
@@ -41,7 +41,7 @@ void tiaoxian_init(void)	//调线初始化 by FJW
 	
 	for (bb = 0 ; bb < tiaoxianzu_max; bb++){
 		for (ii = 0 ; ii < 5 ; ii++){
-			/**通讯成功之后会直接退出循环**/
+			/**通讯成功之后会直接退出循环,5次为容错**/
 			if (tiaoxian_jidianqi_write(bb) == 1){
 				break;
 			}
@@ -54,6 +54,8 @@ void tiaoxian_init(void)	//调线初始化 by FJW
 		tiaoxianduan[ii].jieshuquanshu = &g_InteralMemory.KeepWord[157 + 10*ii];
 		tiaoxianduan[ii].channal_choose= &g_InteralMemory.KeepWord[158 + 10*ii];
 		tiaoxianduan[ii].ewaiduan_choose=&g_InteralMemory.KeepBit[49 + ii];
+	
+		/**7路电机放大倍数**/
 		for (bb = 0; bb<7; bb++){
 			tiaoxianduan[ii].fangdabeishu[bb] = &g_InteralMemory.KeepWord[159 + 10*ii + bb];
 		}
@@ -82,14 +84,14 @@ void tiaoxian_reset(void){
 	
 	for (bb = 0 ; bb < tiaoxianzu_max; bb++){
 		for (ii = 0 ; ii < 5 ; ii++){
-			/**通讯成功之后会直接退出循环**/
+			/**通讯成功之后会直接退出循环，5次容错**/
 			if (tiaoxian_jidianqi_write(bb) == 1){
 				break;
 			}
 		}
 	}
 	
-	/*****************6把刀具判断哪一段刀具运动********************/
+	/*****************6组刀具全部复位********************/
 	for (bb =0; bb<6;bb++){
 		
 		/*****使能位、通讯帧、通讯开始信号*****/
@@ -125,13 +127,13 @@ void tiaoxian_reset(void){
 
 /*************************************************
 Function(函数名称): between_check(unsigned int roundShineng)
-Description(函数功能、性能等的描述): 主要用于shinengpanduan()函数
+Description(函数功能、性能等的描述): 主要用于shinengpanduan()函数，判断当前阶段是否是在调线圈数之内
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): songsha_fre_change(void);		shinengpanduan(void);
 
 Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): roundShineng——大盘使能(传入dapan_round)
 Output(对输出参数的说明):
-Return: i:调线第i段
+Return: i:当前在调线的第i段
 Others: 
 Author:王德铭
 Modified:
@@ -225,10 +227,13 @@ unsigned int at_check(unsigned int roundShineng){
 		if ((tiaoxianzu_quanshu != 0 || tiaoxianzu_jiange == 1) && 
 			 tiaoxianzu_flag == 1 && tiaoxianzu_jiange != 0)
 		{
-			if (roundShineng == (dapan_round + 1) && ((tiaoxianzu_quanshu+1) % tiaoxianzu_jiange ==0 )) {
+			if (roundShineng == (dapan_round + 1) && 
+			   ((tiaoxianzu_quanshu+1) % tiaoxianzu_jiange ==0 )) {
 				return 1;
 			}
-			if (roundShineng == (dapan_round ) && ((tiaoxianzu_quanshu) % tiaoxianzu_jiange ==0 )) {
+			
+			if (roundShineng == (dapan_round ) && 
+			   ((tiaoxianzu_quanshu) % tiaoxianzu_jiange ==0 )) {
 				return 1;
 			}
 		}
@@ -250,7 +255,7 @@ unsigned int at_check(unsigned int roundShineng){
 						}
 						return 1;
 					}
-					/**************************下一个阶段为额外段，并且外部开关不选择额外段************************************/
+					/**************************下一个阶段不为额外段，并且外部开关不选择额外段************************************/
 					else if (getStage(current_stage,NEXTSTAGE) != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
 						if (roundShineng == dapan_round && tiaoxianzu_flag != 1 && tiaoxianzu_jiange != 0){
 							tiaoxianzu = 1;
@@ -415,7 +420,8 @@ void tiaoxian(void)
 	
 	/**************tiaoxianzu？*************************************************/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
-	
+		
+		/***判断6把刀具是否使能***/
 		for (i = 0; i<6 ; i++){
 			
 			/***********使能位==1之后，设置通讯帧，设置通讯开始标志位，出刀收刀开始标志*********/
@@ -482,8 +488,10 @@ unsigned int tiaoxian_jidianqi_write(unsigned int zushu)
 	U8 Count,jdqCheck,waitTime;
 	int i;
 	U32 ErrorLoop;
-#define	tiaoxiannormal	0
-#if tiaoxiannormal
+	
+	//rUBRDIV3 = ( (int)(SYS_PCLK/16./57600+0.5) -1 );		//该通讯板需要57600的波特率才能工作
+#define	TIAOXIAN_DEBUG	0
+#if TIAOXIAN_DEBUG
 	U8 auchMsg[10],SendArray[10],RecArray[10];  
 	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;
 	/* if (rULCON3!=0x2B) 
@@ -560,7 +568,7 @@ unsigned int tiaoxian_jidianqi_write(unsigned int zushu)
 
 	rGPHDAT |= 0x1000;	//GPH12	+Write
 	Delay(DELAY_TIME_RTU);
-#if tiaoxiannormal
+#if TIAOXIAN_DEBUG
 	for (Count=0;Count<10;Count++)
 #else
 	for (Count=0;Count<11;Count++)
@@ -596,14 +604,20 @@ unsigned int tiaoxian_jidianqi_write(unsigned int zushu)
 			}
 		}
 		if (jdqCheck>=3){
+			
+			//rUBRDIV3 = ( (int)(SYS_PCLK/16./9600+0.5) -1 );	//函数返回之前将波特率换回去
 			return 1;		//10个通讯帧中有3个匹配就返回1
 		}
 		else{
+			//rUBRDIV3 = ( (int)(SYS_PCLK/16./9600+0.5) -1 );	//函数返回之前将波特率换回去
 			return 0;
 		}	
 	}
 	else
-		return 0;
+		{
+			//rUBRDIV3 = ( (int)(SYS_PCLK/16./9600+0.5) -1 );	//函数返回之前将波特率换回去
+			return 0;
+		}
 }
 
 

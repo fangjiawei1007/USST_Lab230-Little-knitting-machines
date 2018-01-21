@@ -36,6 +36,7 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 	U32 ErrorLoop;
 	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;
 	
+	/****选择寄存器地址****/
 	switch (bianpingqi_zhonglei){
 	case shilin_bianpingqi:
 		DevAddress = 0x1002;break;
@@ -43,7 +44,9 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 		DevAddress = 0x2000;break;
 	case PS550_bianpingqi:
 		DevAddress = 0x1001;break;
-	
+	case PS3000_bianpinqi:
+		DevAddress = 0x0002;break;
+		
 	default:
 		DevAddress = 0x1002;break;
 	}
@@ -356,7 +359,8 @@ void bianpingqi_speed_cal(void){
 	//调线
 	/**************************************************************/
 	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan
-		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
+		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
+			(encoder1_cal_factor - jiajiansujiangemaichong_kw))||
 			(at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
 			
 			bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
