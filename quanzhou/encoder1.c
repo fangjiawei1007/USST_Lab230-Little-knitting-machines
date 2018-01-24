@@ -236,7 +236,7 @@ void SpeedChange(const unsigned int* kMotor){
 				
 				else{
 					/**算式使用中间变量更为合理，因为k_motor为中断中直接使用的值；by FJW**/
-					k_motor_cal[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*speedUpCnt[i]/speedUpMax);
+					k_motor_cal[i] = (previousKMotor[i] + ( kMotor[i] - previousKMotor[i] )*(int)(speedUpCnt[i]/speedUpMax));
 					
 					/**当计算的k值与实际的k值不一样时再去进行变换 by FJW**/
 					/* if(k_motor_cal[i] != k_motor[i])
@@ -257,7 +257,7 @@ void SpeedChange(const unsigned int* kMotor){
 				}
 				else{
 					/**算式使用中间变量更为合理，因为k_motor为中断中直接使用的值；by FJW**/
-					k_motor_cal[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*speedDownCnt[i]/speedDownMax);
+					k_motor_cal[i] = (previousKMotor[i] - ( previousKMotor[i] - kMotor[i] )*(int)(speedDownCnt[i]/speedDownMax));
 					
 					/**当计算的k值与实际的k值不一样时再去进行变换 by FJW**/
 					/* if(k_motor_cal[i] != k_motor[i])
@@ -506,7 +506,7 @@ void songsha_fre_change(void){
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=	(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
 										(getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE) )
-										*(dapan_round-daduanquanshu)/middlequanshu)*(*tiaoxianduan[i].fangdabeishu[bb])/100; 
+										*(int)((dapan_round-daduanquanshu)/middlequanshu)*(*tiaoxianduan[i].fangdabeishu[bb])/100); 
 				}
 			}
 			else{
@@ -515,7 +515,7 @@ void songsha_fre_change(void){
 					/**K值计算 K_need = (K1 - (K1-K2)*(x/y))**/
 					kMotorTarget[bb]=	(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
 										(getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE))
-										*(dapan_round-daduanquanshu)/middlequanshu); 
+										*(int)((dapan_round-daduanquanshu)/middlequanshu)); 
 				}
 			}
 			
@@ -567,7 +567,7 @@ void songsha_fre_change(void){
 				//裁剪段的初值和小头段的工况相同，和分层段的K值不同，
 				kMotorTarget[bb] = (getKMotor(bb,fencenduan,PREVIOUSSTAGE)+
 								   (getKMotor(bb,current_stage,NEXTSTAGE)-getKMotor(bb,fencenduan,PREVIOUSSTAGE) )
-									*(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu)/langfeiquanshu);
+									*(int)((dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu)/langfeiquanshu));
 			}
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
