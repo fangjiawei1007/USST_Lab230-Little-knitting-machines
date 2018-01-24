@@ -176,7 +176,7 @@ Commented:方佳伟
 void SpeedChange(const unsigned int* kMotor){
 	static unsigned int previousKMotor[7]={0};
 	static unsigned int previousKMotorCompare[7]={0};
-	unsigned int k_motor_cal[7]={0};				//作为计算值k_motor_cal[7]的中间变量
+	static unsigned int k_motor_cal[7]={0};				//作为计算值k_motor_cal[7]的中间变量
 	
 	int i;
 	
@@ -203,13 +203,13 @@ void SpeedChange(const unsigned int* kMotor){
 			//speedUpMax次加速/减速结束以后，speedUpFlag[n]/speedDownFlag[n]置0，
 			//speedUpCnt[n]/speedDownCnt[n]重置
 			if (speedUpCnt[i] >= speedUpMax && speedUpFlag[i] == 1){
-				k_motor[i] = kMotor[i];
+				k_motor_cal[i] = kMotor[i];
 				previousKMotor[i] = kMotor[i];
 				speedUpFlag[i] = 0;
 				speedUpCnt[i] = 1;
 			}
 			if (speedDownCnt[i] >= speedDownMax && speedDownFlag[i] == 1){
-				k_motor[i] = kMotor[i];
+				k_motor_cal[i] = kMotor[i];
 				previousKMotor[i] = kMotor[i];
 				speedDownFlag[i] = 0;
 				speedDownCnt[i] = 1;
@@ -229,7 +229,7 @@ void SpeedChange(const unsigned int* kMotor){
 			if (previousKMotor[i] < kMotor[i]){
 				//forceUpEqual未使用
 				if (forceUpEqual == 1){
-					k_motor[i] = kMotor[i];
+					k_motor_cal[i] = kMotor[i];
 					previousKMotor[i] = kMotor[i];
 					previousKMotorCompare[i] = kMotor[i];
 				}
@@ -251,7 +251,7 @@ void SpeedChange(const unsigned int* kMotor){
 			else if (previousKMotor[i] > kMotor[i]){
 				//强制降速，外部过渡段会使用
 				if (forceDownEqual == 1){
-					k_motor[i] = kMotor[i];
+					k_motor_cal[i] = kMotor[i];
 					previousKMotor[i] = kMotor[i];
 					previousKMotorCompare[i] = kMotor[i];
 				}
@@ -271,8 +271,8 @@ void SpeedChange(const unsigned int* kMotor){
 			}
 			
 			//容错设置
-			else if (k_motor[i] != kMotor[i]){
-				k_motor[i] = kMotor[i];
+			else if (k_motor_cal[i] != kMotor[i]){
+				k_motor_cal[i] = kMotor[i];
 			}
 		}
 		forceUpEqual = 0;
@@ -863,7 +863,7 @@ void __irq	encoder1_process(void)
 		    sys_force_run_button == 0 && 
 			shangduansha_alarm_level!=level_0){
 			error_times++;
-			if (error_times >= 5){
+			if (error_times >= 10){
 				rGPBDAT &= ~(1<<3); //Y3置0
 				rGPBDAT |= 1<<1;	//Y1置1
 				bianpingqi_previous_speed=0;

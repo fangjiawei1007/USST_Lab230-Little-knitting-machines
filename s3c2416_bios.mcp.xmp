@@ -115,7 +115,6 @@
             <Header RelativePath=".\quanzhou\tiaosha.h" />
             <Header RelativePath=".\quanzhou\wdt.h" />
             <Header RelativePath=".\quanzhou\zhongduan.h" />
-            <Header RelativePath='.\打开文件 &quot;' />
         </File>
         <File RelativePath=".\SRC\end.s" FileType="2" Output="end.o">
             <ADS_AsmParam Name="ADS_CfgFlag" ver64m_bin=' -cpu ARM926EJ-S -fpu None -keep -g -PD &quot;SDRAM_COL_BIT SETA 1&quot; -PD &quot;SDRAM_END SETA 0x34000000&quot;' ver64m_bin_tool="1" ver64m_hex=' -cpu ARM920T -fpu None -g -keep -PD &quot;SDRAM_END SETA 0x34000000&quot;' ver64m_hex_tool="1" />

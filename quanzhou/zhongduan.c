@@ -105,7 +105,7 @@ void zhongduan_fun(void)
 					break;
 				case shangduansha_port:
 					previous_error_status_w=2;
-					if (qz_cuowu_cishu[shangduansha_port]<2){
+					if (qz_cuowu_cishu[shangduansha_port]<7){
 						qz_cuowu_cishu[shangduansha_port]++;break;
 					}
 					else{
