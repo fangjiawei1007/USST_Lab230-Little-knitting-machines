@@ -736,8 +736,8 @@ void __irq	encoder1_process(void)
 		
 		/**调线功能**/
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
-			for (jj = 0 ; jj < 6 ; jj++){
-				for (zushu =0; zushu < tiaoxianzu; zushu++){
+			for (zushu =0; zushu < tiaoxianzu; zushu++){
+				for (jj = 0 ; jj < 6 ; jj++){
 					if (chudao_start[zushu][jj] == 1 && 
 						chudao_start_status[zushu][jj] == 0){	//出刀间隔计算 by FJW
 						chudao_jiange_tmp[zushu][jj] ++;
@@ -747,8 +747,13 @@ void __irq	encoder1_process(void)
 						shoudao_start_status[zushu][jj] == 0){	//收刀间隔计算 by FJW
 						shoudao_jiange_tmp[zushu][jj] ++;
 					}
-				}
-			}	
+					
+					if(weisha_jiange_status[zushu][jj] == 1)
+					{
+						weisha_jiange[zushu][jj]++;
+					}
+				}	
+			}
 		}
 		
 		/**将7组电机分为上下沿两次进行判断，以减小每次循环次数(上半部分)**/

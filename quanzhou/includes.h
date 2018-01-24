@@ -164,7 +164,8 @@ extern unsigned int speed_status;
 extern unsigned int ewaiduan_fencen_status;
 extern unsigned int jiajiaStatus;
 
-
+extern unsigned int weisha_jiange[6][6];
+extern unsigned int weisha_jiange_status[6][6];
 
 extern TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 

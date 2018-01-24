@@ -19,6 +19,10 @@
 #define	choose_ewaiduan					1
 #define	choose_not_ewaiduan				0
 
+/***喂纱间隔 2018.1.24***/
+#define weisha_jiange_kw				g_InteralMemory.KeepWord[460]	//喂纱间隔
+
+/*************************/
 typedef struct{
 	INT16U* kaishiquanshu;				//调线开始圈数
 	INT16U* jieshuquanshu;				//调线结束圈数
@@ -31,7 +35,7 @@ typedef struct{
 void shinengpanduan(void);
 void tiaoxian(void);
 void chudao_shoudao_process(unsigned int i,unsigned int zushu);
-void weisha(unsigned int i,unsigned int zushu);
+void weisha(unsigned int i,unsigned int zushu,unsigned int on_off);
 unsigned int tiaoxian_jidianqi_write(unsigned int zhushu);
 int between_check(unsigned int roundShineng);
 unsigned int at_check(unsigned int roundShineng);

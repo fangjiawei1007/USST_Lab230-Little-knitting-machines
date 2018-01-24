@@ -177,6 +177,9 @@ void menu_init(void)
 		
 		jiajiansujiangemaichong_kw = 10000;
 		
+		weisha_jiange_kw = 0;	//Î¹É´¼ä¸ô
+	/**********************************************/	
+		
 		menu_init_flag=1;
 	}
 	

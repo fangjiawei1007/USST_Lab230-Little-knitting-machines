@@ -1,5 +1,11 @@
 #include "includes.h"
 
+
+enum TIAOXIAN_MACRO{
+	ON,
+	OFF
+};
+
 unsigned int chudao_start_status[6][6] = {0};
 unsigned int shoudao_start_status[6][6] = {0};
 unsigned int chudao_start[6][6] = {0};
@@ -7,13 +13,16 @@ unsigned int shoudao_start[6][6] = {0};
 unsigned int chudao_shoudao_status[6][6] = {0};
 unsigned int kaiguan[6][6] = {0x00};			//外部通讯帧的具体实现	
 unsigned int shinengwei[6]={0};	
-unsigned int tongxunzhen[6] = {0xffff};
+unsigned int tongxunzhen[6] = {0x0000};
 unsigned int tongxunstart[6] = {0};
 unsigned int chudao_jiange_tmp[6][6] = {0};		//出刀间隔记录 by FJW
 unsigned int shoudao_jiange_tmp[6][6] = {0};	//收刀间隔记录 by FJW
 unsigned int chudao_shoudao_start[6][6] = {0};
 //unsigned int tiaoxianzu = 0;
 unsigned int jiajiaStatus = 0;
+
+unsigned int weisha_jiange_status[6][6] = {0};
+unsigned int weisha_jiange[6][6] = {0};
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
@@ -34,20 +43,21 @@ Commented:方佳伟
 void tiaoxian_init(void)	//调线初始化 by FJW
 {
 	int ii,bb;
-	/***写入8路通讯帧，外部输出对应的状态***/
+	/* 
+	//写入8路通讯帧，外部输出对应的状态
 	for (ii = 0 ;ii<tiaoshaduan_max;ii++){
 		tongxunzhen[ii] = 0xffff;//初始化继电器吸合
 	}
 	
 	for (bb = 0 ; bb < tiaoxianzu_max; bb++){
 		for (ii = 0 ; ii < 5 ; ii++){
-			/**通讯成功之后会直接退出循环,5次为容错**/
+			//通讯成功之后会直接退出循环,5次为容错
 			if (tiaoxian_jidianqi_write(bb) == 1){
 				break;
 			}
 		}
 	}
-	
+	 */
 	/***8段参数初始化***/
 	for (ii = 0; ii < tiaoshaduan_max; ii++){
 		tiaoxianduan[ii].kaishiquanshu = &g_InteralMemory.KeepWord[156 + 10*ii];
@@ -79,7 +89,7 @@ Commented:方佳伟
 void tiaoxian_reset(void){
 	int ii,bb;
 	for (ii = 0 ;ii<tiaoshaduan_max;ii++){
-		tongxunzhen[ii] = 0xffff;
+		tongxunzhen[ii] = 0x0;
 	}
 	
 	for (bb = 0 ; bb < tiaoxianzu_max; bb++){
@@ -96,10 +106,10 @@ void tiaoxian_reset(void){
 		
 		/*****使能位、通讯帧、通讯开始信号*****/
 		shinengwei[bb]=0;	
-		tongxunzhen[bb] = 0xffff;
+		tongxunzhen[bb] = 0x0;
 		tongxunstart[bb] = 0;
 		
-		/*******调线出刀收刀部分复位*******/
+		/*******调线出刀收刀部分复位,调纱参数复位*******/
 		for (ii=0;ii<6;ii++){
 			chudao_start_status[bb][ii] = 0;
 			shoudao_start_status[bb][ii] = 0;
@@ -110,6 +120,9 @@ void tiaoxian_reset(void){
 			chudao_shoudao_start[bb][ii] = 0;
 			chudao_jiange_tmp[bb][ii] = 0;		
 			shoudao_jiange_tmp[bb][ii] = 0;	
+			
+			weisha_jiange_status[bb][ii] = 0;
+			weisha_jiange[bb][ii] = 0;
 		}
 	}
 	
@@ -425,8 +438,25 @@ void tiaoxian(void)
 		for (i = 0; i<6 ; i++){
 			
 			/***********使能位==1之后，设置通讯帧，设置通讯开始标志位，出刀收刀开始标志*********/
-			if (shinengwei[i] == 1 && chudao_shoudao_start[zushu][i] == 0){
-				weisha(i,zushu);
+			if (shinengwei[i] == 1 
+				&& 	((chudao_shoudao_start[zushu][i] == 0)
+				||	(weisha_jiange[zushu][i] >=weisha_jiange_kw)&&(weisha_jiange_kw !=0)) )						 
+			{		
+				if(chudao_shoudao_start[zushu][i] == 0)
+				{
+					weisha(i,zushu,ON);
+					weisha_jiange_status[zushu][i] = 1;
+				}
+				
+				else
+				{
+					weisha(i,zushu,OFF);
+					weisha_jiange_status[zushu][i] = 0;
+					
+					weisha_jiange[zushu][i] = 0;
+				}
+					
+				
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
 				chudao_shoudao_status[zushu][i] = 1;
@@ -435,6 +465,8 @@ void tiaoxian(void)
 				chudao_shoudao_start[zushu][i] = 1;
 			}
 			
+			
+			
 			/***********使能位==0之后(即该段不需要调线，那么就要把刀收回来)，
 					   设置出刀收刀，设置通讯开始标志位，出刀收刀开始标志
 			*********/
@@ -442,7 +474,11 @@ void tiaoxian(void)
 				chudao_shoudao_process(i,zushu);					//出刀收刀
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2)); //设置
-				chudao_shoudao_start[zushu][i] = 0;                
+				chudao_shoudao_start[zushu][i] = 0; 
+				
+				/*********出刀收刀完成之后，将weisha_间隔复位***************/
+				weisha_jiange[zushu][i] = 0;
+				weisha_jiange_status[zushu][i] = 0;
 				//previous_stage[i] = current_stage; //此处应该放在出刀收刀结束
 			}
 		}
@@ -637,10 +673,15 @@ Commented:方佳伟
 *************************************************/
 void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 {
+		
+		
+	
+	
+	
 		/**********第一步：kaiguan[zushu][i] = 0x00，打开通讯开关*********/
 		if(chudao_start[zushu][i] == 0 && shoudao_start[zushu][i] == 0)
 		{
-			kaiguan[zushu][i] = 0x00;		//00 00 00 00
+			kaiguan[zushu][i] = 0x03;		//(0b) 11
 			tongxunstart[zushu] = 1;
 			/* Set_Y_Value(Y9,LOW);
 			Set_Y_Value(Y10,LOW); */
@@ -653,7 +694,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		/**********第二步：kaiguan[zushu][i] = 0x01，打开通讯开关*********/
 		if(chudao_jiange_tmp[zushu][i] >= chudao_jiange)
 		{
-			kaiguan[zushu][i] = 0x01;		//01
+			kaiguan[zushu][i] = 0x02;		//(0b)10
 			tongxunstart[zushu] = 1;
 			/* Set_Y_Value(Y9,HIGH);
 			Set_Y_Value(Y10,LOW); */
@@ -668,7 +709,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		/**********第三步：kaiguan[zushu][i] = 0x03，打开通讯开关*********/
 		if(shoudao_jiange_tmp[zushu][i] >= shoudao_jiange)
 		{
-			kaiguan[zushu][i] = 0x03;		//11
+			kaiguan[zushu][i] = 0x00;		//(0b) 00
 			tongxunstart[zushu] = 1;
 			/* Set_Y_Value(Y9,HIGH);
 			Set_Y_Value(Y10,HIGH); */
@@ -685,7 +726,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 
 
 /*************************************************
-Function(函数名称): weisha(unsigned int i,unsigned int zushu)
+Function(函数名称): weisha(unsigned int i,unsigned int zushu,unsigned int on_off)
 Description(函数功能、性能等的描述): 喂纱；主要是设置kaiguan[zushu][i] = 0x02;即二进制(0b)10
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): 
@@ -698,9 +739,12 @@ Author:王德铭
 Modified:
 Commented:方佳伟
 *************************************************/
-void weisha(unsigned int i,unsigned int zushu)
+void weisha(unsigned int i,unsigned int zushu,unsigned int on_off)
 {
-	kaiguan[zushu][i] = 0x02;		//0b 10
+	if(on_off == ON)
+		kaiguan[zushu][i] = 0x01;		//(0b) 01
+	else
+		kaiguan[zushu][i] = 0x00;		//(0b) 00
 	/* Set_Y_Value(Y9,LOW);
 	Set_Y_Value(Y10,HIGH); */
 		
