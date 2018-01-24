@@ -737,7 +737,7 @@ void __irq	encoder1_process(void)
 		/**调线功能**/
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
 			for (zushu =0; zushu < tiaoxianzu; zushu++){
-				for (jj = 0 ; jj < 6 ; jj++){
+				for (jj = 0 ; jj < DAOSHU_MAX ; jj++){
 					if (chudao_start[zushu][jj] == 1 && 
 						chudao_start_status[zushu][jj] == 0){	//出刀间隔计算 by FJW
 						chudao_jiange_tmp[zushu][jj] ++;

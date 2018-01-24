@@ -64,7 +64,7 @@ void App_Init(void)
 
 	Timer0_init_quanzhou();
 
-	if(tiaoxiankaiguan_kb == 1)//mode_choose == tiaoxian_mode
+//	if(tiaoxiankaiguan_kb == 1)//mode_choose == tiaoxian_mode
 		tiaoxian_init();// by FJW
 	//wdt_init_reset();
 	wdt_feed_dog();main_enter_flag = 1;

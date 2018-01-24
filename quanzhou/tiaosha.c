@@ -6,23 +6,23 @@ enum TIAOXIAN_MACRO{
 	OFF
 };
 
-unsigned int chudao_start_status[6][6] = {0};
-unsigned int shoudao_start_status[6][6] = {0};
-unsigned int chudao_start[6][6] = {0};
-unsigned int shoudao_start[6][6] = {0};
-unsigned int chudao_shoudao_status[6][6] = {0};
-unsigned int kaiguan[6][6] = {0x00};			//外部通讯帧的具体实现	
-unsigned int shinengwei[6]={0};	
-unsigned int tongxunzhen[6] = {0x0000};
-unsigned int tongxunstart[6] = {0};
-unsigned int chudao_jiange_tmp[6][6] = {0};		//出刀间隔记录 by FJW
-unsigned int shoudao_jiange_tmp[6][6] = {0};	//收刀间隔记录 by FJW
-unsigned int chudao_shoudao_start[6][6] = {0};
+unsigned int chudao_start_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
+unsigned int shoudao_start_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
+unsigned int chudao_start[ZUSHU_MAX][DAOSHU_MAX] = {0};
+unsigned int shoudao_start[ZUSHU_MAX][DAOSHU_MAX] = {0};
+unsigned int chudao_shoudao_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
+unsigned int kaiguan[ZUSHU_MAX][DAOSHU_MAX] = {0x00};			//外部通讯帧的具体实现	
+unsigned int shinengwei[DAOSHU_MAX]={0};	
+unsigned int tongxunzhen[ZUSHU_MAX] = {0x0000};
+unsigned int tongxunstart[ZUSHU_MAX] = {0};
+unsigned int chudao_jiange_tmp[ZUSHU_MAX][DAOSHU_MAX] = {0};		//出刀间隔记录 by FJW
+unsigned int shoudao_jiange_tmp[ZUSHU_MAX][DAOSHU_MAX] = {0};	//收刀间隔记录 by FJW
+unsigned int chudao_shoudao_start[ZUSHU_MAX][DAOSHU_MAX] = {0};
 //unsigned int tiaoxianzu = 0;
 unsigned int jiajiaStatus = 0;
 
-unsigned int weisha_jiange_status[6][6] = {0};
-unsigned int weisha_jiange[6][6] = {0};
+unsigned int weisha_jiange_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
+unsigned int weisha_jiange[ZUSHU_MAX][DAOSHU_MAX] = {0};
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
@@ -43,21 +43,23 @@ Commented:方佳伟
 void tiaoxian_init(void)	//调线初始化 by FJW
 {
 	int ii,bb;
-	/* 
-	//写入8路通讯帧，外部输出对应的状态
-	for (ii = 0 ;ii<tiaoshaduan_max;ii++){
-		tongxunzhen[ii] = 0xffff;//初始化继电器吸合
-	}
 	
-	for (bb = 0 ; bb < tiaoxianzu_max; bb++){
-		for (ii = 0 ; ii < 5 ; ii++){
-			//通讯成功之后会直接退出循环,5次为容错
-			if (tiaoxian_jidianqi_write(bb) == 1){
-				break;
+	//写入8路通讯帧，外部输出对应的状态
+	if (tiaoxiankaiguan_kb ==1 ){
+		for (ii = 0 ;ii<ZUSHU_MAX;ii++){
+			tongxunzhen[ii] = 0x0;//初始化继电器吸合
+		}
+		
+		for (bb = 0 ; bb < ZUSHU_MAX; bb++){
+			for (ii = 0 ; ii < 5 ; ii++){
+				//通讯成功之后会直接退出循环,5次为容错
+				if (tiaoxian_jidianqi_write(bb) == 1){
+					break;
+				}
 			}
 		}
 	}
-	 */
+	
 	/***8段参数初始化***/
 	for (ii = 0; ii < tiaoshaduan_max; ii++){
 		tiaoxianduan[ii].kaishiquanshu = &g_InteralMemory.KeepWord[156 + 10*ii];
@@ -88,38 +90,40 @@ Commented:方佳伟
 *************************************************/
 void tiaoxian_reset(void){
 	int ii,bb;
-	for (ii = 0 ;ii<tiaoshaduan_max;ii++){
+	/* for (ii = 0 ;ii<ZUSHU_MAX;ii++){
 		tongxunzhen[ii] = 0x0;
 	}
 	
-	for (bb = 0 ; bb < tiaoxianzu_max; bb++){
+	for (bb = 0 ; bb < ZUSHU_MAX; bb++){
 		for (ii = 0 ; ii < 5 ; ii++){
-			/**通讯成功之后会直接退出循环，5次容错**/
+			//通讯成功之后会直接退出循环，5次容错
 			if (tiaoxian_jidianqi_write(bb) == 1){
 				break;
 			}
 		}
-	}
+	} */
 	
 	/*****************6组刀具全部复位********************/
-	for (bb =0; bb<6;bb++){
+	for (bb =0; bb<ZUSHU_MAX;bb++){
 		
 		/*****使能位、通讯帧、通讯开始信号*****/
-		shinengwei[bb]=0;	
+		//shinengwei[bb]=0;					//此处使能位应该与刀数对应，由于组数和刀数相同，所以在外面可行
 		tongxunzhen[bb] = 0x0;
 		tongxunstart[bb] = 0;
 		
 		/*******调线出刀收刀部分复位,调纱参数复位*******/
-		for (ii=0;ii<6;ii++){
+		for (ii=0;ii<DAOSHU_MAX;ii++){
 			chudao_start_status[bb][ii] = 0;
 			shoudao_start_status[bb][ii] = 0;
 			chudao_start[bb][ii] = 0;
 			shoudao_start[bb][ii] = 0;
-			chudao_shoudao_status[bb][ii] = 0;
+			//chudao_shoudao_status[bb][ii] = 0;
 			kaiguan[bb][ii] = 0x00;	
 			chudao_shoudao_start[bb][ii] = 0;
 			chudao_jiange_tmp[bb][ii] = 0;		
 			shoudao_jiange_tmp[bb][ii] = 0;	
+			
+			shinengwei[ii]=0;					//将上面放下来
 			
 			weisha_jiange_status[bb][ii] = 0;
 			weisha_jiange[bb][ii] = 0;
@@ -159,7 +163,7 @@ int between_check(unsigned int roundShineng){
 	if (tiaoxiankaiguan_kb == 0)
 		return -1;
 	
-	for(i=0;i<8;i++){
+	for(i=0;i<tiaoshaduan_max;i++){
 		
 		/***进入条件：1.大于开始圈数
 					2.结束圈数为0表示关闭
@@ -234,7 +238,7 @@ unsigned int at_check(unsigned int roundShineng){
 	}
 	
 	/****调线八段速****/
-	for(i=0;i<8;i++){
+	for(i=0;i<tiaoshaduan_max;i++){
 		
 		/*****************???????????????????????????????????????????????????????????????????********************/
 		if ((tiaoxianzu_quanshu != 0 || tiaoxianzu_jiange == 1) && 
@@ -395,14 +399,14 @@ Commented:方佳伟
 void shinengpanduan(void){
 	int i;
 	unsigned int weizhi = 0x00;
-	for (i = 0 ; i <6 ; i++){
+	for (i = 0 ; i <DAOSHU_MAX ; i++){
 		shinengwei[i] = 0;
 	}
 	i = between_check(dapan_round);
 	/**提取**/
 	if ( i != -1 && current_stage != caijianduan){
 		weizhi = tiqushuzi(*tiaoxianduan[i].channal_choose);
-		for (i = 0 ; i <6 ; i++){
+		for (i = 0 ; i <DAOSHU_MAX ; i++){
 			if ( (weizhi>>i) & 0x01){
 				shinengwei[i] = 1;
 			}
@@ -435,9 +439,11 @@ void tiaoxian(void)
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
 		
 		/***判断6把刀具是否使能***/
-		for (i = 0; i<6 ; i++){
+		for (i = 0; i<DAOSHU_MAX ; i++){
 			
-			/***********使能位==1之后，设置通讯帧，设置通讯开始标志位，出刀收刀开始标志*********/
+			/***********使能位==1之后，设置通讯帧，设置通讯开始标志位，出刀收刀开始标志，
+												喂纱的工艺改变为出刀之后隔一段脉冲收回来
+			*********/
 			if (shinengwei[i] == 1 
 				&& 	((chudao_shoudao_start[zushu][i] == 0)
 				||	(weisha_jiange[zushu][i] >=weisha_jiange_kw)&&(weisha_jiange_kw !=0)) )						 
@@ -452,7 +458,6 @@ void tiaoxian(void)
 				{
 					weisha(i,zushu,OFF);
 					weisha_jiange_status[zushu][i] = 0;
-					
 					weisha_jiange[zushu][i] = 0;
 				}
 					
@@ -477,8 +482,8 @@ void tiaoxian(void)
 				chudao_shoudao_start[zushu][i] = 0; 
 				
 				/*********出刀收刀完成之后，将weisha_间隔复位***************/
-				weisha_jiange[zushu][i] = 0;
-				weisha_jiange_status[zushu][i] = 0;
+				// weisha_jiange[zushu][i] = 0;
+				// weisha_jiange_status[zushu][i] = 0;
 				//previous_stage[i] = current_stage; //此处应该放在出刀收刀结束
 			}
 		}
@@ -673,54 +678,73 @@ Commented:方佳伟
 *************************************************/
 void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 {
-		
-		
-	
-	
-	
-		/**********第一步：kaiguan[zushu][i] = 0x00，打开通讯开关*********/
-		if(chudao_start[zushu][i] == 0 && shoudao_start[zushu][i] == 0)
-		{
+	/****工艺：1.外部喂纱间隔为0:直接执行原来工艺
+			  2.外部喂纱间隔不为0:weisha_jiange_status为0; weisha_jiange[6][6]此时=0;
+	****/
+	if(weisha_jiange_kw !=0){
+		if(weisha_jiange_status[zushu][i] != 1 && weisha_jiange[zushu][i] == 0){
+			kaiguan[zushu][i] = 0x01;		//(0b) 01
+			tongxunstart[zushu] = 1;
+			weisha_jiange_status[zushu][i] = 1;
+		}
+		else if(weisha_jiange[zushu][i]<weisha_jiange_kw){
+			return;
+		}
+		else 
+			weisha_jiange_status[zushu][i] = 0;
+	}
+	/**********第一步：kaiguan[zushu][i] = 0x00，打开通讯开关*********/
+	if(chudao_start[zushu][i] == 0 && shoudao_start[zushu][i] == 0)
+	{
+		if(kaiguan[zushu][i] != 0x03){
 			kaiguan[zushu][i] = 0x03;		//(0b) 11
 			tongxunstart[zushu] = 1;
-			/* Set_Y_Value(Y9,LOW);
-			Set_Y_Value(Y10,LOW); */
 		}
-		
-		/****************?????????????????**************************/
-		if(chudao_start_status[zushu][i] == 0)
-			chudao_start[zushu][i] = 1;
-		
-		/**********第二步：kaiguan[zushu][i] = 0x01，打开通讯开关*********/
-		if(chudao_jiange_tmp[zushu][i] >= chudao_jiange)
-		{
+		/* Set_Y_Value(Y9,LOW);
+		Set_Y_Value(Y10,LOW); */
+	}
+	
+	/****************?????????????????**************************/
+	if(chudao_start_status[zushu][i] == 0)
+		chudao_start[zushu][i] = 1;
+	
+	/**********第二步：kaiguan[zushu][i] = 0x01，打开通讯开关*********/
+	if(chudao_jiange_tmp[zushu][i] >= chudao_jiange)
+	{
+		if(kaiguan[zushu][i] != 0x02)	{
 			kaiguan[zushu][i] = 0x02;		//(0b)10
 			tongxunstart[zushu] = 1;
-			/* Set_Y_Value(Y9,HIGH);
-			Set_Y_Value(Y10,LOW); */
-			
-			chudao_start_status[zushu][i] = 1;
-			chudao_start[zushu][i] = 0;
-			chudao_jiange_tmp[zushu][i] = 0;
-			
-			shoudao_start[zushu][i] = 1;
 		}
-	
-		/**********第三步：kaiguan[zushu][i] = 0x03，打开通讯开关*********/
-		if(shoudao_jiange_tmp[zushu][i] >= shoudao_jiange)
-		{
+		/* Set_Y_Value(Y9,HIGH);
+		Set_Y_Value(Y10,LOW); */
+		
+		chudao_start_status[zushu][i] = 1;
+		chudao_start[zushu][i] = 0;
+		chudao_jiange_tmp[zushu][i] = 0;
+		
+		shoudao_start[zushu][i] = 1;
+	}
+
+	/**********第三步：kaiguan[zushu][i] = 0x03，打开通讯开关*********/
+	if(shoudao_jiange_tmp[zushu][i] >= shoudao_jiange)
+	{
+		if(kaiguan[zushu][i] != 0x00){
 			kaiguan[zushu][i] = 0x00;		//(0b) 00
 			tongxunstart[zushu] = 1;
-			/* Set_Y_Value(Y9,HIGH);
-			Set_Y_Value(Y10,HIGH); */
-			
-			shoudao_start_status[zushu][i] = 1;
-			shoudao_start[zushu][i] = 0;
-			shoudao_jiange_tmp[zushu][i] = 0;
-			
-			//previous_stage[i] = current_stage;
-			chudao_shoudao_status[zushu][i] = 0;
 		}
+		
+		/* Set_Y_Value(Y9,HIGH);
+		Set_Y_Value(Y10,HIGH); */
+		
+		shoudao_start_status[zushu][i] = 1;
+		shoudao_start[zushu][i] = 0;
+		shoudao_jiange_tmp[zushu][i] = 0;
+		
+		//previous_stage[i] = current_stage;
+		chudao_shoudao_status[zushu][i] = 0;
+		
+		weisha_jiange[zushu][i] = 0;
+	}
 }
 
 
