@@ -190,7 +190,7 @@ static EnvParams Env;
 //#define VERSION "Ver4.2.1 2017-7-3"
 //#define VERSION "Ver4.3.0 2017-8-2"
 //#define VERSION "Ver4.3.7 2018-1-22"
-#define VERSION "Ver4.3.9 2018-1-24"
+#define VERSION "Ver4.3.10 2018-1-24"
 
 #define UART_PrintStr		0		// 是否串口输出调试信息
 									// 1 串口输出，则波特率不能修改								
