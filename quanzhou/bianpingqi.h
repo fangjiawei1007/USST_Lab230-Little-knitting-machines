@@ -82,6 +82,11 @@
 /***************************电机方向，输出函数********************************************************/
 #define bianpingqi_station_num		13
 
+/***************************调纱大盘减速比*****************************************/
+#define bianpingqi_weisha_delta_num			g_InteralMemory.KeepWord[461]
+
+
+
 void bianpingqi_start(U8 bianpingqi_run_button);
 void bianpingqi_jog(void);
 void bianpingqi_RTU_WriteWord(U8 function_num,int Value);

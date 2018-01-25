@@ -1,10 +1,7 @@
 #include "includes.h"
 
 
-enum TIAOXIAN_MACRO{
-	ON,
-	OFF
-};
+
 
 unsigned int chudao_start_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int shoudao_start_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
@@ -186,7 +183,49 @@ int between_check(unsigned int roundShineng){
 	}
 	return -1;
 }
+/*************************************************
+Function(函数名称): unsigned int at_check(unsigned int roundShineng)
+Description(函数功能、性能等的描述): 主要用于变频器的变速，主要被bianpingqi_speed_cal()所调用
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): bianpingqi_speed_cal(void)
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): roundShineng：dapan_round值
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
+int weisha_check(unsigned int roundShineng){
+	int current_duan;
+	int next_duan;
+	int current_duan_weizhi;
+	int next_duan_weizhi;
+	int current_weizhi_tmp = 0;
+	int next_weizhi_tmp = 0;
+	int i;
+	
+	current_duan = between_check(roundShineng);
+	next_duan = between_check(roundShineng+1);
+	
+	if(current_duan != next_duan && (current_duan != -1) && (next_duan != -1)){
+		current_duan_weizhi = tiqushuzi(*tiaoxianduan[current_duan].channal_choose);
+		next_duan_weizhi = tiqushuzi(*tiaoxianduan[next_duan].channal_choose);
+	
+		for(i=0;i<DAOSHU_MAX;i++){
+			current_weizhi_tmp = (current_duan_weizhi & 0x01);
+			next_weizhi_tmp = (next_duan_weizhi & 0x01);
+			if((current_weizhi_tmp^next_weizhi_tmp) && (current_weizhi_tmp == 0)){
+				return WEISHAJIANSU;
+			}
+			current_duan_weizhi = (current_duan_weizhi >>1);
+			next_duan_weizhi = (next_duan_weizhi >>1);
+		}
+		return WEISHABUJIANSU;
+	}
+	return WEISHAJIANSU;
+}
 
 /*************************************************
 Function(函数名称): unsigned int at_check(unsigned int roundShineng)

@@ -360,12 +360,26 @@ void bianpingqi_speed_cal(void){
 	/**************************************************************/
 	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan
 		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
-			(encoder1_cal_factor - jiajiansujiangemaichong_kw))||
-			(at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
-			
-			bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
+			(encoder1_cal_factor - jiajiansujiangemaichong_kw))){
+			if (weisha_check(dapan_round) == WEISHAJIANSU){
+					bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
+				}
+				else{
+					bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_weisha_delta_num/100.0);
+				}
 			return;
 		}
+		if ((at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
+			return;
+		}
+		
+		// if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
+			// (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
+			// (at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
+			
+			
+		// }
+		// weisha_pre_speed_status = 0;
 	}
 	
 	/**quanshu[x+1]，后面的功能代码的next_stage其实是表示的current_stage，因为其没有+1，
