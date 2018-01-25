@@ -127,6 +127,7 @@ void menu_init(void)
 		bianpingqi_delta_num=50;
 		bianpingqi_fencen_speed_set=500;
 		bianpingqi_tiaoxian_speed_set = 500;
+		bianpingqi_weisha_delta_num = 100;
 		
 		xifenshu=800;
 		jianshu=0;
@@ -363,7 +364,7 @@ void stepmotor_init(void)
 		qigang_zhonglei_choose=xiamian;
 		
 		
-		encoder1_cal_factor=26677;
+		encoder1_cal_factor=20000;
 		stepmotor_init_flag=1;
 	}
 	

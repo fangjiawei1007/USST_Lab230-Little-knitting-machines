@@ -205,9 +205,13 @@ int weisha_check(unsigned int roundShineng){
 	int current_weizhi_tmp = 0;
 	int next_weizhi_tmp = 0;
 	int i;
+	static unsigned int roundShineng_use = 0;
 	
-	current_duan = between_check(roundShineng);
-	next_duan = between_check(roundShineng+1);
+	if(tiaoxianzu_flag == 0){
+		roundShineng_use = roundShineng;
+	}
+	current_duan = between_check(roundShineng_use);
+	next_duan = between_check(roundShineng_use+1);
 	
 	if(current_duan != next_duan && (current_duan != -1) && (next_duan != -1)){
 		current_duan_weizhi = tiqushuzi(*tiaoxianduan[current_duan].channal_choose);
@@ -222,6 +226,12 @@ int weisha_check(unsigned int roundShineng){
 			current_duan_weizhi = (current_duan_weizhi >>1);
 			next_duan_weizhi = (next_duan_weizhi >>1);
 		}
+		return WEISHABUJIANSU;
+	}
+	if (current_duan == -1){
+		return WEISHAJIANSU;
+	}
+	else if (next_duan == -1){
 		return WEISHABUJIANSU;
 	}
 	return WEISHAJIANSU;
@@ -248,6 +258,8 @@ unsigned int at_check(unsigned int roundShineng){
 					  2.调线组间隔圈数！=0
 					  3.调线组圈数%调线组间隔圈数:间隔圈数的倍数
 					  4.jiajiaStatus == 0
+		此处代码主要为了判断当前是否调线组需要++以判断第二组 刀具是否需要出刀收刀，
+		此处只是条件的增加，而不会return;
 	***/
 	if (tiaoxianzu_quanshu != 0 && tiaoxianzu_jiange != 0 &&
 		tiaoxianzu_quanshu % tiaoxianzu_jiange ==0 && jiajiaStatus == 0)
@@ -276,24 +288,35 @@ unsigned int at_check(unsigned int roundShineng){
 		jiajiaStatus = 0;
 	}
 	
-	/****调线八段速****/
-	for(i=0;i<tiaoshaduan_max;i++){
+	
 		
-		/*****************???????????????????????????????????????????????????????????????????********************/
-		if ((tiaoxianzu_quanshu != 0 || tiaoxianzu_jiange == 1) && 
-			 tiaoxianzu_flag == 1 && tiaoxianzu_jiange != 0)
-		{
-			if (roundShineng == (dapan_round + 1) && 
-			   ((tiaoxianzu_quanshu+1) % tiaoxianzu_jiange ==0 )) {
-				return 1;
-			}
+	/****	进入条件:1.调线组圈数不等于0 || 调线组间隔等于1
+					2.调线组flag等于1并且调线组间隔不等于0
+		
+			此处代码对应判断是否到了第n组调线的时候，提前一圈降速(通过return 1;将函数返回):
+			if ((at_check((dapan_round+1)) && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw)))
 			
-			if (roundShineng == (dapan_round ) && 
-			   ((tiaoxianzu_quanshu) % tiaoxianzu_jiange ==0 )) {
-				return 1;
-			}
+			判断是否当前圈是否需要在其后面减速:
+			if ((at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw))
+	****/
+	if ((tiaoxianzu_quanshu != 0 || tiaoxianzu_jiange == 1) && 
+		 tiaoxianzu_flag == 1 && tiaoxianzu_jiange != 0)
+	{
+		
+		if (roundShineng == (dapan_round + 1) && 
+		   ((tiaoxianzu_quanshu+1) % tiaoxianzu_jiange ==0 )) {
+			return 1;
 		}
 		
+		if (roundShineng == (dapan_round ) && 
+		   ((tiaoxianzu_quanshu) % tiaoxianzu_jiange ==0 )) {
+			return 1;
+		}
+	}
+	
+	
+	/****调线八段速，此处仅仅为第1组的开始和结束，其余刀组数的判断均为上述代码进行判断****/
+	for(i=0;i<tiaoshaduan_max;i++){
 		/*****只要开启调线，首先进入以下函数******/
 		if (*tiaoxianduan[i].jieshuquanshu)//对应上限不为零
 		{											
@@ -474,7 +497,7 @@ void tiaoxian(void)
 	unsigned int zushu;
 	shinengpanduan();	//判断第i组刀具的使能
 	
-	/**************tiaoxianzu？*************************************************/
+	/**************当tiaoxianzu_flag=1时，tioaxianzu_quanshu++;*************************************************/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
 		
 		/***判断6把刀具是否使能***/
