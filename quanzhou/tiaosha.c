@@ -21,6 +21,10 @@ unsigned int jiajiaStatus = 0;
 unsigned int weisha_jiange_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int weisha_jiange[ZUSHU_MAX][DAOSHU_MAX] = {0};
 
+unsigned int shoudao_tozero_status[ZUSHU_MAX]={0};	//刀具归零复位标志
+unsigned int shoudao_reset_flag = 0;
+unsigned int tongxunnum[6] = {0};
+
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
 /*************************************************
@@ -100,7 +104,7 @@ void tiaoxian_reset(void){
 		}
 	} */
 	
-	/*****************6组刀具全部复位********************/
+	/*****************6组刀具，6把刀全部复位********************/
 	for (bb =0; bb<ZUSHU_MAX;bb++){
 		
 		/*****使能位、通讯帧、通讯开始信号*****/
@@ -124,17 +128,20 @@ void tiaoxian_reset(void){
 			
 			weisha_jiange_status[bb][ii] = 0;
 			weisha_jiange[bb][ii] = 0;
+			
+			if (chudao_shoudao_status[bb][ii] == 1){//喂纱后点击清零，需要出刀的才将shoudao_tozero_status[bb]置1
+				shoudao_tozero_status[bb]= 1;
+			}	
 		}
 	}
-	
 	/****************调线间隔圈数******************/
-	if (tiaoxianzu_jiange != 0){
+	/* if (tiaoxianzu_jiange != 0){
 		tiaoxianzu = 1;
 	}
 	else
-		tiaoxianzu = tiaoxianzu_max;
-	
-	
+		tiaoxianzu = tiaoxianzu_max; */
+	shoudao_reset_flag = 1;
+	tiaoxianzu = tiaoxianzu_max;
 	tiaoxianzu_flag = 0;
 	tiaoxianzu_quanshu=0;
 }
@@ -465,6 +472,7 @@ void shinengpanduan(void){
 		shinengwei[i] = 0;
 	}
 	i = between_check(dapan_round);
+	at_check(dapan_round);
 	/**提取**/
 	if ( i != -1 && current_stage != caijianduan){
 		weizhi = tiqushuzi(*tiaoxianduan[i].channal_choose);
@@ -492,10 +500,10 @@ Commented:方佳伟
 *************************************************/
 void tiaoxian(void)
 {
-	static unsigned int tongxunnum[6] = {0};
 	int i;
+	int j=0;
 	unsigned int zushu;
-	shinengpanduan();	//判断第i组刀具的使能
+	shinengpanduan();	//判断第i把刀具的使能
 	
 	/**************当tiaoxianzu_flag=1时，tioaxianzu_quanshu++;*************************************************/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
@@ -504,12 +512,11 @@ void tiaoxian(void)
 		for (i = 0; i<DAOSHU_MAX ; i++){
 			
 			/***********使能位==1之后，设置通讯帧，设置通讯开始标志位，出刀收刀开始标志，
-												喂纱的工艺改变为出刀之后隔一段脉冲收回来
+											  喂纱的工艺改变为出刀之后隔一段脉冲收回来
 			*********/
-			if (shinengwei[i] == 1 
-				&& 	((chudao_shoudao_start[zushu][i] == 0)
-				||	(weisha_jiange[zushu][i] >=weisha_jiange_kw)&&(weisha_jiange_kw !=0)) )						 
-			{		
+			if (shinengwei[i] == 1 && (weisha_jiange_kw !=0) &&
+				((chudao_shoudao_start[zushu][i] == 0)||(weisha_jiange[zushu][i] >=weisha_jiange_kw))){						 
+					
 				if(chudao_shoudao_start[zushu][i] == 0)
 				{
 					weisha(i,zushu,ON);
@@ -521,23 +528,19 @@ void tiaoxian(void)
 					weisha(i,zushu,OFF);
 					weisha_jiange_status[zushu][i] = 0;
 					weisha_jiange[zushu][i] = 0;
-				}
-					
-				
+				}				
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
 				chudao_shoudao_status[zushu][i] = 1;
 				// previous_stage[i] = current_stage;
 				tongxunstart[zushu] = 1;
+				tongxunnum[zushu]=0;
 				chudao_shoudao_start[zushu][i] = 1;
 			}
-			
-			
-			
 			/***********使能位==0之后(即该段不需要调线，那么就要把刀收回来)，
 					   设置出刀收刀，设置通讯开始标志位，出刀收刀开始标志
 			*********/
-			else if (shinengwei[i] == 0 && chudao_shoudao_status[zushu][i] == 1){
+			else if ((shinengwei[i] == 0) && (chudao_shoudao_status[zushu][i] == 1)){
 				chudao_shoudao_process(i,zushu);					//出刀收刀
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2)); //设置
@@ -547,15 +550,13 @@ void tiaoxian(void)
 				// weisha_jiange[zushu][i] = 0;
 				// weisha_jiange_status[zushu][i] = 0;
 				//previous_stage[i] = current_stage; //此处应该放在出刀收刀结束
-			}
+			}	
 		}
-		
 		/***通讯开始***/
 		if (tongxunstart[zushu] == 1 && tongxunnum[zushu] <5){
 			/***5次通讯容错***/
 			if (tiaoxian_jidianqi_write(zushu) != 1){
 				tongxunnum[zushu] ++ ;
-				
 			}
 			else{
 				tongxunnum[zushu] = 0;
@@ -570,6 +571,21 @@ void tiaoxian(void)
 		else if (tongxunnum[zushu] != 0)
 			tongxunnum[zushu] = 0;
 	}
+	if (shoudao_reset_flag == 1){
+		for (j=0;j<ZUSHU_MAX;j++){
+			if (shoudao_tozero_status[j] != 0)
+				return;
+		}
+		if (j >= ZUSHU_MAX){
+			if (tiaoxianzu_jiange != 0){
+				tiaoxianzu = 1;
+			}
+			else
+				tiaoxianzu = tiaoxianzu_max;
+			shoudao_reset_flag = 0;
+		}
+	}
+	
 }
 
 /*************************************************
@@ -747,6 +763,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		if(weisha_jiange_status[zushu][i] != 1 && weisha_jiange[zushu][i] == 0){
 			kaiguan[zushu][i] = 0x01;		//(0b) 01
 			tongxunstart[zushu] = 1;
+			tongxunnum[zushu] = 0;
 			weisha_jiange_status[zushu][i] = 1;
 		}
 		else if(weisha_jiange[zushu][i]<weisha_jiange_kw){
@@ -761,6 +778,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		if(kaiguan[zushu][i] != 0x03){
 			kaiguan[zushu][i] = 0x03;		//(0b) 11
 			tongxunstart[zushu] = 1;
+			tongxunnum[zushu] = 0;
 		}
 		/* Set_Y_Value(Y9,LOW);
 		Set_Y_Value(Y10,LOW); */
@@ -776,6 +794,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		if(kaiguan[zushu][i] != 0x02)	{
 			kaiguan[zushu][i] = 0x02;		//(0b)10
 			tongxunstart[zushu] = 1;
+			tongxunnum[zushu] = 0;
 		}
 		/* Set_Y_Value(Y9,HIGH);
 		Set_Y_Value(Y10,LOW); */
@@ -793,6 +812,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		if(kaiguan[zushu][i] != 0x00){
 			kaiguan[zushu][i] = 0x00;		//(0b) 00
 			tongxunstart[zushu] = 1;
+			tongxunnum[zushu] = 0;
 		}
 		
 		/* Set_Y_Value(Y9,HIGH);
@@ -801,11 +821,14 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		shoudao_start_status[zushu][i] = 1;
 		shoudao_start[zushu][i] = 0;
 		shoudao_jiange_tmp[zushu][i] = 0;
-		
+
 		//previous_stage[i] = current_stage;
 		chudao_shoudao_status[zushu][i] = 0;
-		
 		weisha_jiange[zushu][i] = 0;
+		if (shoudao_tozero_status[zushu] == 1){
+			shoudao_tozero_status[zushu]=0;
+		}
+		
 	}
 }
 
@@ -829,8 +852,10 @@ void weisha(unsigned int i,unsigned int zushu,unsigned int on_off)
 {
 	if(on_off == ON)
 		kaiguan[zushu][i] = 0x01;		//(0b) 01
-	else
+	else{
 		kaiguan[zushu][i] = 0x00;		//(0b) 00
+	}
+		
 	/* Set_Y_Value(Y9,LOW);
 	Set_Y_Value(Y10,HIGH); */
 		
