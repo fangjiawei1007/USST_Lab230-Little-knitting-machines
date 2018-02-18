@@ -46,7 +46,8 @@ void bianpingqi_RTU_WriteWord(U8 function_num,int Value)
 		DevAddress = 0x1001;break;
 	case PS3000_bianpinqi:
 		DevAddress = 0x0002;break;
-		
+	case PS1000_bianpinqi:
+		DevAddress = 0x1002;break;
 	default:
 		DevAddress = 0x1002;break;
 	}

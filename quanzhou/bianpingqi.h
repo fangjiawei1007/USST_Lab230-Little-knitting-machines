@@ -36,7 +36,7 @@
 #define	taili_bianpingqi				2
 #define	PS550_bianpingqi				3
 #define PS3000_bianpinqi				4
-
+#define PS1000_bianpinqi				5
 /*************************************************************************************************************/
 //»­Ãæ¿Ø¼þºÅ
 #define	bianpingqi_run_button_bit			2
