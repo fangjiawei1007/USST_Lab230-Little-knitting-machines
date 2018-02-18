@@ -151,7 +151,11 @@ void menu_init(void)
 		
 		reset_time_kw = 700;
 		init_stop_time_kw = 30;
+	
+	#ifdef TIAOXIAN_YOUFENG_EN	
 		
+		
+	#else	
 		/*************8段调线设置*****************/
 		for (ii = 0; ii < tiaoshaduan_max; ii++){
 			g_InteralMemory.KeepWord[156 + 10*ii] = 0;			//开始圈
@@ -180,7 +184,7 @@ void menu_init(void)
 		
 		weisha_jiange_kw = 0;	//喂纱间隔
 	/**********************************************/	
-		
+	
 		menu_init_flag=1;
 	}
 	

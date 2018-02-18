@@ -1198,6 +1198,12 @@
                 </File>
                 <File RelativePath=".\quanzhou\tiaosha.h" FileType="4" />
             </Filter>
+            <Filter Name="µ÷Ïß_ÓÑ·å">
+                <File RelativePath=".\quanzhou\tiaoxian_youfeng.c" FileType="1" Output="tiaoxian_youfeng.o">
+                    <ADS_CParam Name="ADS_CfgFlag" ver64m_bin=" -cpu ARM926EJ-S -O0 -g+ -D__OPTIMISE_LEVEL==0 -D__TARGET_ARCH_4T= -D__TARGET_ARCH_5TE -D__TARGET_CPU_ARM7TDMI= -D__TARGET_CPU_ARM926EJ_S -D__TARGET_FEATURE_DOUBLEWORD -D__TARGET_FEATURE_DSPMUL -DSDRAM_SIZE64M" ver64m_bin_tool="2" ver64m_hex=" -cpu ARM920T -DSDRAM_SIZE64M -D__TARGET_CPU_ARM7TDMI= -D__TARGET_CPU_ARM920T  -g+ -O2" ver64m_hex_tool="2" />
+                </File>
+                <File RelativePath=".\quanzhou\tiaoxian_youfeng.h" FileType="4" />
+            </Filter>
         </Filter>
     </Files>
 </TKStudioProject>

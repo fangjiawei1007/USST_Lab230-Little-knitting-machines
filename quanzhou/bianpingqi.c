@@ -360,6 +360,7 @@ void bianpingqi_speed_cal(void){
 	//调线
 	/**************************************************************/
 	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan
+		/**调线开始之前,提前缓冲脉冲数开始减速**/
 		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
 			(encoder1_cal_factor - jiajiansujiangemaichong_kw))){
 			if (weisha_check(dapan_round) == WEISHAJIANSU){
@@ -374,13 +375,6 @@ void bianpingqi_speed_cal(void){
 			return;
 		}
 		
-		// if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
-			// (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
-			// (at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
-			
-			
-		// }
-		// weisha_pre_speed_status = 0;
 	}
 	
 	/**quanshu[x+1]，后面的功能代码的next_stage其实是表示的current_stage，因为其没有+1，

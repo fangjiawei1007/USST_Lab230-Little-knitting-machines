@@ -91,18 +91,7 @@ Commented:方佳伟
 *************************************************/
 void tiaoxian_reset(void){
 	int ii,bb;
-	/* for (ii = 0 ;ii<ZUSHU_MAX;ii++){
-		tongxunzhen[ii] = 0x0;
-	}
 	
-	for (bb = 0 ; bb < ZUSHU_MAX; bb++){
-		for (ii = 0 ; ii < 5 ; ii++){
-			//通讯成功之后会直接退出循环，5次容错
-			if (tiaoxian_jidianqi_write(bb) == 1){
-				break;
-			}
-		}
-	} */
 	
 	/*****************6组刀具，6把刀全部复位********************/
 	for (bb =0; bb<ZUSHU_MAX;bb++){
