@@ -1,6 +1,9 @@
 #ifndef _TIAOSHA_H_
 #define _TIAOSHA_H_
 
+
+#ifdef TIAOSHA_NORMAL_EN
+
 #define tiaoxiankaiguan_kb				(g_InteralMemory.KeepBit[48])	//大头条线开关
 #define	tiaoxianzu_flag					(g_InteralMemory.KeepBit[26])	//调线组开始记录实际走了多少圈的标志位
 
@@ -28,7 +31,7 @@
 typedef struct{
 	INT16U* kaishiquanshu;				//调线开始圈数
 	INT16U* jieshuquanshu;				//调线结束圈数
-	INT16U* channal_choose;				//通道数选择(选择第几组刀)
+	INT16U* channal_choose;				//通道数选择(选择第几组刀(DAOSHU))
 	unsigned char* ewaiduan_choose;		//额外段选择
 	INT16U* fangdabeishu[7];			//放大倍数：调线的时候，各个电机的速度不一样(百分比)
 }TIAOXIANDUAN;
@@ -40,7 +43,7 @@ enum TIAOXIAN_MACRO{
 	WEISHABUJIANSU
 };
 
-
+#endif
 void shinengpanduan(void);
 void tiaoxian(void);
 void chudao_shoudao_process(unsigned int i,unsigned int zushu);

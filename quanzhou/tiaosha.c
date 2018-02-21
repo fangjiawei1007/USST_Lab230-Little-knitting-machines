@@ -1,7 +1,7 @@
 #include "includes.h"
 
 
-
+#ifdef TIAOSHA_NORMAL_EN
 
 unsigned int chudao_start_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int shoudao_start_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
@@ -26,7 +26,7 @@ unsigned int shoudao_reset_flag = 0;
 unsigned int tongxunnum[6] = {0};
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
-
+#endif
 /*************************************************
 Function(函数名称): tiaoxian_init(void)
 Description(函数功能、性能等的描述): 调线功能初始化
@@ -168,19 +168,19 @@ int between_check(unsigned int roundShineng){
 		|| 	*tiaoxianduan[i].jieshuquanshu == 
 			(daduanquanshu + middlequanshu + xiaoduanquanshu + caijiaoquanshu + langfeiquanshu))){
 			
-			/***判断是否是额外段，即外部开关是否打开***/
+			
 			if (current_stage == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
-				return i;
+				return i;/***判断是否是额外段，即外部开关是否打开***/
 			}
 			else if (current_stage != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
-				return i;
+				return i;/***不是额外段，返回所在段***/
 			}
 		}
 	}
 	return -1;
 }
 /*************************************************
-Function(函数名称): unsigned int at_check(unsigned int roundShineng)
+Function(函数名称): unsigned int weisha_check(unsigned int roundShineng)
 Description(函数功能、性能等的描述): 主要用于变频器的变速，主要被bianpingqi_speed_cal()所调用
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): bianpingqi_speed_cal(void)
@@ -235,7 +235,8 @@ int weisha_check(unsigned int roundShineng){
 
 /*************************************************
 Function(函数名称): unsigned int at_check(unsigned int roundShineng)
-Description(函数功能、性能等的描述): 主要用于变频器的变速，主要被bianpingqi_speed_cal()所调用
+Description(函数功能、性能等的描述): 1.主要用于变频器的变速，主要被bianpingqi_speed_cal()所调用
+								2.主要修改了全局变量tiaoxianzu/tiaoxianzu_flag
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): bianpingqi_speed_cal(void)
 
@@ -457,9 +458,11 @@ Commented:方佳伟
 void shinengpanduan(void){
 	int i;
 	unsigned int weizhi = 0x00;
+	/*使能位清零*/
 	for (i = 0 ; i <DAOSHU_MAX ; i++){
 		shinengwei[i] = 0;
 	}
+	/*使能位判断*/
 	i = between_check(dapan_round);
 	at_check(dapan_round);
 	/**提取**/
@@ -829,7 +832,7 @@ Description(函数功能、性能等的描述): 喂纱；主要是设置kaiguan[zushu][i] = 0x02;即
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): 
 
-Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): i->6把刀具;	zushu->8段?
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): i->6把刀具;	zushu->6组
 Output(对输出参数的说明):
 Return: 
 Others: 

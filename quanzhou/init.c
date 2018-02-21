@@ -153,8 +153,7 @@ void menu_init(void)
 		init_stop_time_kw = 30;
 	
 	#ifdef TIAOXIAN_YOUFENG_EN	
-		
-		
+		TiaoXian_Youfeng_Init_once();	
 	#else	
 		/*************8段调线设置*****************/
 		for (ii = 0; ii < tiaoshaduan_max; ii++){
@@ -184,7 +183,8 @@ void menu_init(void)
 		
 		weisha_jiange_kw = 0;	//喂纱间隔
 	/**********************************************/	
-	
+	#endif
+		
 		menu_init_flag=1;
 	}
 	

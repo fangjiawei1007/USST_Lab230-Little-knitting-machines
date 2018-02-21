@@ -54,6 +54,7 @@
 #include "pressing_get_zero.h"		//压针 by FJW */
 #include "tiaosha.h"				//调线 by FJW
 
+#include "tiaoxian_youfeng.h"	//友峰调线 by FJW
 
 #define	start_quanzhou					1
 #define	stop_quanzhou					0
