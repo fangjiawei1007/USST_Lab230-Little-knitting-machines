@@ -3,6 +3,8 @@
 
 #define TIAOXIAN_YOUFENG_EN
 
+
+#define tiaoxian_shiji_kb				(g_InteralMemory.KeepBit[60])
 /*********************************待修改***************************************************/
 #define tiaoxiankaiguan_kb				(g_InteralMemory.KeepBit[48])	//大头条线开关
 #define	tiaoxianzu_flag					(g_InteralMemory.KeepBit[26])	//调线组开始记录实际走了多少圈的标志位
@@ -50,7 +52,10 @@ enum TIAOXIAN_MACRO{
 	WEISHAJIANSU,
 	WEISHABUJIANSU
 };
-
+enum YouFeng_Checkout{
+	NOT_CHANGED = 0,
+	CHANGED = 1
+};
 //单击气缸;双击气缸;NOJI-->不动作;
 enum TIAOXIAN_SEL{
 	NOJI = 0,
@@ -70,7 +75,7 @@ void TiaoXian_Youfeng_Shinengpanduan(void);
 
 unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zhushu);
 
-void TiaoXian_Youfeng_weisha(unsigned int i,unsigned int zushu,unsigned int on_off);
+void TiaoXian_Youfeng_weisha(int duanshu);
 void TiaoXian_Youfeng_chudao_shoudao_process(unsigned int i,unsigned int zushu);
 
 
