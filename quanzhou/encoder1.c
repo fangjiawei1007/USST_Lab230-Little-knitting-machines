@@ -736,6 +736,11 @@ void __irq	encoder1_process(void)
 		
 		/**调线功能**/
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
+			
+		#ifdef TIAOXIAN_YOUFENG_EN
+		//压针电机代码段
+			
+		#else	
 			for (zushu =0; zushu < tiaoxianzu; zushu++){
 				for (jj = 0 ; jj < DAOSHU_MAX ; jj++){
 					if (chudao_start[zushu][jj] == 1 && 
@@ -754,8 +759,9 @@ void __irq	encoder1_process(void)
 					}
 				}	
 			}
+		#endif
 		}
-		
+		//友峰调线功能需要使用Y9/Y10作为压针电机，所以得去除两路电机
 		/**将7组电机分为上下沿两次进行判断，以减小每次循环次数(上半部分)**/
 		for (jj=0;jj<4;jj++)
 		{
@@ -771,16 +777,18 @@ void __irq	encoder1_process(void)
 			
 			/***拉高3个电机电平(或者拉低，具体看原理图，有修改过)，
 				并且优化占空比(步进电机的响应时间会变长一些，但是一个周期之内不影响)
+				友峰：jj != 3 改为jj == 0,if(jj != 3) && --> if ((jj == 0) && 
 			***/
-			if (jj != 3 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
+			if ((jj == 0) && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
 				rGPEDAT |= (1<<(jj + 4));
 			}
 		}
 		//rGPEDAT |= (0x7 << 4);
 		/********7组电机的K值的变化之后，从K_Current多次变化到->K_Target;
 				具体的改变在Speed_Change()中求解
+				友峰改成5路，for (jj = 0; jj < 7; jj ++)-->for (jj = 0; jj < 5; jj ++)
 		**********/
-		for (jj = 0; jj < 7; jj ++){
+		for (jj = 0; jj < 5; jj ++){
 			if (speedUpFlag[jj]==1){
 				if (huanchongmaichong!=0&&speedUpCnt[jj]<speedUpMax&&
 				++speedChangeCnt[0][jj]%huanchongmaichong==0)
@@ -814,9 +822,10 @@ void __irq	encoder1_process(void)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)，获得B相信号
 		
 		/**将7组电机分为上下沿两次进行判断，以减小每次循环次数(下半部分)**/
+		//友峰改为5路：if (jj != 7)-->if (jj == 4)
 		for (jj=4;jj<8;jj++)
 		{
-			if (jj != 7){
+			if (jj == 4){
 				motor_factor[jj] += k_motor[jj];
 				if (motor_factor[jj]>=1000000)
 				{
@@ -905,7 +914,8 @@ void __irq	encoder1_process(void)
 /**************************************************************************************************/		
 		
 		/*********Speed_Change()中降速阶段，与上升沿中断相对称*********/
-		for (jj = 0; jj < 7; jj ++){
+		//友峰5路电机：for (jj = 0; jj < 7; jj ++)-->for (jj = 0; jj < 5; jj ++)
+		for (jj = 0; jj < 5; jj ++){
 			if (speedDownFlag[jj]==1){
 				if (huanchongmaichong!=0&&speedDownCnt[jj]<speedDownMax&&
 				++speedChangeCnt[1][jj]%huanchongmaichong==0)
@@ -923,7 +933,6 @@ void __irq	encoder1_process(void)
 			else{
 				speedChangeCnt[1][jj] = 1;
 			}
-				
 		}
 	}
 	rEINTPEND=(1<<1); 

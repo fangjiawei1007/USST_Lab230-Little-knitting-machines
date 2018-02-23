@@ -3,23 +3,17 @@
 #define SHANGPAN_SHUANGJI_NUM		8
 #define SHANGPAN_DANJI_NUM			6
 #define XIAPAN_SHUANGJI_NUM			21
+#define Jidianqi_Dianshu			16
 
 unsigned int tongxunstart[ZUSHU_MAX][PIANSHU_MAX] = {0};
 unsigned int tongxunnum[ZUSHU_MAX][PIANSHU_MAX] = {0};
-unsigned int tongxunzhen[PIANSHU_MAX] = {0x0000};
+unsigned int tongxunzhen[tiaoshaduan_max][PIANSHU_MAX] = {0x0000};
 unsigned char* qigang_confirm_kb[16];			//16因为一共8段*2=16
 unsigned int qigang_confirm_status;				//用于气缸确认之后，tongxunzhen的set
+unsigned int jiajiaStatus = 0;
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
-/************************待修改**************************************/
 
-unsigned int jiajiaStatus = 0;
-
-unsigned int weisha_jiange_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
-unsigned int weisha_jiange[ZUSHU_MAX][DAOSHU_MAX] = {0};
-
-unsigned int shoudao_tozero_status[ZUSHU_MAX]={0};	//刀具归零复位标志
-unsigned int shoudao_reset_flag = 0;
 
 /*************************************************
 Function(函数名称): TiaoXian_Youfeng_App(void);
@@ -69,29 +63,7 @@ void TiaoXian_Youfeng_App(void){
 }
 
 
-void TiaoXian_Youfeng_Shinengpanduan(void){
-	int i;
-//	unsigned int weizhi = 0x00;
-	/*使能位清零,此处选择8段方法*/
-	/* for (i = 0 ; i <tiaoshaduan_max; i++){
-		shinengwei[i] = 0;
-	} */
-	/*获取当前段，并且判断当前段是否需要减速
-	  或者改变全局变量tiaoxianzu/tiaoxianzu_flag*/
-	i = between_check(dapan_round);
-	at_check(dapan_round);
-	/**提取使能位，用于tiaoxian设置通讯帧，直接判断通讯帧即可**/
- 	/* if ( i != -1 && current_stage != caijianduan){
-	/*	weizhi = tiqushuzi(*tiaoxianduan[i].channal_choose);
-		for (i = 0 ; i <DAOSHU_MAX ; i++){
-			if ( (weizhi>>i) & 0x01){
-				shinengwei[i] = 1;
-			}
-		}*/
-		shinengwei[i] = 1;
-		
-	}  */
-}
+
 void TiaoXian_Youfeng_Init(void){
 	int i,j,k,m,n,bb;
 	unsigned int shangpan_danji_check_tmp[8]={0};
@@ -100,7 +72,7 @@ void TiaoXian_Youfeng_Init(void){
 
 	//写入8路通讯帧，外部输出对应的状态
 	if (tiaoxiankaiguan_kb ==1 ){
-		for (i = 0 ;i<ZUSHU_MAX;i++){
+		for (i = 0 ;i<tiaoshaduan_max;i++){
 			for (j = 0 ;j<PIANSHU_MAX;j++)
 				tongxunzhen[i][j] = 0x0;//初始化继电器吸合
 		}
@@ -109,7 +81,7 @@ void TiaoXian_Youfeng_Init(void){
 			for (j = 0 ; j < PIANSHU_MAX; j++)
 				for (bb = 0 ; bb < 5 ; bb++){
 					//通讯成功之后会直接退出循环,5次为容错
-					if (Tiaoxian_Youfeng_jidianqi_write(i,j) == 1){
+					if (Tiaoxian_Youfeng_jidianqi_write(i,j,1) == 1){//选择第一段的通讯帧进行清零
 						break;
 					}
 				}
@@ -120,14 +92,10 @@ void TiaoXian_Youfeng_Init(void){
 	for (i = 0; i < tiaoshaduan_max; i++){
 		tiaoxianduan[i].kaishiquanshu = &g_InteralMemory.KeepWord[156 + 10*i];
 		tiaoxianduan[i].jieshuquanshu = &g_InteralMemory.KeepWord[157 + 10*i];
-		//	tiaoxianduan[ii].channal_choose= &g_InteralMemory.KeepWord[158 + 10*ii];
 		tiaoxianduan[i].ewaiduan_choose=&g_InteralMemory.KeepBit[49 + i];
 		tiaoxianduan[i].yazheng_motor_1st=&g_InteralMemory.KeepWord[158 + 10*i];
 		tiaoxianduan[i].yazheng_motor_2nd=&g_InteralMemory.KeepWord[159 + 10*i];
-		/**7路电机放大倍数**/
-		// for (bb = 0; bb<7; bb++)		{
-		// tiaoxianduan[ii].fangdabeishu[bb] = &g_InteralMemory.KeepWord[159 + 10*ii + bb];}
-
+	
 		/**上下盘气缸数以及气缸作用**/
 		for (j = 0;j<SHANGPAN_SHUANGJI_NUM; j++){
 			tiaoxianduan[i].shangpan_shaungji_qigang[j]=&g_InteralMemory.KeepWord[470+j+35*i];
@@ -215,7 +183,7 @@ int TiaoXian_Youfeng_Checkout(void){
 	if(tiaoxian_shiji_kb == 1){
 		for(n = 0;n<16;n++)
 		{
-			if(qigang_confirm_kb[n] == 1){
+			if(*(qigang_confirm_kb[n]) == 1){
 				qigang_confirm_status = 1;
 				
 				qigang_confirm_num = n;
@@ -243,12 +211,12 @@ int TiaoXian_Youfeng_Checkout(void){
 				
 				if( (up_checkout_tmp[i] != *(tiaoxianduan[i].shangpan_checkout))
 				  ||(down_checkout_tmp[i] != *(tiaoxianduan[i].xiapan_checkout))){
-					qigang_confirm_kb[qigang_confirm_num] = 0;	//button置零;
+					*(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;
 					return CHANGED;
 				  }
-					
 			}
 		}
+		qigang_confirm_status=0;
 		return NOT_CHANGED;
 	}
 	qigang_confirm_status = 0;
@@ -265,7 +233,7 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 	if(duanshu>8)
 		return;
 	
-	Tiaoxian_Youfeng_ComInfo_Get(duanshu);
+	//Tiaoxian_Youfeng_ComInfo_Get(duanshu);
 	
 	/**tongxunstart[][]以及tongxunnum[][]必须在Tiaoxian_Youfeng_ComInfo_Get()中打开**/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
@@ -273,7 +241,7 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 			/***通讯开始***/
 			if (tongxunstart[zushu][pianshu] == 1 && tongxunnum[zushu]][pianshu] <5){
 				/***5次通讯容错***/
-					if (Tiaoxian_Youfeng_jidianqi_write(zushu,pianshu) != 1){
+					if (Tiaoxian_Youfeng_jidianqi_write(zushu,pianshu,duanshu) != 1){
 						tongxunnum[zushu][pianshu]++ ;
 					}
 					else{
@@ -295,7 +263,7 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 }
 
 /**栈号计算公式:station = zushu+(pianshu+1)*10;**/
-unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pianshu){
+unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pianshu,unsigned int duanshu){
 	
 	U8 Count,jdqCheck,waitTime;
 	int i;
@@ -335,8 +303,8 @@ unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pia
 	
 	auchMsg[6]=0x02;		//字节数：输出数量/8 余数不等于0则+1(字节数为1则下方为一个字节;为2则为两个字节)
 	
-	auchMsg[7]=tongxunzhen[pianshu]&0xff;		//输出值1：外部输出一共16位所对应的低8位值
-	auchMsg[8]=(tongxunzhen[pianshu] >> 8);	//输出值2：外部输出一共16位所对应的高8位值
+	auchMsg[7]=tongxunzhen[duanshu][pianshu]&0xff;		//输出值1：外部输出一共16位所对应的低8位值
+	auchMsg[8]=(tongxunzhen[duanshu][pianshu] >> 8);	//输出值2：外部输出一共16位所对应的高8位值
 	
 	auchMsg[9]=(CRC(auchMsg,9)) & 0xff;
 	auchMsg[10]=(CRC(auchMsg,9))>>8;
@@ -397,12 +365,106 @@ unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pia
 }
 
 void Tiaoxian_Youfeng_ComInfo_Set(void){
-	unsigned int tongxunzhen_tmp[PIANSHU_MAX] = {0x0000};	
-	if(qigang_confirm_status)
+	
+	unsigned int i,j,k,m;
+	for (i = 0; i < tiaoshaduan_max; i++){
+		if(tiaoxianduan[i].jieshuquanshu != 0){
+			for(j=0;j<PIANSHU_MAX;j++){
+				Tiaoxian_Youfeng_Pianshu_Set(i,j);
+				}
+			}
+		
+		}	
+	}
 }
-void Tiaoxian_Youfeng_ComInfo_Get(duanshu){
+
+void Tiaoxian_Youfeng_Pianshu_Set(duanshu,pianshu){
+	int i,j;
+	
+	switch(pianshu){
+		case 0:
+			for(i = 0;i<8;i++){
+				if(g_InteralMemory.KeepWord[470+i+35*duanshu] == DANJI){
+					tongxunzhen[duanshu][0] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][0] |=(0x01<<(i*2));
+				}
+				else if(g_InteralMemory.KeepWord[470+i+35*duanshu] == SHUANGJI){
+					tongxunzhen[duanshu][0] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][0] |=(0x03<<(i*2));
+				}
+				else{
+					tongxunzhen[duanshu][0] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][0] |=(0x00<<(i*2));
+				}
+			}
+			break;
+		case 1:
+			//6路单击气缸
+			for(i = 0;i<6;i++){
+				if(g_InteralMemory.KeepWord[478+i+35*duanshu] == DANJI){
+					tongxunzhen[duanshu][1] &=(~(0x01<<(i));
+					tongxunzhen[duanshu][1] |=(0x01<<(i));
+				}
+				else{
+					tongxunzhen[duanshu][1] &=(~(0x01<<(i));
+					tongxunzhen[duanshu][1] |=(0x00<<(i));
+				}
+			}
+			//5路双击气缸
+			for(j = 0;j<5;j++){
+				if(g_InteralMemory.KeepWord[484+j+35*duanshu] == DANJI){
+					tongxunzhen[duanshu][1] &=(~(0x03<<(j*2+6));
+					tongxunzhen[duanshu][1] |=(0x03<<(j*2+6));
+				}
+				else if(g_InteralMemory.KeepWord[484+j+35*duanshu] == SHUANGJI){
+					tongxunzhen[duanshu][1] &=(~(0x03<<(j*2+6));
+					tongxunzhen[duanshu][1] |=(0x03<<(j*2+6));
+				}
+				else{
+					tongxunzhen[duanshu][1] &=(~(0x03<<(j*2+6));
+					tongxunzhen[duanshu][1] |=(0x00<<(j*2+6));
+				}
+			}
+			break;
+		case 2:
+			for(i = 0;i<8;i++){
+				if(g_InteralMemory.KeepWord[489+i+35*duanshu] == DANJI){
+					tongxunzhen[duanshu][2] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][2] |=(0x01<<(i*2));
+				}
+				else if(g_InteralMemory.KeepWord[489+i+35*duanshu] == SHUANGJI){
+					tongxunzhen[duanshu][2] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][2] |=(0x03<<(i*2));
+				}
+				else{
+					tongxunzhen[duanshu][2] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][2] |=(0x00<<(i*2));
+				}
+			}
+			break;
+		case 3:
+			for(i = 0;i<8;i++){
+				if(g_InteralMemory.KeepWord[497+i+35*duanshu] == DANJI){
+					tongxunzhen[duanshu][3] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][3] |=(0x01<<(i*2));
+				}
+				else if(g_InteralMemory.KeepWord[497+i+35*duanshu] == SHUANGJI){
+					tongxunzhen[duanshu][3] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][3] |=(0x03<<(i*2));
+				}
+				else{
+					tongxunzhen[duanshu][3] &=(~(0x03<<(i*2));
+					tongxunzhen[duanshu][3] |=(0x00<<(i*2));
+				}
+			}
+			break;
+		default:
+			break;
+	}
+	
 	
 }
+
 
 void TiaoXian_Youfeng_Reset(void){
 	
@@ -412,8 +474,10 @@ void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num){
 	
 }
 
-/***压针电机模块***/	
+/***压针电机模块，所有的压针电机的计算问题应该放在这里，
+	中断中做++/set;已知s;通过中断得出t，最后获得v(可以这样类比)***/	
 void Tiaoxian_Youfeng_Yazhen(void){
+	static prev_motor;//用于记录前值
 	
 		if(tiaoxianduan[duanshu_enable_cur].yazheng_motor_1st != 0){
 			yazheng_motor_1st_start = 1;
@@ -423,8 +487,7 @@ void Tiaoxian_Youfeng_Yazhen(void){
 			yazheng_motor_1st_start = 0;
 		}
 		
-		if(tiaoxianduan[duanshu_enable_cur].yazheng_motor_2nd != 0)
-		{
+		if(tiaoxianduan[duanshu_enable_cur].yazheng_motor_2nd != 0)	{
 			yazheng_motor_2nd_start = 1;
 		}
 		else{
