@@ -1301,7 +1301,14 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 		songsha_fre_change();
 		if(tiaoxiankaiguan_kb == 1)
 		{
+			#ifdef TIAOXIAN_YOUFENG_EN
+			TiaoXian_Youfeng_App();	
+			
+			#else
 			tiaoxian();
+			
+			#endif
+			
 		}
 		bianpingqi_set_speed(bianpingqi_speed);
 		wdt_feed_dog();main_enter_flag = 1;

@@ -26,7 +26,7 @@ unsigned int shoudao_reset_flag = 0;
 unsigned int tongxunnum[6] = {0};
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
-#endif
+
 /*************************************************
 Function(函数名称): tiaoxian_init(void)
 Description(函数功能、性能等的描述): 调线功能初始化
@@ -858,3 +858,5 @@ void weisha(unsigned int i,unsigned int zushu,unsigned int on_off)
 	chudao_jiange_tmp[zushu][i] = 0;
 	shoudao_jiange_tmp[zushu][i] = 0;
 }
+
+#endif

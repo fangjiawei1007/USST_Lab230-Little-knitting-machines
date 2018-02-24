@@ -68,7 +68,7 @@ Commented:方佳伟
 void menu_init(void)
 {
 	int ban,lei;
-	int ii,bb;
+	//int ii,bb; 友峰去除
 	if (menu_init_flag!=1)
 	{
 		zhibusheding=2000;				//对应件数上限

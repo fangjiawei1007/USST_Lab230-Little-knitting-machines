@@ -7,22 +7,10 @@
 #define tiaoxian_shiji_kb				(g_InteralMemory.KeepBit[60])
 #define tiaoxiankaiguan_kb				(g_InteralMemory.KeepBit[48])	//大头条线开关
 #define	tiaoxianzu_flag					(g_InteralMemory.KeepBit[26])	//调线组开始记录实际走了多少圈的标志位
-#define	tiaoxianzu_jiange				g_InteralMemory.KeepWord[99]	//调线间隔圈数
-#define	tiaoxianzu_max					g_InteralMemory.KeepWord[61]	//调线组数
-#define	tiaoxianzu						g_InteralMemory.KeepWord[93]	//记录当前为第几组
-#define	tiaoxianzu_quanshu				g_InteralMemory.KeepWord[62]	//记录调线组实际走了多少圈
-
-#define Y9								9
-#define Y10								10
-/*********************************待修改***************************************************/
-
-
-//#define chudao_jiange						(g_InteralMemory.KeepWord[151]) //出刀间隔
-//#define shoudao_jiange					(g_InteralMemory.KeepWord[152]) //收刀间隔
-
-
-
-
+#define	tiaoxianzu_jiange				(g_InteralMemory.KeepWord[99])	//调线间隔圈数
+#define	tiaoxianzu_max					(g_InteralMemory.KeepWord[61])	//调线组数
+#define	tiaoxianzu						(g_InteralMemory.KeepWord[93])	//记录当前为第几组
+#define	tiaoxianzu_quanshu				(g_InteralMemory.KeepWord[62])	//记录调线组实际走了多少圈
 
 #define	tiaoshaduan_max					8
 #define	choose_ewaiduan					1
@@ -31,10 +19,22 @@
 #define ZUSHU_MAX						6
 #define DAOSHU_MAX						0
 #define PIANSHU_MAX						4
-/***喂纱间隔 2018.1.24***/
 
+#define Y9								9
+#define Y10								10
+#define Y9_Bit							5
+#define Y10_Bit							6
 
-/*************************/
+/**开始信号，用作内部变量**/
+#define yazheng_motor_1st_start		g_InteralMemory.KeepWord[781]
+#define yazheng_motor_2nd_start		g_InteralMemory.KeepWord[782]
+/**压针比较变量，用作内部变量**/
+#define yazhen_pulse_cmp_1st		g_InteralMemory.KeepWord[783]
+#define yazhen_pulse_cmp_2nd        g_InteralMemory.KeepWord[784]
+/**压针电机脉冲量，用作内部变量**/
+#define yazhen_motor_pulse_1st		g_InteralMemory.KeepWord[785]
+#define yazhen_motor_pulse_2nd      g_InteralMemory.KeepWord[786]
+
 typedef struct{
 	INT16U* kaishiquanshu;				//调线开始圈数
 	INT16U* jieshuquanshu;				//调线结束圈数
@@ -56,31 +56,38 @@ enum TIAOXIAN_MACRO{
 	WEISHAJIANSU,
 	WEISHABUJIANSU
 };
-enum YouFeng_Checkout{
+
+enum TIAOXIAN_CHECKOUT{
 	NOT_CHANGED = 0,
-	CHANGED = 1
-};
+	CHANGED	=1
+};   
 //单击气缸;双击气缸;NOJI-->不动作;
 enum TIAOXIAN_SEL{
 	NOJI = 0,
 	DANJI = 1,
-	SHUANGJI = 12,
+	SHUANGJI = 12
 };
+	
+
 /**************************************************************************************************/
 
 void TiaoXian_Youfeng_App(void);
 
 void TiaoXian_Youfeng_Init(void);
+void TiaoXian_Youfeng_Init_once(void);
 void TiaoXian_Youfeng_Reset(void);
 
-void TiaoXian_Youfeng_Checkout(void);
+int TiaoXian_Youfeng_Checkout(void);
 void Tiaoxian_Youfeng_ComInfo_Set(void);
+void Tiaoxian_Youfeng_Pianshu_Set(unsigned int duanshu,unsigned int pianshu);
 
+unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pianshu,unsigned int duanshu);
+void Tiaoxian_Youfeng_Yazhen(unsigned int duanshu_prev,unsigned int duanshu_cur);
+void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num);
 
-unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zhushu);
-void Tiaoxian_Youfeng_Yazhen(void)；
 void TiaoXian_Youfeng_weisha(int duanshu);
 
-
+int between_check(unsigned int roundShineng);
+unsigned int at_check(unsigned int roundShineng);
 
 #endif

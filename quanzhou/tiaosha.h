@@ -43,7 +43,7 @@ enum TIAOXIAN_MACRO{
 	WEISHABUJIANSU
 };
 
-#endif
+
 void shinengpanduan(void);
 void tiaoxian(void);
 void chudao_shoudao_process(unsigned int i,unsigned int zushu);
@@ -56,6 +56,7 @@ void tiaoxian_reset(void);
 int weisha_check(unsigned int roundShineng);
 unsigned int tiqushuzi(INT16U channal_choose);
 
+#endif
 
 #endif
 

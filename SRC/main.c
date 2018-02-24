@@ -499,7 +499,13 @@ void Main(void)
 				} */
 				if(tiaoxiankaiguan_kb == 1)//mode_choose == tiaoxian_mode
 				{
+					#ifdef TIAOXIAN_YOUFENG_EN
+					TiaoXian_Youfeng_App();
+					
+					#else
 					tiaoxian();
+					
+					#endif
 				}
 				
 				

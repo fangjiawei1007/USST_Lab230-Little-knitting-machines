@@ -363,12 +363,16 @@ void bianpingqi_speed_cal(void){
 		/**调线开始之前,提前缓冲脉冲数开始减速**/
 		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
 			(encoder1_cal_factor - jiajiansujiangemaichong_kw))){
+			#ifdef TIAOXIAN_YOUFENG_EN
+				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_weisha_delta_num/100.0);
+			#else
 			if (weisha_check(dapan_round) == WEISHAJIANSU){
 				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
 			}
 			else{
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_weisha_delta_num/100.0);
 			}
+			#endif
 			return;
 		}
 		if ((at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
