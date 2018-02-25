@@ -43,7 +43,7 @@ typedef struct{
 	INT16U* fangdabeishu[7];			//放大倍数：调线的时候，各个电机的速度不一样(百分比)
 	INT16U* yazheng_motor_1st;			//压针电机1
 	INT16U* yazheng_motor_2nd;			//压针电机2
-	INT16U* shangpan_shaungji_qigang[8];//上盘双击气缸	
+	INT16U* shangpan_shaungji_qigang[8];//上盘双击气缸	(拼音标错了)
 	INT16U* shangpan_danji_qigang[6];	//上盘单击气缸
 	INT16U* xiapan_shuangji_qigang[21];	//下盘双击气缸
 	INT16U* shangpan_checkout;		//上盘校验
@@ -79,9 +79,10 @@ void TiaoXian_Youfeng_Reset(void);
 
 int TiaoXian_Youfeng_Checkout(void);
 void Tiaoxian_Youfeng_ComInfo_Set(void);
-void Tiaoxian_Youfeng_Pianshu_Set(unsigned int duanshu,unsigned int pianshu);
+void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu);
 
 unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pianshu,unsigned int duanshu);
+unsigned int Tiaoxian_Youfeng_jidianqi_zero(unsigned int zushu,unsigned int pianshu);
 void Tiaoxian_Youfeng_Yazhen(unsigned int duanshu_prev,unsigned int duanshu_cur);
 void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num);
 

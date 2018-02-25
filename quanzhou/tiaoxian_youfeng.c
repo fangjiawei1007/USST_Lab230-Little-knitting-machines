@@ -3,7 +3,7 @@
 #define SHANGPAN_SHUANGJI_NUM		8
 #define SHANGPAN_DANJI_NUM			6
 #define XIAPAN_SHUANGJI_NUM			21
-//#define Jidianqi_Dianshu			16
+
 /**压针倍率**/
 #define Yazhen_Factor				g_InteralMemory.KeepWord[780]
 
@@ -14,19 +14,23 @@ unsigned int tongxunzhen[tiaoshaduan_max][PIANSHU_MAX] = {0x0000};
 unsigned char* qigang_confirm_kb[16];			//16因为一共8段*2=16
 unsigned int qigang_confirm_status = 0;				//用于气缸确认之后，tongxunzhen的set
 unsigned int jiajiaStatus = 0;
+
+unsigned int enter_already = 0;	//用于checkout防止重复进入,CHANGED之后Set完毕之后再置零
+int changed_duan = -1;							//用于duan改变之后的通讯帧的设置
+int changed_qigang_button = -1;
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
 /*************************************************
 Function(函数名称): TiaoXian_Youfeng_App(void);
 Description(函数功能、性能等的描述): 调线功能代码
-Calls (被本函数调用的函数清单): shinengpanduan();
+Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): 
 
 Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
 Output(对输出参数的说明):
 Return: 
 Others: 
-Author:王德铭
+Author:方佳伟
 Modified:
 Commented:方佳伟
 *************************************************/
@@ -34,8 +38,7 @@ void TiaoXian_Youfeng_App(void){
 	// unsigned int zushu=0;
 	static int duanshu_enable_prev=10;
 	static int duanshu_enable_cur=11;
-	
-	
+
 	at_check(dapan_round);
 	duanshu_enable_cur = between_check(dapan_round);
 	
@@ -63,15 +66,28 @@ void TiaoXian_Youfeng_App(void){
 }
 
 
+/*************************************************
+Function(函数名称): TiaoXian_Youfeng_Init(void);
+Description(函数功能、性能等的描述): 调线功能初始化代码(每次上电都会调用一次)
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 void TiaoXian_Youfeng_Init(void){
-	int i,j,k,m,n,bb;
+	int i,j,k,m,n;
 	unsigned int shangpan_danji_check_tmp[8]={0};
 	unsigned int shangpan_shuangji_check_tmp[8]={0};
 	unsigned int xiapan_shaungji_check_tmp[8]={0};
 
-	//写入8路通讯帧，外部输出对应的状态
-	if (tiaoxiankaiguan_kb ==1 ){
+	//写入8路通讯帧，外部输出对应的状态(此处需要初始化是因为他的继电器板子有问题，继电器板子没问题应该不需要做这些)
+	/* if (tiaoxiankaiguan_kb ==1 ){
 		for (i = 0 ;i<tiaoshaduan_max;i++){
 			for (j = 0 ;j<PIANSHU_MAX;j++)
 				tongxunzhen[i][j] = 0x0;//初始化继电器吸合
@@ -87,7 +103,7 @@ void TiaoXian_Youfeng_Init(void){
 				}
 		}
 	}
-
+ */
 	/***8段参数初始化***/
 	for (i = 0; i < tiaoshaduan_max; i++){
 		tiaoxianduan[i].kaishiquanshu = &g_InteralMemory.KeepWord[156 + 10*i];
@@ -95,7 +111,7 @@ void TiaoXian_Youfeng_Init(void){
 		tiaoxianduan[i].ewaiduan_choose=&g_InteralMemory.KeepBit[49 + i];
 		tiaoxianduan[i].yazheng_motor_1st=&g_InteralMemory.KeepWord[158 + 10*i];
 		tiaoxianduan[i].yazheng_motor_2nd=&g_InteralMemory.KeepWord[159 + 10*i];
-	
+		wdt_feed_dog();main_enter_flag = 1;
 		/**上下盘气缸数以及气缸作用**/
 		for (j = 0;j<SHANGPAN_SHUANGJI_NUM; j++){
 			tiaoxianduan[i].shangpan_shaungji_qigang[j]=&g_InteralMemory.KeepWord[470+j+35*i];
@@ -121,6 +137,21 @@ void TiaoXian_Youfeng_Init(void){
 		qigang_confirm_kb[n]=&g_InteralMemory.KeepBit[65 + n];
 	}
 }
+
+/*************************************************
+Function(函数名称): TiaoXian_Youfeng_Init_once(void);
+Description(函数功能、性能等的描述): 调线功能初始化代码(只有第一次上电会被调用)
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 void TiaoXian_Youfeng_Init_once(void){
 	
 	int i,j,k,m,n;
@@ -131,7 +162,7 @@ void TiaoXian_Youfeng_Init_once(void){
 			g_InteralMemory.KeepWord[158 + 10*i] = 0;			//压针电机1
 			g_InteralMemory.KeepWord[159 + 10*i] = 0;			//压针电机2
 			g_InteralMemory.KeepBit[49 + i] = 0;				//额外段选择
-			
+			wdt_feed_dog();main_enter_flag = 1;
 			//上部大送纱轮、上部小送砂轮、下部大送纱轮、下部小送砂轮
 			//卷布机、五号送砂轮、六号送砂轮 循环设置(百分比)
 			/* for (bb = 0; bb<7; bb++){
@@ -170,58 +201,108 @@ void TiaoXian_Youfeng_Init_once(void){
 		//weisha_jiange_kw = 0;	//喂纱间隔,友峰去除
 }
 
+/*************************************************
+Function(函数名称): TiaoXian_Youfeng_Checkout(void);
+Description(函数功能、性能等的描述): 是否需要重新设置通讯帧的检查
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):当外部试机按键被按下的时候，以及气缸确定按钮被按下之后，会进入checkout()
+Return: CHANGED/NOT_CHANGED
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 int TiaoXian_Youfeng_Checkout(void){
-	
-	int i,j,k,m,n;
+	unsigned int i,j,k,m,n;
 	unsigned int up_danji_checkout_tmp[8] = {0};
-	unsigned int up_shaungji_checkout_tmp[8] = {0};
+	unsigned int up_shuangji_checkout_tmp[8] = {0};
 	unsigned int down_shuangji_checkout_tmp[8] = {0};
 	unsigned int up_checkout_tmp[8]={0};
 	unsigned int down_checkout_tmp[8]={0};
-	unsigned int qigang_confirm_num = 0;
 	
-	for(n = 0;n<16;n++)
-	{
-		if(*(qigang_confirm_kb[n]) == 1){
-			qigang_confirm_status = 1;
-			
+	int qigang_confirm_num = -1;	//用于记录哪个按键被按下了,-1表示无按键被按下
+	
+	for(n = 0;n<16;n++)	{
+		if(*(qigang_confirm_kb[n]) == 1 && enter_already == 0){//
 			qigang_confirm_num = n;
+			/****用于外部的全局变量*****/
+			qigang_confirm_status = 1;
+			enter_already = 1;
+			changed_qigang_button = n;
+			changed_duan = (qigang_confirm_num/2);
 			break;
 		}
 	}
 	
-	if(qigang_confirm_status == 1){		
-		for (i = 0; i < tiaoshaduan_max; i++){
+	if(qigang_confirm_status == 1 && qigang_confirm_num >= 0){	
+		// for (i = 0; i < tiaoshaduan_max; i++){
 			wdt_feed_dog();main_enter_flag = 1;
-			for (j = 0;j<SHANGPAN_SHUANGJI_NUM; j++){
-				//tiaoxianduan[i].shangpan_shaungji_qigang[j]=&g_InteralMemory.KeepWord[470+j+35*i];
-				up_shaungji_checkout_tmp[i]+=*(tiaoxianduan[i].shangpan_shaungji_qigang[j]);
+			/**上盘被改变**/
+			if((qigang_confirm_num%2) == 0){
+				i = (qigang_confirm_num/2);//获取段
+				for (j = 0;j<SHANGPAN_SHUANGJI_NUM; j++){
+					//tiaoxianduan[i].shangpan_shaungji_qigang[j]=&g_InteralMemory.KeepWord[470+j+35*i];
+					up_shuangji_checkout_tmp[i]+=*(tiaoxianduan[i].shangpan_shaungji_qigang[j]);
+				}
+				for (k = 0;k<SHANGPAN_DANJI_NUM; k++){
+					//tiaoxianduan[i].shangpan_danji_qigang[k]=&g_InteralMemory.KeepWord[478+k+35*i];
+					up_danji_checkout_tmp[i]+=*(tiaoxianduan[i].shangpan_danji_qigang[k]);
+				}
+				up_checkout_tmp[i] = (up_shuangji_checkout_tmp[i]+up_danji_checkout_tmp[i]);
+				
+				if(up_checkout_tmp[i] != *(tiaoxianduan[i].shangpan_checkout)){
+					*(tiaoxianduan[i].shangpan_checkout) = up_checkout_tmp[i];
+					// *(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;set完之后在把按键弹起来
+					return CHANGED;
+				}
+				else{
+					*(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;
+					enter_already = 0;
+					return NOT_CHANGED;
+				}
 			}
-			for (k = 0;k<SHANGPAN_DANJI_NUM; k++){
-				//tiaoxianduan[i].shangpan_danji_qigang[k]=&g_InteralMemory.KeepWord[478+k+35*i];
-				up_danji_checkout_tmp[i]+=*(tiaoxianduan[i].shangpan_danji_qigang[k]);
+			/**下盘被改变**/
+			else{
+				i = (qigang_confirm_num/2);
+				for(m = 0;m<XIAPAN_SHUANGJI_NUM; m++){
+					//tiaoxianduan[i].xiapan_shuangji_qigang[m]=&g_InteralMemory.KeepWord[484+m+35*i];
+					down_shuangji_checkout_tmp[i]+=*(tiaoxianduan[i].xiapan_shuangji_qigang[m]);
+				}
+				down_checkout_tmp[i] = (down_shuangji_checkout_tmp[i]);
+				
+				if((down_checkout_tmp[i] != *(tiaoxianduan[i].xiapan_checkout))){
+					*(tiaoxianduan[i].xiapan_checkout)= down_checkout_tmp[i];
+					// *(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;
+					return CHANGED;
+				}
+				else{
+					*(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;
+					enter_already = 0;
+					return NOT_CHANGED;
+				}
 			}
-			for (m = 0;m<XIAPAN_SHUANGJI_NUM; m++){
-				//tiaoxianduan[i].xiapan_shuangji_qigang[m]=&g_InteralMemory.KeepWord[484+m+35*i];
-				down_shuangji_checkout_tmp[i]+=*(tiaoxianduan[i].xiapan_shuangji_qigang[m]);
-			}
-			
-			up_checkout_tmp[i] = (up_shaungji_checkout_tmp[i]+up_danji_checkout_tmp[i]);
-			down_checkout_tmp[i] = (down_shuangji_checkout_tmp[i]);
-			
-			if( (up_checkout_tmp[i] != *(tiaoxianduan[i].shangpan_checkout))
-			  ||(down_checkout_tmp[i] != *(tiaoxianduan[i].xiapan_checkout))){
-				*(tiaoxianduan[i].shangpan_checkout) = up_checkout_tmp[i];
-				*(tiaoxianduan[i].xiapan_checkout)= down_checkout_tmp[i];
-				*(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;
-				return CHANGED;//1
-			  }
-		}
 	}
 	qigang_confirm_status=0;
-	return NOT_CHANGED;//0
+	return NOT_CHANGED;
 }
 
+/*************************************************
+Function(函数名称): TiaoXian_Youfeng_weisha(int duanshu);
+Description(函数功能、性能等的描述): 外部继电器板开始通讯，一共需要通讯4片*zushu次
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): duanshu选择哪一段的通讯帧(一共8段:0-7)
+Output(对输出参数的说明):
+Return: CHANGED/NOT_CHANGED
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 /**包括了-1的情况,即收刀情况**/
 void TiaoXian_Youfeng_weisha(int duanshu){
 	
@@ -232,14 +313,13 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 	if(duanshu>8)
 		return;
 	
-	//Tiaoxian_Youfeng_ComInfo_Get(duanshu);
-	
 	/**tongxunstart[][]以及tongxunnum[][]必须在Tiaoxian_Youfeng_ComInfo_Get()中打开**/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
 		for(pianshu = 0;pianshu<PIANSHU_MAX;pianshu++){	
 			/***通讯开始***/
 			if (tongxunstart[zushu][pianshu] == 1 && tongxunnum[zushu][pianshu] <5){
 				/***5次通讯容错***/
+				if(duanshu > 0){
 					if (Tiaoxian_Youfeng_jidianqi_write(zushu,pianshu,duanshu) != 1){
 						tongxunnum[zushu][pianshu]++ ;
 					}
@@ -248,6 +328,16 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 						tongxunstart[zushu][pianshu] = 0;
 					}
 				}
+				else{//收刀
+					if (Tiaoxian_Youfeng_jidianqi_zero(zushu,pianshu) != 1){
+						tongxunnum[zushu][pianshu]++ ;
+					}
+					else{
+						tongxunnum[zushu][pianshu] = 0;
+						tongxunstart[zushu][pianshu] = 0;
+					}
+				}
+			}
 			/**5次通讯错误之后**/
 			else if(tongxunstart[zushu][pianshu] == 1){
 				tongxunnum[zushu][pianshu] = 0;
@@ -349,21 +439,131 @@ unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pia
 		}
 }
 
+
+unsigned int Tiaoxian_Youfeng_jidianqi_zero(unsigned int zushu,unsigned int pianshu){
+	
+	U8 Count,jdqCheck,waitTime;
+	int i;
+	U32 ErrorLoop;
+	int station;
+	//rUBRDIV3 = ( (int)(SYS_PCLK/16./57600+0.5) -1 );		//该通讯板需要57600的波特率才能工作
+
+	U8 auchMsg[11],SendArray[11],RecArray[11];  
+	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;
+	if (rULCON3!=0x03) 
+		rULCON3 =0x03; 				//0x03=00 000 0 11  普通 偶校验（even） 1停止位 8数据位
+	//友峰共有24组继电器板
+	
+	station = zushu+(pianshu+1)*10;
+	
+	auchMsg[0]=station;		//栈号
+	auchMsg[1]=0x0F;		//功能码:0x0F表示写多个线圈
+	
+	auchMsg[2]=0x00;		//起始地址H
+	auchMsg[3]=0x00;		//起始地址L
+	
+	auchMsg[4]=0x00;		//输出数量H
+	auchMsg[5]=0x10;		//输出数量L
+	
+	auchMsg[6]=0x02;		//字节数：输出数量/8 余数不等于0则+1(字节数为1则下方为一个字节;为2则为两个字节)
+	
+	auchMsg[7]=0x0000&0xff;		//输出值1：外部输出一共16位所对应的低8位值
+	auchMsg[8]=(0x0000 >> 8);	//输出值2：外部输出一共16位所对应的高8位值
+	
+	auchMsg[9]=(CRC(auchMsg,9)) & 0xff;
+	auchMsg[10]=(CRC(auchMsg,9))>>8;
+	for (i=0;i<11;i++)
+	{
+		SendArray[i]=auchMsg[i];
+	}
+
+
+
+	rGPHDAT |= 0x1000;	//GPH12	+Write
+	Delay(DELAY_TIME_RTU);
+
+	for (Count=0;Count<11;Count++)
+
+	{
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+		waitTime=0;
+		WrUTXH3(SendArray[Count]);wdt_feed_dog();main_enter_flag = 1;
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+	}
+	
+	/***************通讯协议485 Read********************/
+	rGPHDAT &= 0xefff;	//GPH12	-Read
+	Count = 0;
+	while ((RecArray[0]=qz_Uart_Getch())!=25 && Count<=20)
+	{
+		Count++;
+	}
+	if (RecArray[0]==25){
+		for (Count=1;Count<10;Count++)
+		{
+			RecArray[Count]=qz_Uart_Getch();
+			if (RecArray[Count]==auchMsg[Count]){
+				jdqCheck++;
+			}
+		}
+		if (jdqCheck>=3){
+			return 1;		//10个通讯帧中有3个匹配就返回1
+		}
+		else{
+			return 0;
+		}	
+	}
+	else
+		{
+			//rUBRDIV3 = ( (int)(SYS_PCLK/16./9600+0.5) -1 );	//函数返回之前将波特率换回去
+			return 0;
+		}
+}
+
+/*************************************************
+Function(函数名称): Tiaoxian_Youfeng_ComInfo_Set(unsigned int duanshu);//不能循环SET太消耗时间
+Description(函数功能、性能等的描述): 必须获取到哪一个确定按钮被按下;
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): duanshu选择哪一段的通讯帧(一共8段:0-7)
+Output(对输出参数的说明):
+Return: CHANGED/NOT_CHANGED
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 void Tiaoxian_Youfeng_ComInfo_Set(void){
 	
-	unsigned int i,j;
-	for (i = 0; i < tiaoshaduan_max; i++){
-		if(tiaoxianduan[i].jieshuquanshu != 0){
+	unsigned int j;
+	
+	if(changed_duan >= 0 && changed_duan<tiaoshaduan_max){
+		if(tiaoxianduan[changed_duan].jieshuquanshu != 0){
 			for(j=0;j<PIANSHU_MAX;j++){
-				Tiaoxian_Youfeng_Pianshu_Set(i,j);
-				}
+				Tiaoxian_Youfeng_Pianshu_Set(changed_duan,j);
 			}
-		
-		}	
+			if(changed_qigang_button >= 0){
+				*(qigang_confirm_kb[changed_qigang_button]) = 0;	//button置零;set完之后在把按键弹起来
+				enter_already = 0;									//这个标志位值得考虑
+				changed_qigang_button = -1;							//开关用
+			}
+		}
+		qigang_confirm_status = 0;
+		changed_duan = -1;//当做开关用
+	}
 }
 
 
-void Tiaoxian_Youfeng_Pianshu_Set(unsigned int duanshu,unsigned int pianshu){
+void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu){
 	int i,j;
 	
 	switch(pianshu){
@@ -451,8 +651,6 @@ void Tiaoxian_Youfeng_Pianshu_Set(unsigned int duanshu,unsigned int pianshu){
 		default:
 			break;
 	}
-	
-	
 }
 
 
@@ -467,6 +665,12 @@ void TiaoXian_Youfeng_Reset(void){
 	yazhen_motor_pulse_2nd = 0;
 	
 	qigang_confirm_status = 0;
+	
+	enter_already = 0;
+	changed_duan = -1;			
+	changed_qigang_button = -1;
+	
+	
 }
 
 void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num){
@@ -474,7 +678,7 @@ void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num){
 }
 
 /***压针电机模块，所有的压针电机的计算问题应该放在这里，
-	中断中做++/set;已知s;通过中断得出t，最后获得v(可以这样类比)***/	
+	encoder1_process中做++/set;已知s;通过中断得出t，最后获得v(可以这样类比)***/	
 void Tiaoxian_Youfeng_Yazhen(unsigned int duanshu_prev,unsigned int duanshu_cur){
 	
 	INT16U yazhen_cur_1st = 0;
@@ -497,7 +701,6 @@ void Tiaoxian_Youfeng_Yazhen(unsigned int duanshu_prev,unsigned int duanshu_cur)
 	kaishi_quanshu = *(tiaoxianduan[duanshu_cur].kaishiquanshu);
 	jieshu_quanshu = *(tiaoxianduan[duanshu_cur].jieshuquanshu);
 	
-	//encoder1_cal_factor
 	//第一段
 	if(duanshu_cur == 0){
 		/**获取第一段压针 1 所需要的值**/
