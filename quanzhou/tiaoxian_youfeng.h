@@ -83,7 +83,7 @@ void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu);
 
 unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pianshu,unsigned int duanshu);
 unsigned int Tiaoxian_Youfeng_jidianqi_zero(unsigned int zushu,unsigned int pianshu);
-void Tiaoxian_Youfeng_Yazhen(unsigned int duanshu_prev,unsigned int duanshu_cur);
+void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur);
 void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num);
 
 void TiaoXian_Youfeng_weisha(int duanshu);

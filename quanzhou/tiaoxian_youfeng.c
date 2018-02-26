@@ -12,9 +12,9 @@ unsigned int tongxunstart[ZUSHU_MAX][PIANSHU_MAX] = {0};
 unsigned int tongxunnum[ZUSHU_MAX][PIANSHU_MAX] = {0};
 unsigned int tongxunzhen[tiaoshaduan_max][PIANSHU_MAX] = {0x0000};
 unsigned char* qigang_confirm_kb[16];			//16因为一共8段*2=16
-unsigned int qigang_confirm_status = 0;				//用于气缸确认之后，tongxunzhen的set
 unsigned int jiajiaStatus = 0;
 
+unsigned int qigang_confirm_status = 0;				//用于气缸确认之后，tongxunzhen的set
 unsigned int enter_already = 0;	//用于checkout防止重复进入,CHANGED之后Set完毕之后再置零
 int changed_duan = -1;							//用于duan改变之后的通讯帧的设置
 int changed_qigang_button = -1;
@@ -319,7 +319,7 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 			/***通讯开始***/
 			if (tongxunstart[zushu][pianshu] == 1 && tongxunnum[zushu][pianshu] <5){
 				/***5次通讯容错***/
-				if(duanshu > 0){
+				if(duanshu >= 0){
 					if (Tiaoxian_Youfeng_jidianqi_write(zushu,pianshu,duanshu) != 1){
 						tongxunnum[zushu][pianshu]++ ;
 					}
@@ -350,6 +350,20 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 
 }
 
+/*************************************************
+Function(函数名称): Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pianshu,unsigned int duanshu);
+Description(函数功能、性能等的描述): 写继电器通讯帧,通讯写通讯帧
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): duanshu选择哪一段的通讯帧(一共8段:0-7)
+Output(对输出参数的说明):
+Return: CHANGED/NOT_CHANGED
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 /**栈号计算公式:station = zushu+(pianshu+1)*10;**/
 unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pianshu,unsigned int duanshu){
 	
@@ -439,9 +453,21 @@ unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pia
 		}
 }
 
+/*************************************************
+Function(函数名称): Tiaoxian_Youfeng_jidianqi_zero(unsigned int zushu,unsigned int pianshu);
+Description(函数功能、性能等的描述): 写继电器通讯帧,通讯写通讯帧0
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): duanshu选择哪一段的通讯帧(一共8段:0-7)
+Output(对输出参数的说明):
+Return: CHANGED/NOT_CHANGED
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 unsigned int Tiaoxian_Youfeng_jidianqi_zero(unsigned int zushu,unsigned int pianshu){
-	
 	U8 Count,jdqCheck,waitTime;
 	int i;
 	U32 ErrorLoop;
@@ -543,7 +569,6 @@ Modified:
 Commented:方佳伟
 *************************************************/
 void Tiaoxian_Youfeng_ComInfo_Set(void){
-	
 	unsigned int j;
 	
 	if(changed_duan >= 0 && changed_duan<tiaoshaduan_max){
@@ -562,7 +587,20 @@ void Tiaoxian_Youfeng_ComInfo_Set(void){
 	}
 }
 
+/*************************************************
+Function(函数名称): Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu);//不能循环SET太消耗时间
+Description(函数功能、性能等的描述): 必须获取到哪一个确定按钮被按下;
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): duanshu选择哪一段的通讯帧(一共8段:0-7)
+Output(对输出参数的说明):
+Return: CHANGED/NOT_CHANGED
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu){
 	int i,j;
 	
@@ -653,7 +691,20 @@ void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu){
 	}
 }
 
+/*************************************************
+Function(函数名称): TiaoXian_Youfeng_Reset(void);//不能循环SET太消耗时间
+Description(函数功能、性能等的描述): 复位标志位复位(恢复全局变量初始化的量);
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
 
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: CHANGED/NOT_CHANGED
+Others: 
+Author:方佳伟
+Modified:
+Commented:方佳伟
+*************************************************/
 void TiaoXian_Youfeng_Reset(void){
 	yazheng_motor_1st_start	= 0;
 	yazheng_motor_2nd_start	= 0;
@@ -669,9 +720,8 @@ void TiaoXian_Youfeng_Reset(void){
 	enter_already = 0;
 	changed_duan = -1;			
 	changed_qigang_button = -1;
-	
-	
 }
+
 
 void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num){
 	(void)yazhen_num;
@@ -679,7 +729,7 @@ void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num){
 
 /***压针电机模块，所有的压针电机的计算问题应该放在这里，
 	encoder1_process中做++/set;已知s;通过中断得出t，最后获得v(可以这样类比)***/	
-void Tiaoxian_Youfeng_Yazhen(unsigned int duanshu_prev,unsigned int duanshu_cur){
+void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur){
 	
 	INT16U yazhen_cur_1st = 0;
 	INT16U yazhen_prev_1st = 0;
@@ -690,9 +740,23 @@ void Tiaoxian_Youfeng_Yazhen(unsigned int duanshu_prev,unsigned int duanshu_cur)
 	unsigned int yazhen_total_pulse_1st = 0;
 	unsigned int yazhen_total_pulse_2nd = 0;
 	//第一次边界条件，因为duanshu_prev == 10;
-	if(duanshu_prev >= 8){
+	if(duanshu_prev >= 8 || duanshu_prev == -1){
 		duanshu_prev = 0;
 	}
+	
+	//当前段被关闭则回零
+	if(duanshu_cur == -1){
+		Tiaoxian_Youfeng_Yazhen_Get_Zero(1);//yazhen_no_1
+		Tiaoxian_Youfeng_Yazhen_Get_Zero(2);//yazhen_no_2
+		
+		yazheng_motor_1st_start = 0;
+		yazheng_motor_2nd_start = 0;
+		return;
+	}
+	//容错
+	if(duanshu_cur == -1 || duanshu_prev == -1)
+		return;
+	
 	yazhen_cur_1st = *(tiaoxianduan[duanshu_cur].yazheng_motor_1st);
 	yazhen_prev_1st = *(tiaoxianduan[duanshu_prev].yazheng_motor_1st);
 	yazhen_cur_2nd = *(tiaoxianduan[duanshu_cur].yazheng_motor_2nd);
@@ -701,9 +765,10 @@ void Tiaoxian_Youfeng_Yazhen(unsigned int duanshu_prev,unsigned int duanshu_cur)
 	kaishi_quanshu = *(tiaoxianduan[duanshu_cur].kaishiquanshu);
 	jieshu_quanshu = *(tiaoxianduan[duanshu_cur].jieshuquanshu);
 	
-	//第一段
-	if(duanshu_cur == 0){
-		/**获取第一段压针 1 所需要的值**/
+	//第一段or结束之后的一段
+	if(duanshu_cur == 0 || (duanshu_prev == 0 && duanshu_cur != 1)){
+		/**1.获取第一段压针 1 所需要的值
+		   2.当前一段关闭的时候，后一段打开，并且当前不是第二段(duanshu_cur!=1)**/
 		if(yazhen_cur_1st != 0){
 			if((jieshu_quanshu > kaishi_quanshu)){
 				yazhen_motor_pulse_1st = (yazhen_cur_1st - 0)*Yazhen_Factor;
