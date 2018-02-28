@@ -7,7 +7,6 @@
 /**压针倍率**/
 #define Yazhen_Factor				g_InteralMemory.KeepWord[780]
 
-
 unsigned int tongxunstart[ZUSHU_MAX][PIANSHU_MAX] = {0};
 unsigned int tongxunnum[ZUSHU_MAX][PIANSHU_MAX] = {0};
 unsigned int tongxunzhen[tiaoshaduan_max][PIANSHU_MAX] = {0x0000};
@@ -175,7 +174,7 @@ void TiaoXian_Youfeng_Init_once(void){
 			for(k = 0;k<SHANGPAN_DANJI_NUM; k++){
 				g_InteralMemory.KeepWord[478+k+35*i]=0;
 			}
-			for(m = 0;m<SHANGPAN_DANJI_NUM; m++){
+			for(m = 0;m<XIAPAN_SHUANGJI_NUM; m++){
 				g_InteralMemory.KeepWord[484+m+35*i]=0;
 			}
 		
@@ -195,6 +194,7 @@ void TiaoXian_Youfeng_Init_once(void){
 		tiaoxianzu = 1;
 		tiaoxianzu_quanshu=0;
 		tiaoxianzu_flag = 0;
+		Yazhen_Factor = 5;
 		
 		jiajiansujiangemaichong_kw = 10000;
 		
@@ -225,7 +225,7 @@ int TiaoXian_Youfeng_Checkout(void){
 	
 	int qigang_confirm_num = -1;	//用于记录哪个按键被按下了,-1表示无按键被按下
 	
-	for(n = 0;n<16;n++)	{
+	for(n = 0;n<16;n++){
 		if(*(qigang_confirm_kb[n]) == 1 && enter_already == 0){//
 			qigang_confirm_num = n;
 			/****用于外部的全局变量*****/
@@ -254,8 +254,8 @@ int TiaoXian_Youfeng_Checkout(void){
 				up_checkout_tmp[i] = (up_shuangji_checkout_tmp[i]+up_danji_checkout_tmp[i]);
 				
 				if(up_checkout_tmp[i] != *(tiaoxianduan[i].shangpan_checkout)){
-					*(tiaoxianduan[i].shangpan_checkout) = up_checkout_tmp[i];
-					// *(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;set完之后在把按键弹起来
+					*(tiaoxianduan[i].shangpan_checkout) = up_checkout_tmp[i];//88
+					//Beep(1);// *(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;set完之后在把按键弹起来
 					return CHANGED;
 				}
 				else{
