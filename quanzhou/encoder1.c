@@ -754,23 +754,23 @@ void __irq	encoder1_process(void)
 		/**调线功能**/
 		if(tiaoxiankaiguan_kb == 1)	{//mode_choose == tiaoxian_mode
 #ifdef TIAOXIAN_YOUFENG_EN
-		//压针电机代码段
-		/**********************************压针电机1*********************************************/
-		if (yazheng_motor_1st_start == 1){
-				motor_factor_yazhen_1st++;
-				if (motor_factor_yazhen_1st >= yazhen_pulse_cmp_1st){
-					rGPEDAT &= ~(1<<Y9_Bit);
-					motor_factor_yazhen_1st = 0;
-					yazhen_1st_counter++;
+			//压针电机代码段
+			/**********************************压针电机1*********************************************/
+			if (yazheng_motor_1st_start == 1){
+					motor_factor_yazhen_1st++;
+					if (motor_factor_yazhen_1st >= yazhen_pulse_cmp_1st){
+						rGPEDAT &= ~(1<<Y9_Bit);
+						motor_factor_yazhen_1st = 0;
+						yazhen_1st_counter++;
+					}
+					//此处-4是为了提前量,其实-1更为合理
+					//若进入下一段，压针无作用，则需要-40即减得更多,因为外部进入下一个阶段之后，
+					//此处还未进入，在下一个阶段起初就将start置零了
+					if (yazhen_1st_counter>=(yazhen_motor_pulse_1st)){//-4
+						yazhen_1st_counter = 0;
+						yazheng_motor_1st_start = 0;
+					}
 				}
-				//此处-4是为了提前量,其实-1更为合理
-				//若进入下一段，压针无作用，则需要-40即减得更多,因为外部进入下一个阶段之后，
-				//此处还未进入，在下一个阶段起初就将start置零了
-				if (yazhen_1st_counter>=(yazhen_motor_pulse_1st-4)){
-					yazhen_1st_counter = 0;
-					yazheng_motor_1st_start = 0;
-				}
-			}
 			/**********************************压针电机2*********************************************/
 			if (yazheng_motor_2nd_start == 1){
 				motor_factor_yazhen_2nd++;
@@ -782,7 +782,7 @@ void __irq	encoder1_process(void)
 				//此处-4是为了提前量,其实-1更为合理
 				//若进入下一段，压针无作用，则需要-40即减得更多,因为外部进入下一个阶段之后，
 				//此处还未进入，在下一个阶段起初就将start置零了
-				if (yazhen_2nd_counter>=(yazhen_motor_pulse_2nd-4)){
+				if (yazhen_2nd_counter>=(yazhen_motor_pulse_2nd)){//-4
 					yazhen_2nd_counter = 0;
 					yazheng_motor_2nd_start = 0;
 				}

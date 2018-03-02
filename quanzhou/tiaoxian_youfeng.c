@@ -43,10 +43,17 @@ void TiaoXian_Youfeng_App(void){
 	
 	if((tiaoxian_shiji_kb == 1)){
 		int checkout_tmp = 0;
-		checkout_tmp = TiaoXian_Youfeng_Checkout();
+		int checkout_yazhen = 0;
 		
+		checkout_tmp = TiaoXian_Youfeng_Checkout();
 		if(checkout_tmp == CHANGED)
 			Tiaoxian_Youfeng_ComInfo_Set();
+		
+		checkout_yazhen = Yazhen_Youfeng_Checkout(duanshu_enable_cur);
+		if(checkout_yazhen == CHANGED){
+			Tiaoxian_Youfeng_Yazhen_Change(duanshu_enable_cur);
+		}
+			
 	}
 	
 	//1.正常情况duanshu_enable_tmp != duanshu_enable保证不多次通讯;
@@ -612,6 +619,10 @@ void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu){
 					tongxunzhen[duanshu][0] &=(~(0x03<<(i*2)));
 					tongxunzhen[duanshu][0] |=(0x01<<(i*2));
 				}
+				else if(g_InteralMemory.KeepWord[470+i+35*duanshu] == DAN_SHUANGJI){
+					tongxunzhen[duanshu][0] &=(~(0x03<<(i*2)));
+					tongxunzhen[duanshu][0] |=(0x02<<(i*2));
+				}
 				else if(g_InteralMemory.KeepWord[470+i+35*duanshu] == SHUANGJI){
 					tongxunzhen[duanshu][0] &=(~(0x03<<(i*2)));
 					tongxunzhen[duanshu][0] |=(0x03<<(i*2));
@@ -640,7 +651,11 @@ void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu){
 			for(j = 0;j<5;j++){
 				if(g_InteralMemory.KeepWord[484+j+35*duanshu] == DANJI){
 					tongxunzhen[duanshu][1] &=(~(0x03<<(j*2+6)));
-					tongxunzhen[duanshu][1] |=(0x03<<(j*2+6));
+					tongxunzhen[duanshu][1] |=(0x01<<(j*2+6));
+				}
+				else if(g_InteralMemory.KeepWord[484+j+35*duanshu] == DAN_SHUANGJI){
+					tongxunzhen[duanshu][1] &=(~(0x03<<(j*2+6)));
+					tongxunzhen[duanshu][1] |=(0x02<<(j*2+6));
 				}
 				else if(g_InteralMemory.KeepWord[484+j+35*duanshu] == SHUANGJI){
 					tongxunzhen[duanshu][1] &=(~(0x03<<(j*2+6)));
@@ -659,6 +674,10 @@ void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu){
 					tongxunzhen[duanshu][2] &=(~(0x03<<(i*2)));
 					tongxunzhen[duanshu][2] |=(0x01<<(i*2));
 				}
+				else if(g_InteralMemory.KeepWord[489+i+35*duanshu] == DAN_SHUANGJI){
+					tongxunzhen[duanshu][2] &=(~(0x03<<(i*2)));
+					tongxunzhen[duanshu][2] |=(0x02<<(i*2));
+				}
 				else if(g_InteralMemory.KeepWord[489+i+35*duanshu] == SHUANGJI){
 					tongxunzhen[duanshu][2] &=(~(0x03<<(i*2)));
 					tongxunzhen[duanshu][2] |=(0x03<<(i*2));
@@ -675,6 +694,10 @@ void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu){
 				if(g_InteralMemory.KeepWord[497+i+35*duanshu] == DANJI){
 					tongxunzhen[duanshu][3] &=(~(0x03<<(i*2)));
 					tongxunzhen[duanshu][3] |=(0x01<<(i*2));
+				}
+				else if(g_InteralMemory.KeepWord[497+i+35*duanshu] == DAN_SHUANGJI){
+					tongxunzhen[duanshu][3] &=(~(0x03<<(i*2)));
+					tongxunzhen[duanshu][3] |=(0x02<<(i*2));
 				}
 				else if(g_InteralMemory.KeepWord[497+i+35*duanshu] == SHUANGJI){
 					tongxunzhen[duanshu][3] &=(~(0x03<<(i*2)));
@@ -711,9 +734,10 @@ void TiaoXian_Youfeng_Reset(void){
 	
 	yazhen_pulse_cmp_1st = 0;	
 	yazhen_pulse_cmp_2nd = 0;   
-	
 	yazhen_motor_pulse_1st = 0;
 	yazhen_motor_pulse_2nd = 0;
+	yazhen_1st_counter = 0;
+	yazhen_2nd_counter = 0;
 	
 	qigang_confirm_status = 0;
 	
@@ -723,8 +747,11 @@ void TiaoXian_Youfeng_Reset(void){
 }
 
 
+
 void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num){
+	
 	(void)yazhen_num;
+	//Beep(1);
 }
 
 /***压针电机模块，所有的压针电机的计算问题应该放在这里，
@@ -739,11 +766,11 @@ void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur){
 	INT16U jieshu_quanshu = 0;
 	unsigned int yazhen_total_pulse_1st = 0;
 	unsigned int yazhen_total_pulse_2nd = 0;
+	unsigned int yazhen_1st_2nd_together = 0;//边界条件，用于第一段与第二段连续的判断条件,因为prev == 0 有可能前一段为第0段
 	//第一次边界条件，因为duanshu_prev == 10;
-	if(duanshu_prev >= 8 || duanshu_prev == -1){
+	if(duanshu_prev >= 8 || duanshu_prev == -1)
 		duanshu_prev = 0;
-	}
-	
+
 	//当前段被关闭则回零
 	if(duanshu_cur == -1){
 		Tiaoxian_Youfeng_Yazhen_Get_Zero(1);//yazhen_no_1
@@ -756,6 +783,9 @@ void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur){
 	//容错
 	if(duanshu_cur == -1 || duanshu_prev == -1)
 		return;
+	//边界条件
+	if((duanshu_cur == 1) && (*(tiaoxianduan[0].jieshuquanshu) == *(tiaoxianduan[1].kaishiquanshu)))
+		yazhen_1st_2nd_together = 1;
 	
 	yazhen_cur_1st = *(tiaoxianduan[duanshu_cur].yazheng_motor_1st);
 	yazhen_prev_1st = *(tiaoxianduan[duanshu_prev].yazheng_motor_1st);
@@ -766,17 +796,22 @@ void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur){
 	jieshu_quanshu = *(tiaoxianduan[duanshu_cur].jieshuquanshu);
 	
 	//第一段or结束之后的一段
-	if(duanshu_cur == 0 || (duanshu_prev == 0 && duanshu_cur != 1)){
+	if(duanshu_prev == 0 && yazhen_1st_2nd_together == 0){//duanshu_cur == 0 || (duanshu_prev == 0 && duanshu_cur != 1)//
 		/**1.获取第一段压针 1 所需要的值
 		   2.当前一段关闭的时候，后一段打开，并且当前不是第二段(duanshu_cur!=1)**/
 		if(yazhen_cur_1st != 0){
 			if((jieshu_quanshu > kaishi_quanshu)){
 				yazhen_motor_pulse_1st = (yazhen_cur_1st - 0)*Yazhen_Factor;
 				yazhen_total_pulse_1st = (jieshu_quanshu - kaishi_quanshu)*encoder1_cal_factor;
-				yazhen_pulse_cmp_1st = yazhen_total_pulse_1st/yazhen_motor_pulse_1st;
+				if(yazhen_motor_pulse_1st == 0)
+					yazhen_pulse_cmp_1st = 0;
+				else
+					yazhen_pulse_cmp_1st = yazhen_total_pulse_1st/yazhen_motor_pulse_1st;
+				
 				if(yazhen_pulse_cmp_1st < 2){
 					yazhen_pulse_cmp_1st = 2;//保证下降沿
 				}
+				yazhen_1st_counter = 0;
 				yazheng_motor_1st_start = 1;
 			}
 		}
@@ -789,10 +824,15 @@ void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur){
 			if((jieshu_quanshu > kaishi_quanshu)){
 				yazhen_motor_pulse_2nd = (yazhen_cur_2nd - 0)*Yazhen_Factor;
 				yazhen_total_pulse_2nd = (jieshu_quanshu - kaishi_quanshu)*encoder1_cal_factor;
-				yazhen_pulse_cmp_2nd = yazhen_total_pulse_2nd/yazhen_motor_pulse_2nd;
+				if(yazhen_motor_pulse_2nd == 0)
+					yazhen_pulse_cmp_2nd = 0;
+				else
+					yazhen_pulse_cmp_2nd = yazhen_total_pulse_2nd/yazhen_motor_pulse_2nd;
+				
 				if(yazhen_pulse_cmp_2nd < 2){
 					yazhen_pulse_cmp_2nd = 2;//保证下降沿
 				}
+				yazhen_2nd_counter=0;
 				yazheng_motor_2nd_start = 1;
 			}
 		}
@@ -803,15 +843,21 @@ void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur){
 		
 	}
 	else{
+		// Beep(1);
 		/**获取第i>1段压针 1 所需要的值**/
 		if(yazhen_cur_1st != 0){
 			if((yazhen_cur_1st > yazhen_prev_1st) && (jieshu_quanshu > kaishi_quanshu)){
 				yazhen_motor_pulse_1st = (yazhen_cur_1st - yazhen_prev_1st)*Yazhen_Factor;
 				yazhen_total_pulse_1st = (jieshu_quanshu - kaishi_quanshu)*encoder1_cal_factor;
-				yazhen_pulse_cmp_1st = yazhen_total_pulse_1st/yazhen_motor_pulse_1st;
+				if(yazhen_motor_pulse_1st == 0)
+					yazhen_pulse_cmp_1st = 0;
+				else
+					yazhen_pulse_cmp_1st = yazhen_total_pulse_1st/yazhen_motor_pulse_1st;
+				
 				if(yazhen_pulse_cmp_1st < 2){
 					yazhen_pulse_cmp_1st = 2;//保证下降沿
 				}
+				yazhen_1st_counter = 0;
 				yazheng_motor_1st_start = 1;
 			}
 			//剩下的情况均不合理，直接跳过	，注意yazhen_cur_1st == yazhen_prev_1st的情况就是不做任何改变;
@@ -825,10 +871,15 @@ void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur){
 			if((yazhen_cur_2nd > yazhen_prev_2nd) && (jieshu_quanshu > kaishi_quanshu)){
 				yazhen_motor_pulse_2nd = (yazhen_cur_2nd - yazhen_prev_2nd)*Yazhen_Factor;
 				yazhen_total_pulse_2nd = (jieshu_quanshu - kaishi_quanshu)*encoder1_cal_factor;
-				yazhen_pulse_cmp_2nd = yazhen_total_pulse_2nd/yazhen_motor_pulse_2nd;
+				if(yazhen_motor_pulse_2nd == 0)
+					yazhen_pulse_cmp_2nd = 0;
+				else
+					yazhen_pulse_cmp_2nd = yazhen_total_pulse_2nd/yazhen_motor_pulse_2nd;
+				
 				if(yazhen_pulse_cmp_2nd < 2){
 					yazhen_pulse_cmp_2nd = 2;//保证下降沿
 				}
+				yazhen_2nd_counter=0;
 				yazheng_motor_2nd_start = 1;
 			}
 			//剩下的情况均不合理，直接跳过	，注意yazhen_cur_1st == yazhen_prev_1st的情况就是不做任何改变;
@@ -841,6 +892,75 @@ void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur){
 	
 }
 
+int Yazhen_Youfeng_Checkout(int duanshu){
+	static unsigned int first_in = 0;		//第一次进入
+	static unsigned int yazhen_1st_pre = 0;
+	static unsigned int yazhen_2nd_pre = 0;
+	static unsigned int yazhen_1st_cur = 0;
+	static unsigned int yazhen_2nd_cur = 0;
+	
+	if(duanshu == -1)
+		return NOT_CHANGED;
+	if(first_in == 0){
+		yazhen_1st_pre = *(tiaoxianduan[duanshu].yazheng_motor_1st);
+		yazhen_2nd_pre = *(tiaoxianduan[duanshu].yazheng_motor_2nd);
+		yazhen_1st_cur = *(tiaoxianduan[duanshu].yazheng_motor_1st);
+		yazhen_2nd_cur = *(tiaoxianduan[duanshu].yazheng_motor_2nd);
+		first_in = 1;
+		return NOT_CHANGED;
+	}
+	else{
+		yazhen_1st_cur = *(tiaoxianduan[duanshu].yazheng_motor_1st);
+		yazhen_2nd_cur = *(tiaoxianduan[duanshu].yazheng_motor_2nd);
+		
+		if((yazhen_1st_cur == yazhen_1st_pre) && (yazhen_2nd_cur == yazhen_2nd_pre))
+			return NOT_CHANGED;
+		else{
+			yazhen_1st_pre = yazhen_1st_cur;
+			yazhen_2nd_pre = yazhen_2nd_cur;
+			return CHANGED;
+		}
+	}
+	return NOT_CHANGED;
+}
+
+void Tiaoxian_Youfeng_Yazhen_Change(int duanshu){
+	int yazhen_cur_1st,yazhen_cur_2nd,jieshu_quanshu;
+	int yazhen_total_pulse_1st,yazhen_total_pulse_2nd;
+	
+	if(duanshu == -1){
+		return;
+	}
+	yazhen_cur_1st = *(tiaoxianduan[duanshu].yazheng_motor_1st);
+	yazhen_cur_2nd = *(tiaoxianduan[duanshu].yazheng_motor_2nd);
+	jieshu_quanshu = *(tiaoxianduan[duanshu].jieshuquanshu);
+	
+	if((yazhen_cur_1st > yazhen_1st_counter) && (jieshu_quanshu > dapan_round)){
+		yazhen_motor_pulse_1st = (yazhen_cur_1st - yazhen_1st_counter)*Yazhen_Factor;
+		yazhen_total_pulse_1st = (jieshu_quanshu - dapan_round)*encoder1_cal_factor;
+		if(yazhen_motor_pulse_1st == 0)
+			yazhen_pulse_cmp_1st = 0;
+		else
+			yazhen_pulse_cmp_1st = yazhen_total_pulse_1st/yazhen_motor_pulse_1st;
+		
+		if(yazhen_pulse_cmp_1st < 2){
+			yazhen_pulse_cmp_1st = 2;//保证下降沿
+		}
+	}
+	
+	if((yazhen_cur_2nd > yazhen_2nd_counter) && (jieshu_quanshu > dapan_round)){
+		yazhen_motor_pulse_2nd = (yazhen_cur_2nd - yazhen_2nd_counter)*Yazhen_Factor;
+		yazhen_total_pulse_2nd = (jieshu_quanshu - dapan_round)*encoder1_cal_factor;
+		if(yazhen_motor_pulse_2nd == 0)
+			yazhen_pulse_cmp_2nd = 0;
+		else
+			yazhen_pulse_cmp_2nd = yazhen_total_pulse_2nd/yazhen_motor_pulse_2nd;
+		
+		if(yazhen_pulse_cmp_2nd < 2){
+			yazhen_pulse_cmp_2nd = 2;//保证下降沿
+		}
+	}
+}
 /*************************************************
 Function(函数名称): between_check(unsigned int roundShineng)
 Description(函数功能、性能等的描述): 主要用于shinengpanduan()函数，判断当前阶段是否是在调线圈数之内

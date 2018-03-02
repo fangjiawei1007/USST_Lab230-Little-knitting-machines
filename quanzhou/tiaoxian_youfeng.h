@@ -65,10 +65,11 @@ enum TIAOXIAN_CHECKOUT{
 enum TIAOXIAN_SEL{
 	NOJI = 0,
 	DANJI = 1,
+	DAN_SHUANGJI = 2,
 	SHUANGJI = 12
 };
 	
-
+//static void  delay_test(unsigned int time);
 /**************************************************************************************************/
 
 void TiaoXian_Youfeng_App(void);
@@ -83,8 +84,11 @@ void Tiaoxian_Youfeng_Pianshu_Set(int duanshu,unsigned int pianshu);
 
 unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pianshu,unsigned int duanshu);
 unsigned int Tiaoxian_Youfeng_jidianqi_zero(unsigned int zushu,unsigned int pianshu);
+
 void Tiaoxian_Youfeng_Yazhen(int duanshu_prev,int duanshu_cur);
 void Tiaoxian_Youfeng_Yazhen_Get_Zero(unsigned int yazhen_num);
+int Yazhen_Youfeng_Checkout(int duanshu);
+void Tiaoxian_Youfeng_Yazhen_Change(int duanshu);
 
 void TiaoXian_Youfeng_weisha(int duanshu);
 

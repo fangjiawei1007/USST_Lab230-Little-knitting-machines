@@ -107,8 +107,9 @@
 
 extern	unsigned int InPulseCount[7];		//记录6路高速输入的脉冲数
 extern	unsigned int OutPulse_PreSet[4];	// 3路脉冲输出的  脉冲预设值
-extern	unsigned int OutPulse_Counter[4];	
-
+extern	unsigned int OutPulse_Counter[4];
+extern  volatile unsigned int yazhen_1st_counter;
+extern  volatile unsigned int yazhen_2nd_counter;
 ///////main需要用的函数/////////////////////
 void encoder1_data_process(void);				//圆盘，三角速度和整数圈及非整数圈
 void encoder1_data_reset(void);
