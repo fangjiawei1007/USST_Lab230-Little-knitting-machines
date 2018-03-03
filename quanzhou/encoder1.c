@@ -504,18 +504,18 @@ void songsha_fre_change(void){
 			i = between_check(dapan_round);
 			if ( i != -1){
 				for (bb=0;bb<7;bb++){
-					kMotorTarget[bb]=	(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
-										(getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE) )
-										*(int)((dapan_round-daduanquanshu)/middlequanshu)*(*tiaoxianduan[i].fangdabeishu[bb])/100); 
+					kMotorTarget[bb]=	((getKMotor(bb,current_stage,PREVIOUSSTAGE)-
+										(((getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE))
+										*(int)(dapan_round-daduanquanshu))/middlequanshu))*(*tiaoxianduan[i].fangdabeishu[bb])/100); 
 				}
 			}
 			else{
 				for (bb=0;bb<7;bb++){
 			
-					/**K值计算 K_need = (K1 - (K1-K2)*(x/y))**/
+					/**K值计算 K_need = (K1 - ((K1-K2)*x)/y))**/
 					kMotorTarget[bb]=	(getKMotor(bb,current_stage,PREVIOUSSTAGE)-
-										(getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE))
-										*(int)((dapan_round-daduanquanshu)/middlequanshu)); 
+										(((getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE))
+										*(int)(dapan_round-daduanquanshu))/middlequanshu)); 
 				}
 			}
 			
@@ -566,8 +566,8 @@ void songsha_fre_change(void){
 			for (bb=0;bb<7;bb++){//裁剪圈不调线
 				//裁剪段的初值和小头段的工况相同，和分层段的K值不同，
 				kMotorTarget[bb] = (getKMotor(bb,fencenduan,PREVIOUSSTAGE)+
-								   (getKMotor(bb,current_stage,NEXTSTAGE)-getKMotor(bb,fencenduan,PREVIOUSSTAGE) )
-									*(int)((dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu)/langfeiquanshu));
+								   (((getKMotor(bb,current_stage,NEXTSTAGE)-getKMotor(bb,fencenduan,PREVIOUSSTAGE))
+									*(int)(dapan_round-daduanquanshu-middlequanshu-xiaoduanquanshu-caijiaoquanshu))/langfeiquanshu));
 			}
 			SpeedChange(kMotorTarget);
 			bianpingqi_speed_cal();
