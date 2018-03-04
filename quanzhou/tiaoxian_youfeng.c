@@ -17,6 +17,7 @@ unsigned int qigang_confirm_status = 0;				//用于气缸确认之后，tongxunzhen的set
 unsigned int enter_already = 0;	//用于checkout防止重复进入,CHANGED之后Set完毕之后再置零
 int changed_duan = -1;							//用于duan改变之后的通讯帧的设置
 int changed_qigang_button = -1;
+unsigned int have_not_com = 0;					//用于判断通讯帧改变之后是否进行了通讯 0->不需要通讯/已经通讯过了;1->改变了但是未通讯
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
 /*************************************************
@@ -46,28 +47,30 @@ void TiaoXian_Youfeng_App(void){
 		int checkout_yazhen = 0;
 		
 		checkout_tmp = TiaoXian_Youfeng_Checkout();
-		if(checkout_tmp == CHANGED)
+		if(checkout_tmp == CHANGED){
+			//Beep(1);
 			Tiaoxian_Youfeng_ComInfo_Set();
+		}
 		
 		checkout_yazhen = Yazhen_Youfeng_Checkout(duanshu_enable_cur);
 		if(checkout_yazhen == CHANGED){
 			Tiaoxian_Youfeng_Yazhen_Change(duanshu_enable_cur);
-		}
-			
+		}	
 	}
 	
 	//1.正常情况duanshu_enable_tmp != duanshu_enable保证不多次通讯;
-	//2.试机的时候需要多次通讯qigang_confirm_status用于试机
+	//2.试机的时候需要多次通讯have_not_com用于试机qigang_confirm_status
 	if((duanshu_enable_prev != duanshu_enable_cur && current_stage != caijianduan) \
-	  || (qigang_confirm_status == 1)){
+	  || (have_not_com == 1)){//qigang_confirm_status == 1
 		//容错
 		if(duanshu_enable_cur>8)
 			return;
 		
-		Tiaoxian_Youfeng_Yazhen(duanshu_enable_prev,duanshu_enable_cur);
+		Tiaoxian_Youfeng_Yazhen(duanshu_enable_prev,duanshu_enable_cur);//(qigang_confirm_status == 1)不会对此有影响，因为里面判断了压针数必须改变，相同段不会改变
 		duanshu_enable_prev = duanshu_enable_cur;//防止重复进入(通讯)
 		
 		TiaoXian_Youfeng_weisha(duanshu_enable_cur);
+		have_not_com = 0;
 	}
 }
 
@@ -87,7 +90,7 @@ Modified:
 Commented:方佳伟
 *************************************************/
 void TiaoXian_Youfeng_Init(void){
-	int i,j,k,m,n;
+	int i,j,k,m,n,l;
 	unsigned int shangpan_danji_check_tmp[8]={0};
 	unsigned int shangpan_shuangji_check_tmp[8]={0};
 	unsigned int xiapan_shaungji_check_tmp[8]={0};
@@ -110,7 +113,7 @@ void TiaoXian_Youfeng_Init(void){
 		}
 	}
  */
-	/***8段参数初始化***/
+	/***8段结构体参数初始化***/
 	for (i = 0; i < tiaoshaduan_max; i++){
 		tiaoxianduan[i].kaishiquanshu = &g_InteralMemory.KeepWord[156 + 10*i];
 		tiaoxianduan[i].jieshuquanshu = &g_InteralMemory.KeepWord[157 + 10*i];
@@ -138,10 +141,21 @@ void TiaoXian_Youfeng_Init(void){
 		tiaoxianduan[i].shangpan_checkout = &g_InteralMemory.KeepWord[760 + i];
 		tiaoxianduan[i].xiapan_checkout = &g_InteralMemory.KeepWord[768 + i];
 	}
-	
+	/***气缸button初始化***/
 	for(n=0;n<16;n++){
 		qigang_confirm_kb[n]=&g_InteralMemory.KeepBit[65 + n];
 	}
+	/***通讯帧初始化***/
+	for(l = 0;l<tiaoshaduan_max;l++){
+		if(tiaoxianduan[l].jieshuquanshu != 0){
+			for(j=0;j<PIANSHU_MAX;j++){
+				Tiaoxian_Youfeng_Pianshu_Set(l,j);
+			}
+		}
+	}
+	
+	
+	
 }
 
 /*************************************************
@@ -224,11 +238,11 @@ Commented:方佳伟
 *************************************************/
 int TiaoXian_Youfeng_Checkout(void){
 	unsigned int i,j,k,m,n;
-	unsigned int up_danji_checkout_tmp[8] = {0};
-	unsigned int up_shuangji_checkout_tmp[8] = {0};
-	unsigned int down_shuangji_checkout_tmp[8] = {0};
-	unsigned int up_checkout_tmp[8]={0};
-	unsigned int down_checkout_tmp[8]={0};
+	INT16U up_danji_checkout_tmp[8] = {0};
+	INT16U up_shuangji_checkout_tmp[8] = {0};
+	INT16U down_shuangji_checkout_tmp[8] = {0};
+	INT16U up_checkout_tmp[8]={0};
+	INT16U down_checkout_tmp[8]={0};
 	
 	int qigang_confirm_num = -1;	//用于记录哪个按键被按下了,-1表示无按键被按下
 	
@@ -245,29 +259,27 @@ int TiaoXian_Youfeng_Checkout(void){
 	}
 	
 	if(qigang_confirm_status == 1 && qigang_confirm_num >= 0){	
-		// for (i = 0; i < tiaoshaduan_max; i++){
 			wdt_feed_dog();main_enter_flag = 1;
 			/**上盘被改变**/
 			if((qigang_confirm_num%2) == 0){
 				i = (qigang_confirm_num/2);//获取段
 				for (j = 0;j<SHANGPAN_SHUANGJI_NUM; j++){
-					//tiaoxianduan[i].shangpan_shaungji_qigang[j]=&g_InteralMemory.KeepWord[470+j+35*i];
 					up_shuangji_checkout_tmp[i]+=*(tiaoxianduan[i].shangpan_shaungji_qigang[j]);
 				}
 				for (k = 0;k<SHANGPAN_DANJI_NUM; k++){
-					//tiaoxianduan[i].shangpan_danji_qigang[k]=&g_InteralMemory.KeepWord[478+k+35*i];
 					up_danji_checkout_tmp[i]+=*(tiaoxianduan[i].shangpan_danji_qigang[k]);
 				}
 				up_checkout_tmp[i] = (up_shuangji_checkout_tmp[i]+up_danji_checkout_tmp[i]);
+				/**test for checkout**/
 				
 				if(up_checkout_tmp[i] != *(tiaoxianduan[i].shangpan_checkout)){
-					*(tiaoxianduan[i].shangpan_checkout) = up_checkout_tmp[i];//88
-					//Beep(1);// *(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;set完之后在把按键弹起来
+					*(tiaoxianduan[i].shangpan_checkout) = up_checkout_tmp[i];
 					return CHANGED;
 				}
 				else{
 					*(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;
 					enter_already = 0;
+					qigang_confirm_status = 0;
 					return NOT_CHANGED;
 				}
 			}
@@ -288,6 +300,7 @@ int TiaoXian_Youfeng_Checkout(void){
 				else{
 					*(qigang_confirm_kb[qigang_confirm_num]) = 0;	//button置零;
 					enter_already = 0;
+					qigang_confirm_status = 0;
 					return NOT_CHANGED;
 				}
 			}
@@ -319,12 +332,12 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 	/**容错用**/
 	if(duanshu>8)
 		return;
-	
 	/**tongxunstart[][]以及tongxunnum[][]必须在Tiaoxian_Youfeng_ComInfo_Get()中打开**/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
 		for(pianshu = 0;pianshu<PIANSHU_MAX;pianshu++){	
+			tongxunnum[zushu][pianshu] = 0;
 			/***通讯开始***/
-			if (tongxunstart[zushu][pianshu] == 1 && tongxunnum[zushu][pianshu] <5){
+			if (tongxunnum[zushu][pianshu] <5){//tongxunstart[zushu][pianshu] == 1 &&
 				/***5次通讯容错***/
 				if(duanshu >= 0){
 					if (Tiaoxian_Youfeng_jidianqi_write(zushu,pianshu,duanshu) != 1){
@@ -332,7 +345,6 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 					}
 					else{
 						tongxunnum[zushu][pianshu] = 0;
-						tongxunstart[zushu][pianshu] = 0;
 					}
 				}
 				else{//收刀
@@ -341,17 +353,20 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 					}
 					else{
 						tongxunnum[zushu][pianshu] = 0;
-						tongxunstart[zushu][pianshu] = 0;
 					}
 				}
 			}
 			/**5次通讯错误之后**/
-			else if(tongxunstart[zushu][pianshu] == 1){
+			else{
+				tongxunnum[zushu][pianshu] = 0;
+			}
+			
+			/* else if(tongxunstart[zushu][pianshu] == 1){
 				tongxunnum[zushu][pianshu] = 0;
 				tongxunstart[zushu][pianshu] = 0;
 			}
 			else if(tongxunnum[zushu][pianshu] != 0)
-				tongxunnum[zushu][pianshu] = 0;	
+				tongxunnum[zushu][pianshu] = 0;	 */
 		}
 	}
 
@@ -590,6 +605,7 @@ void Tiaoxian_Youfeng_ComInfo_Set(void){
 			}
 		}
 		qigang_confirm_status = 0;
+		have_not_com = 1;
 		changed_duan = -1;//当做开关用
 	}
 }
