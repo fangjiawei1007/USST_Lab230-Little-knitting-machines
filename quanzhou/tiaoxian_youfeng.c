@@ -219,7 +219,7 @@ void TiaoXian_Youfeng_Init_once(void){
 		tiaoxianzu_quanshu=0;
 		tiaoxianzu_flag = 0;
 		Yazhen_Factor = 5;
-		
+		jiajiaStatus = 0;
 		jiajiansujiangemaichong_kw = 10000;
 		
 		//weisha_jiange_kw = 0;	//Î¹É´¼ä¸ô,ÓÑ·åÈ¥³ý
