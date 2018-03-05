@@ -7,17 +7,20 @@
 /**压针倍率**/
 #define Yazhen_Factor				g_InteralMemory.KeepWord[780]
 
+
 unsigned int tongxunstart[ZUSHU_MAX][PIANSHU_MAX] = {0};
 unsigned int tongxunnum[ZUSHU_MAX][PIANSHU_MAX] = {0};
 unsigned int tongxunzhen[tiaoshaduan_max][PIANSHU_MAX] = {0x0000};
 unsigned char* qigang_confirm_kb[16];			//16因为一共8段*2=16
-unsigned int jiajiaStatus = 0;
+//unsigned int jiajiaStatus = 0;
 
 unsigned int qigang_confirm_status = 0;				//用于气缸确认之后，tongxunzhen的set
 unsigned int enter_already = 0;	//用于checkout防止重复进入,CHANGED之后Set完毕之后再置零
 int changed_duan = -1;							//用于duan改变之后的通讯帧的设置
 int changed_qigang_button = -1;
-unsigned int have_not_com = 0;					//用于判断通讯帧改变之后是否进行了通讯 0->不需要通讯/已经通讯过了;1->改变了但是未通讯
+unsigned int have_not_com = 0;					//用于判断通讯帧改变之后是否进行了通讯：0->不需要通讯/已经通讯过了;1->改变了但是未通讯
+unsigned int com_again = 0;						//用于判断tiaoxianzu改变之后是否进行了通讯：0->不需要通讯/已经通讯过了;1->改变了但是未通讯
+
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
 /*************************************************
@@ -59,9 +62,10 @@ void TiaoXian_Youfeng_App(void){
 	}
 	
 	//1.正常情况duanshu_enable_tmp != duanshu_enable保证不多次通讯;
-	//2.试机的时候需要多次通讯have_not_com用于试机qigang_confirm_status
+	//2.试机的时候需要多次通讯have_not_com用于试机
+	//3.com_again用于阶段调线
 	if((duanshu_enable_prev != duanshu_enable_cur && current_stage != caijianduan) \
-	  || (have_not_com == 1)){//qigang_confirm_status == 1
+	  || (have_not_com == 1) || (com_again == 1)){//qigang_confirm_status == 1|| (tiaoxianzu < tiaoxianzu_max)
 		//容错
 		if(duanshu_enable_cur>8)
 			return;
@@ -70,7 +74,9 @@ void TiaoXian_Youfeng_App(void){
 		duanshu_enable_prev = duanshu_enable_cur;//防止重复进入(通讯)
 		
 		TiaoXian_Youfeng_weisha(duanshu_enable_cur);
+		
 		have_not_com = 0;
+		com_again = 0;
 	}
 }
 
@@ -152,10 +158,7 @@ void TiaoXian_Youfeng_Init(void){
 				Tiaoxian_Youfeng_Pianshu_Set(l,j);
 			}
 		}
-	}
-	
-	
-	
+	}	
 }
 
 /*************************************************
@@ -332,6 +335,10 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 	/**容错用**/
 	if(duanshu>8)
 		return;
+	{
+		g_InteralMemory.Word[300] = tiaoxianzu;	
+		g_InteralMemory.Word[301] = tiaoxianzu_max;
+	}
 	/**tongxunstart[][]以及tongxunnum[][]必须在Tiaoxian_Youfeng_ComInfo_Get()中打开**/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
 		for(pianshu = 0;pianshu<PIANSHU_MAX;pianshu++){	
@@ -360,7 +367,7 @@ void TiaoXian_Youfeng_weisha(int duanshu){
 			else{
 				tongxunnum[zushu][pianshu] = 0;
 			}
-			
+		
 			/* else if(tongxunstart[zushu][pianshu] == 1){
 				tongxunnum[zushu][pianshu] = 0;
 				tongxunstart[zushu][pianshu] = 0;
@@ -401,7 +408,7 @@ unsigned int Tiaoxian_Youfeng_jidianqi_write(unsigned int zushu,unsigned int pia
 		rULCON3 =0x03; 				//0x03=00 000 0 11  普通 偶校验（even） 1停止位 8数据位
 	//友峰共有24组继电器板
 	
-	station = zushu+(pianshu+1)*10;
+	station = zushu*10+(pianshu+5);
 	
 	auchMsg[0]=station;		//栈号
 	auchMsg[1]=0x0F;		//功能码:0x0F表示写多个线圈
@@ -502,7 +509,7 @@ unsigned int Tiaoxian_Youfeng_jidianqi_zero(unsigned int zushu,unsigned int pian
 		rULCON3 =0x03; 				//0x03=00 000 0 11  普通 偶校验（even） 1停止位 8数据位
 	//友峰共有24组继电器板
 	
-	station = zushu+(pianshu+1)*10;
+	station = zushu*10+(pianshu+5);
 	
 	auchMsg[0]=station;		//栈号
 	auchMsg[1]=0x0F;		//功能码:0x0F表示写多个线圈
@@ -760,6 +767,12 @@ void TiaoXian_Youfeng_Reset(void){
 	enter_already = 0;
 	changed_duan = -1;			
 	changed_qigang_button = -1;
+	
+	have_not_com = 0;	
+	com_again = 0;		
+	tiaoxianzu = tiaoxianzu_max;//1
+	tiaoxianzu_flag = 0;
+	tiaoxianzu_quanshu=0;
 }
 
 
@@ -1053,7 +1066,8 @@ unsigned int at_check(unsigned int roundShineng){
 	{
 		jiajiaStatus = 1;
 		if ( tiaoxianzu < tiaoxianzu_max ){
-			tiaoxianzu++;		
+			tiaoxianzu++;
+			com_again = 1;		//for 友峰
 		}
 	}
 	

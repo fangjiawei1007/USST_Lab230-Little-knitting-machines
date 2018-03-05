@@ -375,6 +375,7 @@ void bianpingqi_speed_cal(void){
 			#endif
 			return;
 		}
+		/**调线进行中,继续减速，不改变速度**/
 		if ((at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
 			return;
 		}

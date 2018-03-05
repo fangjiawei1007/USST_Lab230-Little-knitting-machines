@@ -2,7 +2,7 @@
 #define __TIAOXIAN_YOUFENG_H__
 
 #define TIAOXIAN_YOUFENG_EN
-
+#define jiajiaStatus					(g_InteralMemory.KeepBit[100])
 
 #define tiaoxian_shiji_kb				(g_InteralMemory.KeepBit[60])
 #define tiaoxiankaiguan_kb				(g_InteralMemory.KeepBit[48])	//大头条线开关
