@@ -162,7 +162,7 @@ extern unsigned int shoudao_jiange_tmp[6][6];		//ÊÕµ¶¼ä¸ô¼ÇÂ¼ by FJW
 extern unsigned int forceEqual;
 extern unsigned int speed_status;
 extern unsigned int ewaiduan_fencen_status;
-extern unsigned int jiajiaStatus;
+//extern unsigned int jiajiaStatus;
 
 extern unsigned int weisha_jiange[6][6];
 extern unsigned int weisha_jiange_status[6][6];

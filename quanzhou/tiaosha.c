@@ -16,7 +16,7 @@ unsigned int chudao_jiange_tmp[ZUSHU_MAX][DAOSHU_MAX] = {0};		//出刀间隔记录 by 
 unsigned int shoudao_jiange_tmp[ZUSHU_MAX][DAOSHU_MAX] = {0};	//收刀间隔记录 by FJW
 unsigned int chudao_shoudao_start[ZUSHU_MAX][DAOSHU_MAX] = {0};
 //unsigned int tiaoxianzu = 0;
-unsigned int jiajiaStatus = 0;
+//unsigned int jiajiaStatus = 0;
 
 unsigned int weisha_jiange_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int weisha_jiange[ZUSHU_MAX][DAOSHU_MAX] = {0};

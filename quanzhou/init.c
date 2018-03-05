@@ -166,7 +166,7 @@ void menu_init(void)
 			}
 		}
 		/******************************************/
-		
+		jiajiaStatus = 0;
 		tiaoxianzu_jiange = 2;
 		chudao_jiange = 10000;	//by FJW
 		shoudao_jiange = 10000; //by FJW
