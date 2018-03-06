@@ -1,7 +1,8 @@
 #ifndef __TIAOXIAN_YOUFENG_H__
 #define __TIAOXIAN_YOUFENG_H__
 
-#define TIAOXIAN_YOUFENG_EN
+//#define TIAOXIAN_YOUFENG_EN
+#ifdef TIAOXIAN_YOUFENG_EN
 #define jiajiaStatus					(g_InteralMemory.KeepBit[100])
 
 #define tiaoxian_shiji_kb				(g_InteralMemory.KeepBit[60])
@@ -94,5 +95,7 @@ void TiaoXian_Youfeng_weisha(int duanshu);
 
 int between_check(unsigned int roundShineng);
 unsigned int at_check(unsigned int roundShineng);
+
+#endif
 
 #endif

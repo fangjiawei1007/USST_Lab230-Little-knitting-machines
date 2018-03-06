@@ -4,7 +4,7 @@
 
 
 
-void __irq encoder3_process(void);
+//void __irq encoder3_process(void);
 
 
 

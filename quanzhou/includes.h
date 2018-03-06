@@ -55,7 +55,7 @@
 #include "tiaosha.h"				//调线 by FJW
 
 #include "tiaoxian_youfeng.h"	//友峰调线 by FJW
-
+#include "yazhen_normal.h"
 #define	start_quanzhou					1
 #define	stop_quanzhou					0
 
@@ -157,6 +157,7 @@ extern unsigned int shoudao_start_status[6][6];	//调线功能 by FJW
 extern unsigned int chudao_jiange_tmp[6][6];		//出刀间隔记录 by FJW
 extern unsigned int shoudao_jiange_tmp[6][6];		//收刀间隔记录 by FJW
 
+
 //extern	unsigned int tongxunzhen[6];
 //extern unsigned int shinengwei[6];	
 //extern unsigned int chudao_shoudao_status[6][6];
@@ -167,11 +168,11 @@ extern unsigned int ewaiduan_fencen_status;
 
 extern unsigned int weisha_jiange[6][6];
 extern unsigned int weisha_jiange_status[6][6];
-
+#ifdef TIAOXIAN_YOUFENG_EN
 extern TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
 //extern unsigned int SET_HIGH_STATUS;		//置高电平标志位 by FJW
 //unsigned int chudao_shoudao_status;
 #endif
 
-
+#endif

@@ -27,12 +27,24 @@ unsigned int ewaiduan_fencen_status = 0;		//ewaiduan_fencen_status=1时，表示使用
 
 #define	reset_time_100ms				4
 
+#ifdef TIAOXIAN_YOUFENG_EN
 /**************************友峰调线****************************/
 volatile unsigned int motor_factor_yazhen_1st=0;
 volatile unsigned int motor_factor_yazhen_2nd=0;
 volatile unsigned int yazhen_1st_counter=0;
 volatile unsigned int yazhen_2nd_counter=0;
+#endif
 
+#ifdef YAZHEN_NORMAL_EN
+/**************************友峰调线****************************/
+volatile unsigned int motor_factor_shangyazhen=0;
+volatile unsigned int motor_factor_xiayazhen=0;
+volatile unsigned int motor_factor_back_shangyazhen = 0;
+volatile unsigned int motor_factor_back_xiayazhen = 0;
+
+// volatile unsigned int shangyazhen_counter=0;
+// volatile unsigned int xiayazhen_counter=0;
+#endif
 /*************************************************
 Function(函数名称): encoder1_data_process(void)
 Description(函数功能、性能等的描述): 当大盘速度超过设定的最大速度，通过通讯调整变频器，使大盘降速
@@ -751,6 +763,97 @@ void __irq	encoder1_process(void)
 		encoder1_speed_pulse++;
 		encoder1_pulse_number++;	//编码器脉冲数记录
 		
+#ifdef YAZHEN_NORMAL_EN
+		/**普通压针功能**/
+		/**********************************上压针电机开始*********************************************/
+			if (shangyazhen_motor_start == 1 && (shangyazhen_pulse_cmp != NO_MOVE)){
+					motor_factor_shangyazhen++;
+					if (motor_factor_shangyazhen >= shangyazhen_pulse_cmp){
+						rGPEDAT &= ~(1<<Y9_Bit);
+						motor_factor_shangyazhen = 0;
+						shangyazhen_counter++;
+						shangyazhen_back_counter++;
+					}
+					//此处-4是为了提前量,其实-1更为合理
+					//若进入下一段，压针无作用，则需要-40即减得更多,因为外部进入下一个阶段之后，
+					//此处还未进入，在下一个阶段起初就将start置零了
+					if((shangyazhen_counter>=shangyazhen_motor_pulse) || (shangyazhen_pulse_cmp == NO_MOVE)){//-4
+						shangyazhen_counter = 0;
+						shangyazhen_motor_start = 0;
+					}
+				}
+			/**********************************下压针电机开始*********************************************/
+			if (xiayazhen_motor_start == 1 && (xiayazhen_pulse_cmp != NO_MOVE)){
+				motor_factor_xiayazhen++;
+				if (motor_factor_xiayazhen >= xiayazhen_pulse_cmp){
+					rGPEDAT &= ~(1<<Y10_Bit);
+					motor_factor_xiayazhen = 0;
+					xiayazhen_counter++;
+					xiayazhen_back_counter++;
+				}
+				//此处-4是为了提前量,其实-1更为合理
+				//若进入下一段，压针无作用，则需要-40即减得更多,因为外部进入下一个阶段之后，
+				//此处还未进入，在下一个阶段起初就将start置零了
+				if (xiayazhen_counter>=(xiayazhen_motor_pulse) || (xiayazhen_pulse_cmp == NO_MOVE)){//-4
+					xiayazhen_counter = 0;
+					xiayazhen_motor_start = 0;
+				}
+			}
+			/**********************************上压针电机结束*********************************************/
+			if (shangyazhen_back_start == 1){
+				motor_factor_back_shangyazhen++;
+				if (motor_factor_back_shangyazhen >= shangyazhen_back_cmp){
+					rGPEDAT &= ~(1<<Y9_Bit);
+					motor_factor_back_shangyazhen = 0;
+					shangyazhen_back_zero_counter++;
+				}
+				
+				if (shangyazhen_back_zero_counter>=(shangyazhen_back_counter + YAZHEN_ZERO_ERR)){//-4
+					shangyazhen_back_zero_counter = 0;
+					shangyazhen_back_counter = 0;
+					shangyazhen_back_start = 0;
+					/**下一次容错**/
+					if(((rGPFDAT >> 3) & 0x1) == g_InteralMemory.KeepBit[93]){
+						YAZHEN_ZERO_ERR = 0;
+					}
+					else if((((rGPFDAT >> 3) & 0x1) == ~(g_InteralMemory.KeepBit[93])) && (X_3_SIG > yazhen_err)){
+						X_3_SIG = 0;
+						YAZHEN_ZERO_ERR = -4;
+					}
+					else if((((rGPFDAT >> 3) & 0x1) == ~(g_InteralMemory.KeepBit[93])) && (X_3_SIG < yazhen_err)){
+						X_3_SIG = 0;
+						YAZHEN_ZERO_ERR = 4;
+					}	
+				}
+			}
+			/**********************************下压针电机结束*********************************************/
+			if (xiayazhen_back_start == 1){
+				motor_factor_back_xiayazhen++;
+				if (motor_factor_back_xiayazhen >= xiayazhen_back_cmp){
+					rGPEDAT &= ~(1<<Y10_Bit);
+					motor_factor_back_xiayazhen = 0;
+					xiayazhen_back_zero_counter++;
+				}
+				
+				if (xiayazhen_back_zero_counter>=(xiayazhen_back_counter + YAZHEN_ZERO_ERR)){//-4
+					xiayazhen_back_zero_counter = 0;
+					xiayazhen_back_counter = 0;
+					xiayazhen_back_start = 0;
+					if(((rGPFDAT >> 4) & 0x1) == g_InteralMemory.KeepBit[93]){
+						YAZHEN_ZERO_ERR = 0;
+					}
+					else if((((rGPFDAT >> 4) & 0x1) == ~(g_InteralMemory.KeepBit[93])) && (X_4_SIG > 2)){
+						X_4_SIG = 0;
+						YAZHEN_ZERO_ERR = -4;
+					}
+					else if((((rGPFDAT >> 4) & 0x1) == ~(g_InteralMemory.KeepBit[93])) && (X_4_SIG < 2)){
+						X_4_SIG = 0;
+						YAZHEN_ZERO_ERR = 4;
+					}	
+				}
+			}
+#endif		
+		
 		/**调线功能**/
 		if(tiaoxiankaiguan_kb == 1)	{//mode_choose == tiaoxian_mode
 #ifdef TIAOXIAN_YOUFENG_EN
@@ -787,7 +890,7 @@ void __irq	encoder1_process(void)
 					yazheng_motor_2nd_start = 0;
 				}
 			}
-#else
+#elif defined TIAOSHA_NORMAL_EN 
 		for (zushu =0; zushu < tiaoxianzu; zushu++){
 				for (jj = 0 ; jj < DAOSHU_MAX ; jj++){
 					if (chudao_start[zushu][jj] == 1 &&
@@ -806,6 +909,8 @@ void __irq	encoder1_process(void)
 					}
 				}
 			}
+#else
+	
 #endif
 		}
 		//友峰调线功能需要使用Y9/Y10作为压针电机，所以得去除两路电机
@@ -868,9 +973,42 @@ void __irq	encoder1_process(void)
 	**********/
 	else if(signal!=((rGPFDAT >> 2) & 0x1)){//Get_X_Value(2)
 		signal=((rGPFDAT >> 2) & 0x1);//Get_X_Value(2)，获得B相信号
-		
+
+/***压针版本***/		
+#ifdef YAZHEN_NORMAL_EN
+			//压针电机代码段,用于优化占空比
+			/************************上压针开始*******************************/
+			if (shangyazhen_motor_start == 1 && shangyazhen_pulse_cmp != NO_MOVE){
+				if (motor_factor_shangyazhen >= (shangyazhen_pulse_cmp/2)){
+					rGPEDAT |= (1<<Y9_Bit);
+				}
+			}
+			/************************下压针电机开始*******************************/
+			if (xiayazheng_motor_start == 1 && xiayazhen_pulse_cmp != NO_MOVE){
+				if (motor_factor_xiayazhen >= (xiayazhen_pulse_cmp/2)){
+					rGPEDAT |= (1<<Y10_Bit);
+				}
+			}
+			/************************上压针结束*******************************/
+			if (shangyazhen_back_start == 1){
+				if (motor_factor_back_shangyazhen >= (shangyazhen_back_cmp/2)){
+					rGPEDAT |= (1<<Y9_Bit);
+				}
+			}
+			/************************下压针电机结束*******************************/
+			if (xiayazhen_back_start == 1){
+				if (motor_factor_back_xiayazhen >= (xiayazhen_back_cmp/2)){
+					rGPEDAT |= (1<<Y10_Bit);
+				}
+			}
+			
+			
+			
+			
+			
+#endif
 		//友峰调线压针电机
-		#ifdef TIAOXIAN_YOUFENG_EN
+#ifdef TIAOXIAN_YOUFENG_EN
 		if(tiaoxiankaiguan_kb == 1)	{//mode_choose == tiaoxian_mode
 			//压针电机代码段,用于优化占空比
 			/************************压针电机 1*******************************/
@@ -886,7 +1024,8 @@ void __irq	encoder1_process(void)
 				}
 			}
 		}
-		#endif
+#endif
+
 		/**将7组电机分为上下沿两次进行判断，以减小每次循环次数(下半部分)**/
 		//友峰改为5路：if (jj != 7)-->if (jj == 4)
 		for (jj=4;jj<8;jj++)

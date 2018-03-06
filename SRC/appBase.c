@@ -610,8 +610,11 @@ void Pulse_In_Init(void)
 	
 	//配置X1为中断模式
 	tmp = rGPFCON & (~(0x3<< 2)); //& (~(0x3<< 12)) & (~(0x3<< 14));& (~(0x3<< 4)) & (~(0x3<< 6)) & (~(0x3<< 8)) & (~(0x3<< 10))
-	rGPFCON = tmp | (0x2<<2);//| (0x2<<12) | (0x2<<14);	| (0x2<<4)| (0x2<<6) | (0x2<<8)  | (0x2<<10)
+	rGPFCON = tmp | (0x2<<2);//| (0x2<<12) | (0x2<<14);	| (0x2<<4)|   | (0x2<<10)
 	
+	//配置X3/X4为中断模式
+	tmp = rGPFCON &(~(0x3<< 6)) & (~(0x3<< 8));
+	rGPFCON = tmp | (0x2<<6) | (0x2<<8);
 	//GPF1~7 up down disable x1-x7
 	rGPFUDP &=  (~(0x3<< 2)) & (~(0x3<< 4)) & (~(0x3<< 6)) & (~(0x3<< 8)) & (~(0x3<< 10)) & (~(0x3<< 12)) & (~(0x3<< 14));
 	//GPG 0 1 2---up down disable---  X9 X10 X11 X12 X13 X14 X15
@@ -648,7 +651,7 @@ void Pulse_In_Init(void)
 	rEXTINT0 = (rEXTINT0 & (~(0x7<<20))) | (0x2<<20);	// Eint5	Falling edge triggered	
 	rEXTINT0 = (rEXTINT0 & (~(0x7<<24))) | (0x2<<24);	// Eint6	Falling edge triggered	
  */
-	rEXTINT1 = (rEXTINT1 & (~(0x7<<12))) | (0x2<<12);	    // Eint11	下降沿触发		压针零位传感器by FJW
+	//rEXTINT1 = (rEXTINT1 & (~(0x7<<12))) | (0x2<<12);	    // Eint11	下降沿触发		压针零位传感器by FJW
 	
 	//GPF1~6  x1-x6 双边沿触发
 	/*rEXTINT0 = (rEXTINT0 & (~(0x7<<4))) | (0x6<<4);		// Eint1	Both edge triggered
@@ -666,7 +669,7 @@ void Pulse_In_Init(void)
 	//pISR_EINT4_7= (U32)PulseIn_4_7_Process;			// X4_6
 	pISR_EINT1= (U32)encoder1_process;				// X1	
 	pISR_EINT2= (U32)encoder2_process;				// X2	
-	pISR_EINT3= (U32)encoder3_process;				// X3	
+	pISR_EINT3= (U32)shangyazhen_zero_process;			// X3	
 	pISR_EINT4_7= (U32)pwrDownHandler;
 	//pISR_EINT8_23= (U32)pressing_zero_process;		//压针零位 By FJW
 	rGPFDAT=0Xff;

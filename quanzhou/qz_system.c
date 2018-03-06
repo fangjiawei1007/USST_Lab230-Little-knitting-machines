@@ -729,7 +729,7 @@ void dingdanlianghua(void){
 }
 
 
-void __irq pwrDownHandler(void)	//X4-X7µÄÖÐ¶Ï·þÎñ³ÌÐò°ó¶¨µÄÐÂÃû×Ö£¬µ«ÊÇÄ¿Ç°Ã»ÓÐÓÃµ½
+/* void __irq pwrDownHandler(void)	//X4-X7µÄÖÐ¶Ï·þÎñ³ÌÐò°ó¶¨µÄÐÂÃû×Ö£¬µ«ÊÇÄ¿Ç°Ã»ÓÐÓÃµ½
 {
 	//U8 pwrOffCount;
 	if ( !( rEINTMASK >>4  & 0x1 )  && (rEINTPEND & (1<<4)) )//È¡ÏûÆÁ±Î±êÖ¾+¹ÒÆðÓÐÐ§
@@ -762,4 +762,4 @@ void __irq pwrDownHandler(void)	//X4-X7µÄÖÐ¶Ï·þÎñ³ÌÐò°ó¶¨µÄÐÂÃû×Ö£¬µ«ÊÇÄ¿Ç°Ã»ÓÐÓ
 		rEINTPEND=(1<<7);		
 	}
 	ClearPending(BIT_EINT4_7);
-}
+} */

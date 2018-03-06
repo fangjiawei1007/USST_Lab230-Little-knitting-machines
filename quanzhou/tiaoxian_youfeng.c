@@ -1,5 +1,8 @@
 #include "includes.h"
 
+#ifdef TIAOXIAN_YOUFENG_EN
+
+
 #define SHANGPAN_SHUANGJI_NUM		8
 #define SHANGPAN_DANJI_NUM			6
 #define XIAPAN_SHUANGJI_NUM			21
@@ -1185,3 +1188,4 @@ unsigned int at_check(unsigned int roundShineng){
 	}
 	return 0;
 }
+#endif
