@@ -359,19 +359,22 @@ void bianpingqi_speed_cal(void){
 
 	//调线
 	/**************************************************************/
+	#ifndef YAZHEN_NORMAL_EN
 	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan
 		/**调线开始之前,提前缓冲脉冲数开始减速**/
 		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
 			(encoder1_cal_factor - jiajiansujiangemaichong_kw))){
 			#ifdef TIAOXIAN_YOUFENG_EN
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_weisha_delta_num/100.0);
-			#else
+			#elif defined TIAOSHA_NORMAL_EN
 			if (weisha_check(dapan_round) == WEISHAJIANSU){
 				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
 			}
 			else{
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_weisha_delta_num/100.0);
 			}
+			#else
+				
 			#endif
 			return;
 		}
@@ -381,7 +384,7 @@ void bianpingqi_speed_cal(void){
 		}
 		
 	}
-	
+	#endif
 	/**quanshu[x+1]，后面的功能代码的next_stage其实是表示的current_stage，因为其没有+1，
 	   eg：quanshu[guoduduan] 其实为大头段的圈数，而quanshu[guoduduan+1]表示过渡段圈数 
 	**/

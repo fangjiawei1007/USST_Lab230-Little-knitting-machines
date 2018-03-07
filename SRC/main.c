@@ -165,7 +165,7 @@ void Main(void)
 	// Initial
 	Port_Init();
 	bianpingqi_stop_sub();
-	Set_Y_Value(2,0);
+	//Set_Y_Value(2,0);//yazhen_normal需要用到Y2
 	
 	Isr_Init();
 	
@@ -384,7 +384,7 @@ void Main(void)
 				{
 					huangdeng_button=1;
 					huangdeng_fun();
-					Set_Y_Value(2,0);
+				//	Set_Y_Value(2,0);//yazhen_normal需要用到Y2
 					
 					/***以下两段均是停止变频器，一个是通过外部IO，一个是通过通讯写位***/
 					if (emer_stop_flag==1&&privilege_run_flag==0)
@@ -425,7 +425,7 @@ void Main(void)
 					huangdeng_button=0;
 					huangdeng_fun();
 					if (init_stop_status == 1 || Choose_bianpingqi_kb == CHOOSE_BIANPINGQI){
-						Set_Y_Value(2,1);
+//						Set_Y_Value(2,1);//yazhen_normal需要用到Y2
 						init_stop_status = 1;
 					}
 						
@@ -502,13 +502,15 @@ void Main(void)
 					#ifdef TIAOXIAN_YOUFENG_EN
 					TiaoXian_Youfeng_App();
 					
-					#else
+					#elif defined TIAOSHA_NORMAL_EN
 					tiaoxian();
-					
+					#else
+						
 					#endif
 				}
-				
-				
+				#ifdef YAZHEN_NORMAL_EN
+					Yazhen_Normal_App();
+				#endif
 				dangban_jianshu_dis_w=*banci[jianshu_no];//当班产量显示
 				g_InteralMemory.Word[23]=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
 				g_InteralMemory.Word[24]=dapan_round;

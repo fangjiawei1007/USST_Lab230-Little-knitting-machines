@@ -67,9 +67,17 @@ void App_Init(void)
 //	if(tiaoxiankaiguan_kb == 1)//mode_choose == tiaoxian_mode
 	#ifdef TIAOXIAN_YOUFENG_EN
 	TiaoXian_Youfeng_Init();	
-	#else
+	#elif defined TIAOSHA_NORMAL_EN
 	tiaoxian_init();// by FJW
+	#else
+		
 	#endif
+	
+	#ifdef YAZHEN_NORMAL_EN
+	Yazhen_Normal_Init();
+	#endif
+	
+
 	//wdt_init_reset();
 	wdt_feed_dog();main_enter_flag = 1;
 	

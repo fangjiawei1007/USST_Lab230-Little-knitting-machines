@@ -152,9 +152,13 @@ void menu_init(void)
 		reset_time_kw = 700;
 		init_stop_time_kw = 30;
 	
+	#ifdef YAZHEN_NORMAL_EN
+		Yazhen_Normal_Init_Once();	
+	#endif
+		
 	#ifdef TIAOXIAN_YOUFENG_EN	
 		TiaoXian_Youfeng_Init_once();	
-	#else	
+	#elif defined TIAOSHA_NORMAL_EN	
 		/*************8段调线设置*****************/
 		for (ii = 0; ii < tiaoshaduan_max; ii++){
 			g_InteralMemory.KeepWord[156 + 10*ii] = 0;			//开始圈
@@ -183,6 +187,8 @@ void menu_init(void)
 		
 		weisha_jiange_kw = 0;	//喂纱间隔
 	/**********************************************/	
+	#else
+		
 	#endif
 		
 		menu_init_flag=1;
@@ -236,9 +242,9 @@ void zhongduan_init(void)
 	strcpy(Info_qz[8],qingche_error);
 	//strcpy(Info_qz[9],yazheng_error);
 	
-	//将X3，X4，X5设置为输入模式
-	tmp = rGPFCON & (~(0x3<< 6)) & (~(0x3<< 8)) & (~(0x3<< 10)); //& (~(0x3<< 12)) & (~(0x3<< 14));
-	rGPFCON = tmp | (0x0<<6) | (0x0<<8)  | (0x0<<10);//| (0x2<<12) | (0x2<<14);	
+	//将X5设置为输入模式
+	tmp = rGPFCON & (~(0x3<< 10)); //& (~(0x3<< 12)) & (~(0x3<< 14));(~(0x3<< 6)) & (~(0x3<< 8)) & 
+	rGPFCON = tmp | (0x0<<6) ;//| (0x2<<12) | (0x2<<14);	| (0x0<<8)  | (0x0<<10)
 }
 
 /*************************************************
@@ -264,7 +270,7 @@ void bianpingqi_init(void)
 	}
 	
 	bianpingqi_stop_sub();
-	Set_Y_Value(2,0);
+	//Set_Y_Value(2,0);	//yazhen_normal需要用到Y2
 }
 
 /*************************************************

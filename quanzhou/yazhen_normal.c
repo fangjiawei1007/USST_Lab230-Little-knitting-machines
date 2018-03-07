@@ -3,6 +3,9 @@
 #ifdef YAZHEN_NORMAL_EN
 
 #define Y2						2
+#define X3						3
+#define X4						4
+
 
 #define Dir_Positive			(g_InteralMemory.KeepBit[90])
 #define Dir_Negative			(~(g_InteralMemory.KeepBit[90]))
@@ -14,23 +17,22 @@
 #define shangyazhen_xiaotou		(g_InteralMemory.KeepWord[791])
 #define xiayazhen_datou			(g_InteralMemory.KeepWord[792])
 #define xiayazhen_xiaotou		(g_InteralMemory.KeepWord[793])
+#define yazhen_alarm_level		(g_InteralMemory.KeepWord[813])
+#define ERR_TIME				10
+int tiaoxiankaiguan_kb = -1;			//∑¿÷π±®¥Ì£¨”Îµ˜œﬂ∞Ê±æ≥ÂÕª£¨»Ù π”√µ˜œﬂ∞Ê±æ£¨«Î∞—’‚æ‰»•µÙ£¨ªÚ’ﬂ≤ª»•≥˝‘§±‡“Îµƒ«Èøˆœ¬“—æ≠Ω‚æˆ
 
-#define NO_MOVE					65530
+int YAZHEN_ZERO_ERR = 0;
 
 unsigned int X3_SIG;
 unsigned int X4_SIG;
 
-enum YAZHEN_NORMAL_CHECKOUT{
-	NOT_CHANGED = 0,
-	CHANGED	= 1
-};
 	
 	
 void __irq shangyazhen_zero_process(void)	
 {
-	/**»Ìº˛œ˚∂∂**/
+	/**»Ìº˛œ˚∂∂Œ¥ π”√**/
 	X3_SIG++;
-	
+	Beep(1);
 	rEINTPEND=(1<<3);
 	ClearPending(BIT_EINT3);
 }
@@ -40,7 +42,9 @@ void __irq pwrDownHandler(void)	//X4-X7µƒ÷–∂œ∑˛ŒÒ≥Ã–Ú∞Û∂®µƒ–¬√˚◊÷£¨µ´ «ƒø«∞√ª”–”
 
 	if(!( rEINTMASK >>4  & 0x1 ) && (rEINTPEND & (1<<4)))//»°œ˚∆¡±Œ±Í÷æ+π“∆”––ß
 	{
+		/**»Ìº˛œ˚∂∂Œ¥ π”√**/
 		X4_SIG++;
+		Beep(1);
 		rEINTPEND=(1<<4);		
 	}
 	else if ( !( rEINTMASK >>5  & 0x1 )  && (rEINTPEND & (1<<5)) )//»°œ˚∆¡±Œ±Í÷æ+π“∆”––ß	
@@ -69,42 +73,48 @@ void __irq pwrDownHandler(void)	//X4-X7µƒ÷–∂œ∑˛ŒÒ≥Ã–Ú∞Û∂®µƒ–¬√˚◊÷£¨µ´ «ƒø«∞√ª”–”
 }
 	
 void Yazhen_Normal_App(void){
-	int duanshu_cur = -1;
+	int stage_cur = -1;
 	unsigned int checkout_yazhen = 0;
 	
-	at_check(dapan_round);
-	duanshu_cur = between_check(dapan_round);
+	stage_cur = getStage(current_stage,CURRENT);
 	
-	if(duanshu_cur != caijianduan){
+	if(stage_cur != caijianduan){
+		
 		checkout_yazhen = Yazhen_Normal_Checkout();
 		if(checkout_yazhen == CHANGED){
-			Yazhen_Normal_Set(duanshu_cur);
+			Yazhen_Normal_Set(stage_cur);
 		}
 	}
 	
-	if(duanshu_cur == guoduduan && yazhen_move_status == 0){
+	if(stage_cur == guoduduan && yazhen_move_status == 0){
 		yazhen_move_status = 1;
 		Yazhen_Normal_Start();
 	}
-	else if(duanshu_cur != guoduduan){
+	else if(stage_cur != guoduduan){
 		yazhen_move_status = 0;
 	}
 	
-	if(duanshu_cur == caijianduan && yazhen_back_status == 0){
+	if(stage_cur == caijianduan && yazhen_back_status == 0){
 		yazhen_back_status = 1;
 		Yazhen_Normal_Get_Zero_Start();	
 	}
-	else if(duanshu_cur != caijianduan){
+	else if(stage_cur != caijianduan){
 		yazhen_back_status = 0;
+	}
+	
+	//Yazhen_Normal_Alarm();
+	//DEBUG
+	{
+		g_InteralMemory.Word[304] = X3_SIG;
 	}
 }
 
 
-inline void Yazhen_Normal_Start(void){
+void Yazhen_Normal_Start(void){
 	shangyazhen_motor_start = 1;
 	xiayazhen_motor_start = 1;
 }
-void Yazhen_Normal_Checkout(){
+unsigned int Yazhen_Normal_Checkout(void){
 	static unsigned int first_in = 0;		//µ⁄“ª¥ŒΩ¯»Î
 	
 	static unsigned int shangyazhen_datou_pre = 0;
@@ -116,6 +126,9 @@ void Yazhen_Normal_Checkout(){
 	static unsigned int xiayazhen_xiaotou_pre = 0;
 	static unsigned int shangyazhen_xiaotou_cur = 0;
 	static unsigned int xiayazhen_xiaotou_cur = 0;
+	
+	static unsigned int guoduquanshu_cur = 0;
+	static unsigned int guoduquanshu_pre = 0;
 	
 	// if(duanshu == -1)
 		// return NOT_CHANGED;
@@ -130,6 +143,9 @@ void Yazhen_Normal_Checkout(){
 		shangyazhen_xiaotou_cur = shangyazhen_xiaotou;
 		xiayazhen_xiaotou_cur = xiayazhen_xiaotou;
 		
+		guoduquanshu_cur = middlequanshu;
+		guoduquanshu_pre = middlequanshu;
+		
 		first_in = 1;
 		return CHANGED;
 	}
@@ -138,31 +154,34 @@ void Yazhen_Normal_Checkout(){
 		xiayazhen_datou_cur = xiayazhen_datou;
 		shangyazhen_xiaotou_cur = shangyazhen_xiaotou;
 		xiayazhen_xiaotou_cur = xiayazhen_xiaotou;
+		guoduquanshu_cur = middlequanshu;
 		
 		if(( shangyazhen_datou_pre == shangyazhen_datou_cur ) && ( xiayazhen_datou_pre == xiayazhen_datou_cur)
-		  && (shangyazhen_xiaotou_pre == shangyazhen_xiaotou_cur) && (xiayazhen_xiaotou_pre == xiayazhen_xiaotou_cur))
+		  && (shangyazhen_xiaotou_pre == shangyazhen_xiaotou_cur) && (xiayazhen_xiaotou_pre == xiayazhen_xiaotou_cur)
+		  && (guoduquanshu_pre == guoduquanshu_cur))
 			return NOT_CHANGED;
 		else{
 			shangyazhen_datou_pre = shangyazhen_datou_cur;
 			xiayazhen_datou_pre = xiayazhen_datou_cur;
 			shangyazhen_xiaotou_pre = shangyazhen_xiaotou_cur;
 			xiayazhen_xiaotou_pre = xiayazhen_xiaotou_cur;
+			guoduquanshu_pre = guoduquanshu_cur;
 			return CHANGED;
 		}
 	}
 	return NOT_CHANGED;
 }
 
-void Yazhen_Normal_Set(int duanshu){
+void Yazhen_Normal_Set(int stage){
 	int yazhen_total_pulse=0;
-	
-	if (duanshu == guoduduan){//µ±«∞∂ŒŒ™π˝∂…∂Œ
+	/* 
+	if (stage == guoduduan){//µ±«∞∂ŒŒ™π˝∂…∂Œ
 		if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
 			Set_Y_Value(Y2,Dir_Positive);
 			yazhen_total_pulse = (daduanquanshu + middlequanshu-dapan_round)*encoder1_cal_factor;
 			
 			if(shangyazhen_counter > shangyazhen_xiaotou){
-				shangyazhen_motor_pulse = (shangyazhen_counter - shangyazhen_xiaotou);
+				shangyazhen_motor_pulse = ((shangyazhen_datou - shangyazhen_xiaotou) - shangyazhen_counter);
 				shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
 				if (shangyazhen_pulse_cmp < 2)
 					shangyazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
@@ -171,17 +190,17 @@ void Yazhen_Normal_Set(int duanshu){
 				shangyazhen_pulse_cmp = NO_MOVE;
 			
 			if(xiayazhen_counter > xiayazhen_xiaotou){
-				xiayazhen_motor_pulse = (xiayazhen_counter - xiayazhen_xiaotou);
+				xiayazhen_motor_pulse = ((xiayazhen_datou - xiayazhen_xiaotou) - xiayazhen_counter);
 				xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
 				if (xiayazhen_pulse_cmp < 2)
 					xiayazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
 			}
 			else
-				xiayazhen_pulse_cmp = NO_NOVE;
+				xiayazhen_pulse_cmp = NO_MOVE;
 
 			if (yazhen_total_pulse == 0){//Œﬁπ˝∂…∂Œ‘Ú≤ª∂Ø◊˜£¨k->Œﬁ«Ó¥Û
 				shangyazhen_pulse_cmp = NO_MOVE;
-				xiayazhen_pulse_cmp = NO_NOVE;
+				xiayazhen_pulse_cmp = NO_MOVE;
 			}
 			shangyazhen_counter = 0;
 			xiayazhen_counter = 0;
@@ -191,7 +210,7 @@ void Yazhen_Normal_Set(int duanshu){
 			yazhen_total_pulse = (daduanquanshu + middlequanshu-dapan_round)*encoder1_cal_factor;
 			
 			if(shangyazhen_counter > shangyazhen_datou){
-				shangyazhen_motor_pulse = (shangyazhen_counter - shangyazhen_datou);
+				shangyazhen_motor_pulse = ((shangyazhen_xiaotou - shangyazhen_datou)-shangyazhen_counter);
 				shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
 				if (shangyazhen_pulse_cmp < 2)
 					shangyazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ	
@@ -200,29 +219,29 @@ void Yazhen_Normal_Set(int duanshu){
 				shangyazhen_pulse_cmp = NO_MOVE;
 			
 			if(xiayazhen_counter > xiayazhen_datou){
-				xiayazhen_motor_pulse = (xiayazhen_counter - xiayazhen_datou);
+				xiayazhen_motor_pulse = ((xiayazhen_xiaotou - xiayazhen_datou)- xiayazhen_counter);
 				xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
 				if (xiayazhen_pulse_cmp < 2)
 					xiayazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
 			}
 			else
-				xiayazhen_pulse_cmp = NO_NOVE;
+				xiayazhen_pulse_cmp = NO_MOVE;
 
 			if (yazhen_total_pulse == 0){//Œﬁπ˝∂…∂Œ‘Ú≤ª∂Ø◊˜£¨k->Œﬁ«Ó¥Û
 				shangyazhen_pulse_cmp = NO_MOVE;
-				xiayazhen_pulse_cmp = NO_NOVE;
+				xiayazhen_pulse_cmp = NO_MOVE;
 			}
 			shangyazhen_counter = 0;
 			xiayazhen_counter = 0;
 		}
 		else{//¡Ω’ﬂ∑ΩœÚ≤ªÕ¨£¨≤ª∂Ø◊˜
 			shangyazhen_pulse_cmp = NO_MOVE;
-			xiayazhen_pulse_cmp = NO_NOVE;
+			xiayazhen_pulse_cmp = NO_MOVE;
 			shangyazhen_counter = 0;
 			xiayazhen_counter = 0;
 		}
-	}
-	else{
+	} */
+	//else{}
 		if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
 		Set_Y_Value(Y2,Dir_Positive);
 		shangyazhen_motor_pulse = (shangyazhen_datou - shangyazhen_xiaotou);
@@ -242,14 +261,14 @@ void Yazhen_Normal_Set(int duanshu){
 				xiayazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
 		}
 		else
-			xiayazhen_pulse_cmp = NO_NOVE;
+			xiayazhen_pulse_cmp = NO_MOVE;
 
 		if (yazhen_total_pulse == 0){//Œﬁπ˝∂…∂Œ‘Ú≤ª∂Ø◊˜£¨k->Œﬁ«Ó¥Û
 			shangyazhen_pulse_cmp = NO_MOVE;
-			xiayazhen_pulse_cmp = NO_NOVE;
+			xiayazhen_pulse_cmp = NO_MOVE;
 		}
-		shangyazhen_counter = 0;
-		xiayazhen_counter = 0;
+		// shangyazhen_counter = 0;
+		// xiayazhen_counter = 0;
 		
 		}
 		else if ((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou)){
@@ -272,22 +291,30 @@ void Yazhen_Normal_Set(int duanshu){
 					xiayazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
 			}
 			else
-				xiayazhen_pulse_cmp = NO_NOVE;
+				xiayazhen_pulse_cmp = NO_MOVE;
 			
 			if (yazhen_total_pulse == 0){//Œﬁπ˝∂…∂Œ‘Ú≤ª∂Ø◊˜£¨k->Œﬁ«Ó¥Û
 				shangyazhen_pulse_cmp = NO_MOVE;
-				xiayazhen_pulse_cmp = NO_NOVE;
+				xiayazhen_pulse_cmp = NO_MOVE;
 			}
-			shangyazhen_counter = 0;
-			xiayazhen_counter = 0;
+			// shangyazhen_counter = 0;
+			// xiayazhen_counter = 0;
 		}
 		else{//¡Ω’ﬂœ‡µ»÷Æ∫Û£¨≤ª∂Ø◊˜
 			shangyazhen_pulse_cmp = NO_MOVE;
-			xiayazhen_pulse_cmp = NO_NOVE;
+			xiayazhen_pulse_cmp = NO_MOVE;
 			shangyazhen_counter = 0;
 			xiayazhen_counter = 0;
 		}
+	
+	
+	//DEBUG
+	{
+		g_InteralMemory.Word[300] = shangyazhen_pulse_cmp;
+		g_InteralMemory.Word[301] = xiayazhen_pulse_cmp;
 	}
+	
+	
 }
 
 
@@ -296,7 +323,11 @@ void Yazhen_Normal_Get_Zero_Start(void){
 	/***…Ë÷√∑µªÿK***/
 	shangyazhen_back_cmp = 1500/Yazhen_Beilv;
 	xiayazhen_back_cmp   = 1500/Yazhen_Beilv;
-	
+	//DEBUG
+	{
+		g_InteralMemory.Word[302] = shangyazhen_back_cmp;
+		g_InteralMemory.Word[303] = xiayazhen_back_cmp;
+	}
 	if(shangyazhen_back_cmp < 2)
 		shangyazhen_back_cmp = 2;
 	if(xiayazhen_back_cmp < 2)
@@ -339,213 +370,108 @@ void Yazhen_Normal_Init_Once(void){
 	xiayazhen_back_start	= 0;
 	yazhen_err				= 0;
 	yazhen_zero_signal		= 0;
-}   	
+	Yazhen_Beilv            = 1;
+	Err3_Miss				= 0;
+	Err3_Over				= 0;
+	Err4_Miss				= 0;
+	Err4_Over				= 0;
+	yazhen_alarm_level      = 0;
+}
     
 void Yazhen_Normal_Reset(void){
 	shangyazhen_motor_start = 0;
 	xiayazhen_motor_start	= 0;
 	shangyazhen_counter = 0;
 	xiayazhen_counter  = 0;
-	motor_factor_shangyazhen=0;
-	motor_factor_xiayazhen=0;
+	
 	Yazhen_Normal_Get_Zero_Start();
-	
-	
-	
-}
-/*************************************************
-Function(∫Ø ˝√˚≥∆): between_check(unsigned int roundShineng)
-Description(∫Ø ˝π¶ƒ‹°¢–‘ƒ‹µ»µƒ√Ë ˆ): ÷˜“™”√”⁄shinengpanduan()∫Ø ˝£¨≈–∂œµ±«∞Ω◊∂Œ «∑Ò «‘⁄µ˜œﬂ»¶ ˝÷Æƒ⁄
-Calls (±ª±æ∫Ø ˝µ˜”√µƒ∫Ø ˝«Âµ•): 
-Called By (µ˜”√±æ∫Ø ˝µƒ∫Ø ˝«Âµ•): songsha_fre_change(void);		shinengpanduan(void);
-
-Input( ‰»Î≤Œ ˝Àµ√˜£¨∞¸¿®√ø∏ˆ≤Œ ˝µƒ◊˜”√°¢»°÷µÀµ√˜º∞≤Œ ˝º‰πÿœµ): roundShineng°™°™¥Û≈Ã πƒ‹(¥´»Îdapan_round)
-Output(∂‘ ‰≥ˆ≤Œ ˝µƒÀµ√˜):
-Return: i:µ±«∞‘⁄µ˜œﬂµƒµ⁄i∂Œ
-Others: 
-Author:Õıµ¬√˙
-Modified:
-Commented:∑Ωº—Œ∞
-*************************************************/
-int between_check(unsigned int roundShineng){
-	int i;
-	
-	//check∫Ø ˝÷˜“™”√”⁄µ˜œﬂπ¶ƒ‹,»ÙŒ¥¥Úø™µ˜œﬂπ¶ƒ‹£¨‘Ú÷±Ω”∑µªÿ-1£ª
-	if (tiaoxiankaiguan_kb == 0)
-		return -1;
-	
-	for(i=0;i<tiaoshaduan_max;i++){
-		
-		/***Ω¯»ÎÃıº˛£∫1.¥Û”⁄ø™ º»¶ ˝
-					2.Ω· ¯»¶ ˝Œ™0±Ì æπÿ±’
-					3.–°”⁄Ω· ¯»¶ ˝ªÚ’ﬂµ»”⁄◊Ó∫Û“ª»¶
-		***/
-		if (roundShineng >= *tiaoxianduan[i].kaishiquanshu			
-		&& *tiaoxianduan[i].jieshuquanshu							
-		&& (roundShineng < *tiaoxianduan[i].jieshuquanshu			
-		|| 	*tiaoxianduan[i].jieshuquanshu == 
-			(daduanquanshu + middlequanshu + xiaoduanquanshu + caijiaoquanshu + langfeiquanshu))){
-			
-			
-			if (current_stage == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
-				return i;/***≈–∂œ «∑Ò «∂ÓÕ‚∂Œ£¨º¥Õ‚≤øø™πÿ «∑Ò¥Úø™***/
-			}
-			else if (current_stage != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
-				return i;/***≤ª «∂ÓÕ‚∂Œ£¨∑µªÿÀ˘‘⁄∂Œ***/
-			}
-		}
-	}
-	return -1;
 }
 
 
-/*************************************************
-Function(∫Ø ˝√˚≥∆): unsigned int at_check(unsigned int roundShineng)
-Description(∫Ø ˝π¶ƒ‹°¢–‘ƒ‹µ»µƒ√Ë ˆ): 1.÷˜“™”√”⁄±‰∆µ∆˜µƒ±‰ÀŸ£¨÷˜“™±ªbianpingqi_speed_cal()À˘µ˜”√
-								2.÷˜“™–ﬁ∏ƒ¡À»´æ÷±‰¡øtiaoxianzu/tiaoxianzu_flag
-Calls (±ª±æ∫Ø ˝µ˜”√µƒ∫Ø ˝«Âµ•): 
-Called By (µ˜”√±æ∫Ø ˝µƒ∫Ø ˝«Âµ•): bianpingqi_speed_cal(void)
+void Alarm_Disp_Yazhen(unsigned int Port)
+{
+	char Info_X3[]={33,67,46,27,20,11,24,48,41,47,'\0'};  //CharString:°∞¡„Œª¥´∏–…œ°±
+	char Info_X4[]={33,67,46,27,20,11,24,48,47,34,'\0'};  //CharString:°∞¡„Œª¥´∏–œ¬°±
+	
+	char QueDing[]={40,23,22,8};			 //CharString:°∞»∑∂®
+	INT16U LeftX,LeftY;
+	LeftX = 200;
+	LeftY = 150;
+	if(xianshi_flag==0)
+	{
+		Lcd_Fill_Box (LeftX, LeftY, 440, 330, 4);
+		//*(Info_qz+which_alarm-min_port)Œ™zhongduan_init()÷–µƒ◊÷ƒ£ ˝◊È
+		if(Port == X3)
+			Lcd_DispHZ_On_Button(LeftX,LeftY+20,440,300,5,13,4,3,0,1,0,0,Info_X3);
+		else if(Port == X4)
+			Lcd_DispHZ_On_Button(LeftX,LeftY+20,440,300,5,13,4,3,0,1,0,0,Info_X4);
+		
+		Lcd_Button(LeftX+65,LeftY+95,375,305,7,3,RAISE);
+		
+		Lcd_DispHZ_On_Button(LeftX+45, LeftY+95, 395, 305,2, 0, 7,2,0,0,0,3,QueDing);
+		
+		xianshi_flag=1;
+	}
+	delay_qz(0,10,1);	//¥Úø™beep_alarm”√
+}
 
-Input( ‰»Î≤Œ ˝Àµ√˜£¨∞¸¿®√ø∏ˆ≤Œ ˝µƒ◊˜”√°¢»°÷µÀµ√˜º∞≤Œ ˝º‰πÿœµ): roundShineng£∫dapan_round÷µ
-Output(∂‘ ‰≥ˆ≤Œ ˝µƒÀµ√˜):
-Return: 
-Others: 
-Author:Õıµ¬√˙
-Modified:
-Commented:∑Ωº—Œ∞
-*************************************************/
-unsigned int at_check(unsigned int roundShineng){
-	int i;
-	
-	/***Ω¯»ÎÃıº˛(Œª”Î)£∫1.µ˜œﬂ◊È»¶ ˝£°=0£¨‘⁄encoder1_process()÷–++
-					  2.µ˜œﬂ◊Èº‰∏Ù»¶ ˝£°=0
-					  3.µ˜œﬂ◊È»¶ ˝%µ˜œﬂ◊Èº‰∏Ù»¶ ˝:º‰∏Ù»¶ ˝µƒ±∂ ˝
-					  4.jiajiaStatus == 0
-		¥À¥¶¥˙¬Î÷˜“™Œ™¡À≈–∂œµ±«∞ «∑Òµ˜œﬂ◊È–Ë“™++“‘≈–∂œµ⁄∂˛◊È µ∂æﬂ «∑Ò–Ë“™≥ˆµ∂ ’µ∂£¨
-		¥À¥¶÷ª «Ãıº˛µƒ‘ˆº”£¨∂¯≤ªª·return;
-	***/
-	if (tiaoxianzu_quanshu != 0 && tiaoxianzu_jiange != 0 &&
-		tiaoxianzu_quanshu % tiaoxianzu_jiange ==0 && jiajiaStatus == 0)
-	{
-		jiajiaStatus = 1;
-		if ( tiaoxianzu < tiaoxianzu_max ){
-			tiaoxianzu++;
-			com_again = 1;		//for ”—∑Â
-		}
-	}
-	
-	/***µ˜œﬂ◊Èº‰∏Ù»¶ ˝Œ™0£¨‘Ú≤ª∑÷◊È£¨π≤Õ¨≥ˆµ∂ ’µ∂***/
-	else if (tiaoxianzu_jiange == 0){
-		tiaoxianzu_flag = 0;
-		tiaoxianzu_quanshu=0;
-		jiajiaStatus = 0;
-		tiaoxianzu = tiaoxianzu_max;
-	}
-	
-	/*****µ˜œﬂπ§“’ÕÍ≥…£¨flag∫Õstatus∏¥Œª*****/
-	if (tiaoxianzu_quanshu != 0 && tiaoxianzu_jiange != 0 && 
-		tiaoxianzu >= tiaoxianzu_max && 
-		tiaoxianzu_quanshu >= ((tiaoxianzu_max -1)*tiaoxianzu_jiange + 1))
-	{
-		tiaoxianzu_flag = 0;
-		tiaoxianzu_quanshu=0;
-		jiajiaStatus = 0;
-	}
-	
-	
-		
-	/****	Ω¯»ÎÃıº˛:1.µ˜œﬂ◊È»¶ ˝≤ªµ»”⁄0 || µ˜œﬂ◊Èº‰∏Ùµ»”⁄1
-					2.µ˜œﬂ◊Èflagµ»”⁄1≤¢«“µ˜œﬂ◊Èº‰∏Ù≤ªµ»”⁄0
-		
-			¥À¥¶¥˙¬Î∂‘”¶≈–∂œ «∑ÒµΩ¡Àµ⁄n◊Èµ˜œﬂµƒ ±∫Ú£¨Ã·«∞“ª»¶ΩµÀŸ(Õ®π˝return 1;Ω´∫Ø ˝∑µªÿ):
-			if ((at_check((dapan_round+1)) && encoder1_pulse_number >= (encoder1_cal_factor - jiajiansujiangemaichong_kw)))
-			
-			≈–∂œ «∑Òµ±«∞»¶ «∑Ò–Ë“™‘⁄∆‰∫Û√ÊºıÀŸ:
-			if ((at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw))
-	****/
-	if ((tiaoxianzu_quanshu != 0 || tiaoxianzu_jiange == 1) && 
-		 tiaoxianzu_flag == 1 && tiaoxianzu_jiange != 0)
-	{
-		
-		if (roundShineng == (dapan_round + 1) && 
-		   ((tiaoxianzu_quanshu+1) % tiaoxianzu_jiange ==0 )) {
-			return 1;
-		}
-		
-		if (roundShineng == (dapan_round ) && 
-		   ((tiaoxianzu_quanshu) % tiaoxianzu_jiange ==0 )) {
-			return 1;
-		}
-	}
-	
-	
-	/****µ˜œﬂ∞À∂ŒÀŸ£¨¥À¥¶ΩˆΩˆŒ™µ⁄1◊Èµƒø™ º∫ÕΩ· ¯£¨∆‰”‡µ∂◊È ˝µƒ≈–∂œæ˘Œ™…œ ˆ¥˙¬ÎΩ¯––≈–∂œ****/
-	for(i=0;i<tiaoshaduan_max;i++){
-		/*****÷ª“™ø™∆Ùµ˜œﬂ£¨ ◊œ»Ω¯»Î“‘œ¬∫Ø ˝******/
-		if (*tiaoxianduan[i].jieshuquanshu)//∂‘”¶…œœﬁ≤ªŒ™¡„
-		{											
-			/****Œ™¡À±£÷§‘⁄ø™ º»¶ ˝Œ™0 ±£¨ƒ‹Ã·‘ÁºıÀŸΩ¯––µ˜œﬂ(π§“’“™«Ûµ˜œﬂ÷Æ«∞–Ë“™ºıÀŸ£¨0»¶ø™ ºµ˜œﬂ£¨±ÿ–Î¥”◊Ó∫Û“ª»¶ø™ º)
-			****/
-			if (*tiaoxianduan[i].kaishiquanshu == 0
-			    && roundShineng == (daduanquanshu+middlequanshu+xiaoduanquanshu+
-									caijiaoquanshu+langfeiquanshu))
+void Yazhen_Normal_Alarm(U8* err){
+	*err = 1;
+	if(Err3_Miss > ERR_TIMES || Err3_Over > ERR_TIMES){
+		//Beep(1);
+		previous_error_status_w=9;
+		if (yazhen_alarm_level!=level_0)
+		{
+			if (privilege_run_flag==0)
+				Alarm_Disp_Yazhen(X3);
+			if (yazhen_alarm_level==level_3)
 			{
-					/**************************œ¬“ª∏ˆΩ◊∂ŒŒ™∂ÓÕ‚∂Œ£¨≤¢«“Õ‚≤øø™πÿ—°‘Ò∂ÓÕ‚∂Œ************************************/
-					if (getStage(current_stage,NEXTSTAGE) == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
-						if (roundShineng == dapan_round && tiaoxianzu_flag != 1 && tiaoxianzu_jiange != 0){
-							tiaoxianzu = 1;
-							tiaoxianzu_flag = 1;
-						}
-						return 1;
-					}
-					/**************************œ¬“ª∏ˆΩ◊∂Œ≤ªŒ™∂ÓÕ‚∂Œ£¨≤¢«“Õ‚≤øø™πÿ≤ª—°‘Ò∂ÓÕ‚∂Œ************************************/
-					else if (getStage(current_stage,NEXTSTAGE) != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
-						if (roundShineng == dapan_round && tiaoxianzu_flag != 1 && tiaoxianzu_jiange != 0){
-							tiaoxianzu = 1;
-							tiaoxianzu_flag = 1;
-						}
-						return 1;
-					}
-			}//’‚∏ˆifŒ™¡À±£÷§‘⁄ø™ º»¶ ˝Œ™0 ±£¨ƒ‹Ã·‘ÁºıÀŸΩ¯––µ˜œﬂ°£
-			
-			/**********************************µ˜œﬂø™ º********************************************/
-			else if (roundShineng == *tiaoxianduan[i].kaishiquanshu){						//µ»”⁄œ¬œﬁ
-				if (current_stage == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
-					if (roundShineng == dapan_round && tiaoxianzu_flag != 1 && tiaoxianzu_jiange != 0){
-						tiaoxianzu = 1;	
-						tiaoxianzu_flag = 1;
-					}
-					return 1;
-				}
-				else if (current_stage != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
-					if (roundShineng == dapan_round && tiaoxianzu_flag != 1 && tiaoxianzu_jiange != 0){
-						tiaoxianzu = 1;	
-						tiaoxianzu_flag = 1;
-					}
-					return 1;
-				}
+				emer_stop_flag=1;
+				run_permite_flag=0;
+			}							
+			else if (yazhen_alarm_level==level_2)
+			{
+				emer_stop_flag=0;
+				run_permite_flag=0;
 			}
-			
-			/*********************************µ˜œﬂΩ· ¯*******************************************/
-			if (roundShineng == *tiaoxianduan[i].jieshuquanshu){						//µ»”⁄…œœﬁ
-
-				if (current_stage == ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_ewaiduan){
-					if (roundShineng == dapan_round && tiaoxianzu_flag != 1 && tiaoxianzu_jiange != 0){
-						tiaoxianzu = 1;	
-						tiaoxianzu_flag = 1;
-					}
-					return 2;
-				}
-				else if (current_stage != ewaiduan && *tiaoxianduan[i].ewaiduan_choose == choose_not_ewaiduan){
-					if (roundShineng == dapan_round && tiaoxianzu_flag != 1 && tiaoxianzu_jiange != 0){
-						tiaoxianzu = 1;	
-						tiaoxianzu_flag = 1;
-					}
-					return 2;
-				}
+			else
+			{
+				emer_stop_flag=0;
+				run_permite_flag=0;
 			}
+			qz_error_status=1;
 		}
+		else
+			*err = 0;
 	}
-	return 0;
+	if(Err4_Miss > ERR_TIMES || Err4_Over > ERR_TIMES){
+		previous_error_status_w=9;
+		// Err4_Miss = 0;
+		// Err4_Over = 0;
+		if (yazhen_alarm_level!=level_0)
+		{
+			if (privilege_run_flag==0)
+				Alarm_Disp_Yazhen(X4);
+			if (yazhen_alarm_level==level_3)
+			{
+				emer_stop_flag=1;
+				run_permite_flag=0;
+			}							
+			else if (yazhen_alarm_level==level_2)
+			{
+				emer_stop_flag=0;
+				run_permite_flag=0;
+			}
+			else 
+			{
+				emer_stop_flag=0;
+				run_permite_flag=0;
+			}
+			qz_error_status=1;
+		}
+		else
+			*err = 0;
+	}
 }
+
 #endif

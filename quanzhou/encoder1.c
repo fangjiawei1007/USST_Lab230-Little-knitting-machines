@@ -114,10 +114,15 @@ void encoder1_data_reset(void){
 		if (tiaoxiankaiguan_kb == 1){
 			#ifdef TIAOXIAN_YOUFENG_EN
 				TiaoXian_Youfeng_Reset();
-			#else
+			#elif defined TIAOSHA_NORMAL_EN
 				tiaoxian_reset();
+			#else
+				
 			#endif
 		}
+		#ifdef YAZHEN_NORMAL_EN
+		Yazhen_Normal_Reset();
+		#endif
 		//lingwei_jiance_button = 1; //压针回零 by FJW
 	}
 	if (encoder1_jianshu_reset==1)
@@ -138,12 +143,15 @@ void encoder1_data_reset(void){
 			#ifdef TIAOXIAN_YOUFENG_EN
 			TiaoXian_Youfeng_Reset();
 			
-			#else
+			#elif defined TIAOSHA_NORMAL_EN
 			tiaoxian_reset();
 			
 			#endif
 			
 		}
+		#ifdef YAZHEN_NORMAL_EN
+		Yazhen_Normal_Reset();
+		#endif
 		jianshu=0;
 	}
 	if (songshaliang_data_reset==1)
@@ -510,12 +518,18 @@ void songsha_fre_change(void){
 	//当前段为大头段
 		if (dapan_round<daduanquanshu || daduanquanshu == 9999){
 			current_stage=datouduan;
+			#ifdef YAZHEN_NORMAL_EN
+				i = -1;
+			#else
 			i = between_check(dapan_round);
+			#endif
 			//i ！= -1 为调线的功能代码
 			if ( i != -1){
+				#ifdef TIAOSHA_NORMAL_EN
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
 				}
+				#endif
 			}
 			//else 为无调线工作代码，获得大头段的各个K值
 			else{
@@ -530,13 +544,19 @@ void songsha_fre_change(void){
 	//当前段为过渡段
 		else if (dapan_round<(daduanquanshu+middlequanshu)){
 			current_stage=guoduduan;
+			#ifdef YAZHEN_NORMAL_EN
+				i = -1;
+			#else
 			i = between_check(dapan_round);
+			#endif
 			if ( i != -1){
+				#ifdef TIAOSHA_NORMAL_EN
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=	((getKMotor(bb,current_stage,PREVIOUSSTAGE)-
 										(((getKMotor(bb,current_stage,PREVIOUSSTAGE)-getKMotor(bb,current_stage,NEXTSTAGE) )
 										*(int)(dapan_round-daduanquanshu))/middlequanshu))*(*tiaoxianduan[i].fangdabeishu[bb])/100); 
 				}
+				#endif
 			}
 			else{
 				for (bb=0;bb<7;bb++){
@@ -556,11 +576,17 @@ void songsha_fre_change(void){
 	//当前段为小头段
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu)){
 			current_stage=xiaotouduan;
+			#ifdef YAZHEN_NORMAL_EN
+				i = -1;
+			#else
 			i = between_check(dapan_round);
+			#endif
 			if ( i != -1){
+				#ifdef TIAOSHA_NORMAL_EN
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
 				}
+				#endif
 			}
 			else{
 				for (bb=0;bb<7;bb++){
@@ -574,11 +600,17 @@ void songsha_fre_change(void){
 	//当前段为分层段
 		else if (dapan_round<(daduanquanshu+middlequanshu+xiaoduanquanshu+caijiaoquanshu)){
 			current_stage=fencenduan;
+			#ifdef YAZHEN_NORMAL_EN
+				i = -1;
+			#else
 			i = between_check(dapan_round);
+			#endif
 			if ( i != -1){
+				#ifdef TIAOSHA_NORMAL_EN
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
 				}
+				#endif
 			}
 			else{
 				for (bb=0;bb<7;bb++){
@@ -616,15 +648,21 @@ void songsha_fre_change(void){
 	//以下均为挡片段(额外段)，额外段开始的时候，dapan_round已经清零
 	else{
 		current_stage=ewaiduan;	
-		i = between_check(dapan_round);
+		#ifdef YAZHEN_NORMAL_EN
+				i = -1;
+			#else
+			i = between_check(dapan_round);
+			#endif
 		
 		//额外段分层部分：主要作用ewaiduan_fencen_status = 1;，在bianpingqi_speed_cal()中使用
 		if (dapan_round<extra_fencen_quan_num_kw || dapan_round>=(extra_part_quanshu-extra_fencen_quan_num_kw))	{
 			
 			if ( i != -1){
+				#ifdef TIAOSHA_NORMAL_EN
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=(getKMotor(bb,current_stage,CURRENT)*g_InteralMemory.KeepWord[103+bb]/100)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
 				}
+				#endif
 			}
 			else{
 				for (bb=0;bb<7;bb++){
@@ -638,9 +676,11 @@ void songsha_fre_change(void){
 		else{
 			
 			if ( i != -1){
+				#ifdef TIAOSHA_NORMAL_EN
 				for (bb=0;bb<7;bb++){
 					kMotorTarget[bb]=getKMotor(bb,current_stage,CURRENT)*(*tiaoxianduan[i].fangdabeishu[bb])/100;
 				}
+				#endif
 			}
 			else{
 				for (bb=0;bb<7;bb++){
@@ -813,15 +853,21 @@ void __irq	encoder1_process(void)
 					shangyazhen_back_counter = 0;
 					shangyazhen_back_start = 0;
 					/**下一次容错**/
-					if(((rGPFDAT >> 3) & 0x1) == g_InteralMemory.KeepBit[93]){
+					if(((rGPFDAT >> 3) & 0x1) != g_InteralMemory.KeepBit[93]){
+						Err3_Over = 0;
+						Err3_Miss = 0;
 						YAZHEN_ZERO_ERR = 0;
 					}
-					else if((((rGPFDAT >> 3) & 0x1) == ~(g_InteralMemory.KeepBit[93])) && (X_3_SIG > yazhen_err)){
-						X_3_SIG = 0;
+					else if((((rGPFDAT >> 3) & 0x1) == (g_InteralMemory.KeepBit[93])) && (X3_SIG > yazhen_err)){
+						Err3_Over ++;
+						Err3_Miss = 0;
+						X3_SIG = 0;
 						YAZHEN_ZERO_ERR = -4;
 					}
-					else if((((rGPFDAT >> 3) & 0x1) == ~(g_InteralMemory.KeepBit[93])) && (X_3_SIG < yazhen_err)){
-						X_3_SIG = 0;
+					else if((((rGPFDAT >> 3) & 0x1) == (g_InteralMemory.KeepBit[93])) && (X3_SIG <= yazhen_err)){
+						Err3_Miss ++;
+						Err3_Over = 0;
+						X3_SIG = 0;
 						YAZHEN_ZERO_ERR = 4;
 					}	
 				}
@@ -839,15 +885,21 @@ void __irq	encoder1_process(void)
 					xiayazhen_back_zero_counter = 0;
 					xiayazhen_back_counter = 0;
 					xiayazhen_back_start = 0;
-					if(((rGPFDAT >> 4) & 0x1) == g_InteralMemory.KeepBit[93]){
+					if(((rGPFDAT >> 4) & 0x1) != g_InteralMemory.KeepBit[93]){
+						Err4_Over = 0;
+						Err4_Miss = 0;
 						YAZHEN_ZERO_ERR = 0;
 					}
-					else if((((rGPFDAT >> 4) & 0x1) == ~(g_InteralMemory.KeepBit[93])) && (X_4_SIG > 2)){
-						X_4_SIG = 0;
+					else if((((rGPFDAT >> 4) & 0x1) == (g_InteralMemory.KeepBit[93])) && (X4_SIG > yazhen_err)){
+						Err4_Over ++;
+						Err4_Miss = 0;
+						X4_SIG = 0;
 						YAZHEN_ZERO_ERR = -4;
 					}
-					else if((((rGPFDAT >> 4) & 0x1) == ~(g_InteralMemory.KeepBit[93])) && (X_4_SIG < 2)){
-						X_4_SIG = 0;
+					else if((((rGPFDAT >> 4) & 0x1) == (g_InteralMemory.KeepBit[93])) && (X4_SIG <= yazhen_err)){
+						Err4_Miss ++;
+						Err4_Over = 0;
+						X4_SIG = 0;
 						YAZHEN_ZERO_ERR = 4;
 					}	
 				}
@@ -984,7 +1036,7 @@ void __irq	encoder1_process(void)
 				}
 			}
 			/************************下压针电机开始*******************************/
-			if (xiayazheng_motor_start == 1 && xiayazhen_pulse_cmp != NO_MOVE){
+			if (xiayazhen_motor_start == 1 && xiayazhen_pulse_cmp != NO_MOVE){
 				if (motor_factor_xiayazhen >= (xiayazhen_pulse_cmp/2)){
 					rGPEDAT |= (1<<Y10_Bit);
 				}
@@ -1069,11 +1121,13 @@ void __irq	encoder1_process(void)
 			if (fenshan_quan_init_flag==1)
 				fenshan_jianxie_yizhuanquan_num++;
 			
+			#ifndef YAZHEN_NORMAL_EN 
 			/**调线功能**/
 			if (tiaoxianzu_flag == 1){
 				tiaoxianzu_quanshu++;
 				jiajiaStatus = 0;
 			}
+			#endif
 				
 		}
 		
@@ -1107,7 +1161,7 @@ void __irq	encoder1_process(void)
 			reset_enter_times ++;
 			if (reset_timer_counter > reset_time_100ms ){//|| reset_enter_times > 10000
 				bianpingqi_stop_sub();
-				Set_Y_Value(2,0);
+			  //Set_Y_Value(2,0);		//yazhen_normal需要用到Y2
 			}
 		}
 		else{

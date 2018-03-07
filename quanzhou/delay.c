@@ -36,14 +36,14 @@ void __irq	Timer0_Proc(void)
 	if (Choose_bianpingqi_kb==CHOOSE_NOT && 
 	    init_enter_times < init_stop_time_kw && 
 		init_stop_status == 0){
-		Set_Y_Value(2,0);
+	//	Set_Y_Value(2,0);		//yazhen_normal需要用到Y2
 		init_stop_status = 0;
 		init_enter_times ++;
 	}
 	else if (Choose_bianpingqi_kb==CHOOSE_NOT && 
 			 init_enter_times >= init_stop_time_kw && 
 			 init_stop_status == 0){
-		Set_Y_Value(2,1);
+	//	Set_Y_Value(2,1);	//yazhen_normal需要用到Y2
 		init_stop_status = 1;
 	}
 	

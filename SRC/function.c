@@ -897,6 +897,17 @@ void KeyScan(void)
 					{
 						qingche_num_kw=0;
 					}
+					
+					/****yazhen_normal ErrÇåÁã****/
+					if(Err4_Miss > ERR_TIMES || Err4_Over > ERR_TIMES){
+						Err4_Miss = 0;
+						Err4_Over = 0;
+					}
+					if(Err3_Miss > ERR_TIMES || Err3_Over > ERR_TIMES){
+						Err3_Miss = 0;
+						Err3_Over = 0;
+					}
+					
 					break;
 				}
 			}
@@ -1304,12 +1315,18 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 			#ifdef TIAOXIAN_YOUFENG_EN
 			TiaoXian_Youfeng_App();	
 			
-			#else
+			#elif defined TIAOSHA_NORMAL_EN
 			tiaoxian();
+			#else
 			
 			#endif
 			
 		}
+		
+		#ifdef YAZHEN_NORMAL_EN
+		Yazhen_Normal_App();
+		#endif
+			
 		bianpingqi_set_speed(bianpingqi_speed);
 		wdt_feed_dog();main_enter_flag = 1;
 		if ((qz_error_status==1&&privilege_run_flag==0)||ext_start_status==press||

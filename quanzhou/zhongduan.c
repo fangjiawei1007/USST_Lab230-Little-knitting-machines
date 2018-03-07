@@ -288,6 +288,8 @@ void zhongduan_fun(void)
 		run_permite_flag=0;
 	}
 	
+	Yazhen_Normal_Alarm(&err_flag);
+	
 	/**ÈÝ´í**/
 	if (i>max_port && err_flag==0)
 	{

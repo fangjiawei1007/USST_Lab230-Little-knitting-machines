@@ -3,7 +3,23 @@
 
 #define YAZHEN_NORMAL_EN
 #ifdef YAZHEN_NORMAL_EN
-int YAZHEN_ZERO_ERR = 0;
+
+
+
+#define NO_MOVE					65530
+
+
+
+enum YAZHEN_NORMAL_CHECKOUT{
+	NOT_CHANGED = 0,
+	CHANGED	= 1
+};
+
+#define Y9								9
+#define Y10								10
+#define Y9_Bit							5
+#define Y10_Bit							6	
+	
 /**开始信号，用作内部变量**/
 #define shangyazhen_motor_start			g_InteralMemory.KeepWord[795]
 #define xiayazhen_motor_start			g_InteralMemory.KeepWord[796]
@@ -32,9 +48,29 @@ int YAZHEN_ZERO_ERR = 0;
 #define shangyazhen_back_cmp			g_InteralMemory.KeepWord[810]
 #define xiayazhen_back_cmp  			g_InteralMemory.KeepWord[811]
 
-
+#define Yazhen_Beilv					g_InteralMemory.KeepWord[812]
 /***压针零位信号1/0***/
 #define yazhen_zero_signal				g_InteralMemory.KeepBit[93]	
+
+#define Err3_Over 						g_InteralMemory.KeepWord[814]
+#define Err3_Miss 						g_InteralMemory.KeepWord[815]
+#define Err4_Over 						g_InteralMemory.KeepWord[816]
+#define Err4_Miss 						g_InteralMemory.KeepWord[817]		
+#define ERR_TIMES						2	
+		
+void __irq shangyazhen_zero_process(void);
+void __irq pwrDownHandler(void);
+void Yazhen_Normal_App(void);
+unsigned int Yazhen_Normal_Checkout(void);
+void Yazhen_Normal_Set(int duanshu);
+void Yazhen_Normal_Get_Zero_Start(void);
+void Yazhen_Normal_Init(void);
+void Yazhen_Normal_Init_Once(void);
+void Yazhen_Normal_Reset(void);
+void Yazhen_Normal_Start(void);
+void Alarm_Disp_Yazhen(unsigned int Port);
+void Yazhen_Normal_Alarm(U8* err);
+
 
 #endif
 
