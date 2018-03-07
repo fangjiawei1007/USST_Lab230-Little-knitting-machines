@@ -32,7 +32,7 @@ void __irq shangyazhen_zero_process(void)
 {
 	/**»Ìº˛œ˚∂∂Œ¥ π”√**/
 	X3_SIG++;
-	Beep(1);
+	//Beep(1);
 	rEINTPEND=(1<<3);
 	ClearPending(BIT_EINT3);
 }
@@ -44,7 +44,7 @@ void __irq pwrDownHandler(void)	//X4-X7µƒ÷–∂œ∑˛ŒÒ≥Ã–Ú∞Û∂®µƒ–¬√˚◊÷£¨µ´ «ƒø«∞√ª”–”
 	{
 		/**»Ìº˛œ˚∂∂Œ¥ π”√**/
 		X4_SIG++;
-		Beep(1);
+		//Beep(1);
 		rEINTPEND=(1<<4);		
 	}
 	else if ( !( rEINTMASK >>5  & 0x1 )  && (rEINTPEND & (1<<5)) )//»°œ˚∆¡±Œ±Í÷æ+π“∆”––ß	
@@ -103,10 +103,7 @@ void Yazhen_Normal_App(void){
 	}
 	
 	//Yazhen_Normal_Alarm();
-	//DEBUG
-	{
-		g_InteralMemory.Word[304] = X3_SIG;
-	}
+	
 }
 
 
@@ -130,8 +127,14 @@ unsigned int Yazhen_Normal_Checkout(void){
 	static unsigned int guoduquanshu_cur = 0;
 	static unsigned int guoduquanshu_pre = 0;
 	
-	// if(duanshu == -1)
-		// return NOT_CHANGED;
+	static unsigned int shangpan_jiansubi_cur = 0;
+	static unsigned int xiapan_jiansubi_cur = 0;
+	static unsigned int shangpan_jiansubi_pre = 0;
+	static unsigned int xiapan_jiansubi_pre = 0;
+	
+	static unsigned int Yazhen_Beilv_cur = 0;
+	static unsigned int Yazhen_Beilv_pre = 0;
+	
 	if(first_in == 0){
 		shangyazhen_datou_pre = shangyazhen_datou;
 		xiayazhen_datou_pre = xiayazhen_datou;
@@ -146,26 +149,42 @@ unsigned int Yazhen_Normal_Checkout(void){
 		guoduquanshu_cur = middlequanshu;
 		guoduquanshu_pre = middlequanshu;
 		
+		shangpan_jiansubi_cur = shangpan_jiansubi;
+		xiapan_jiansubi_cur = xiapan_jiansubi;
+		shangpan_jiansubi_pre = shangpan_jiansubi;
+		xiapan_jiansubi_pre = xiapan_jiansubi;
+	
+		Yazhen_Beilv_pre = Yazhen_Beilv;
+		Yazhen_Beilv_cur = Yazhen_Beilv;
+		
 		first_in = 1;
 		return CHANGED;
 	}
 	else{
-		shangyazhen_datou_cur = shangyazhen_datou;
-		xiayazhen_datou_cur = xiayazhen_datou;
-		shangyazhen_xiaotou_cur = shangyazhen_xiaotou;
-		xiayazhen_xiaotou_cur = xiayazhen_xiaotou;
-		guoduquanshu_cur = middlequanshu;
+		shangyazhen_datou_cur 	 = shangyazhen_datou;
+		xiayazhen_datou_cur		 = xiayazhen_datou;
+		shangyazhen_xiaotou_cur  = shangyazhen_xiaotou;
+		xiayazhen_xiaotou_cur	 = xiayazhen_xiaotou;
+		guoduquanshu_cur 		 = middlequanshu;
+		shangpan_jiansubi_cur 	 = shangpan_jiansubi;
+		xiapan_jiansubi_cur 	 = xiapan_jiansubi;
+		Yazhen_Beilv_cur		 = Yazhen_Beilv;
 		
 		if(( shangyazhen_datou_pre == shangyazhen_datou_cur ) && ( xiayazhen_datou_pre == xiayazhen_datou_cur)
 		  && (shangyazhen_xiaotou_pre == shangyazhen_xiaotou_cur) && (xiayazhen_xiaotou_pre == xiayazhen_xiaotou_cur)
-		  && (guoduquanshu_pre == guoduquanshu_cur))
+		  && (guoduquanshu_pre == guoduquanshu_cur)
+		  && (shangpan_jiansubi_pre == shangpan_jiansubi_cur) && (xiapan_jiansubi_pre == xiapan_jiansubi_cur)
+		  && (Yazhen_Beilv_pre == Yazhen_Beilv_cur))
 			return NOT_CHANGED;
 		else{
-			shangyazhen_datou_pre = shangyazhen_datou_cur;
-			xiayazhen_datou_pre = xiayazhen_datou_cur;
+			shangyazhen_datou_pre 	= shangyazhen_datou_cur;
+			xiayazhen_datou_pre 	= xiayazhen_datou_cur;
 			shangyazhen_xiaotou_pre = shangyazhen_xiaotou_cur;
-			xiayazhen_xiaotou_pre = xiayazhen_xiaotou_cur;
-			guoduquanshu_pre = guoduquanshu_cur;
+			xiayazhen_xiaotou_pre 	= xiayazhen_xiaotou_cur;
+			guoduquanshu_pre 		= guoduquanshu_cur;
+			shangpan_jiansubi_pre 	= shangpan_jiansubi_cur;
+			xiapan_jiansubi_pre 	= xiapan_jiansubi_cur;
+			Yazhen_Beilv_pre		= Yazhen_Beilv_cur;
 			return CHANGED;
 		}
 	}
@@ -243,38 +262,35 @@ void Yazhen_Normal_Set(int stage){
 	} */
 	//else{}
 		if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
-		Set_Y_Value(Y2,Dir_Positive);
-		shangyazhen_motor_pulse = (shangyazhen_datou - shangyazhen_xiaotou);
-		xiayazhen_motor_pulse = (xiayazhen_datou - xiayazhen_xiaotou);
-		yazhen_total_pulse = middlequanshu*encoder1_cal_factor;
-		if(shangyazhen_motor_pulse > 0){
-			shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
-			if (shangyazhen_pulse_cmp < 2)
-				shangyazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
-		}
-		else
-			shangyazhen_pulse_cmp = NO_MOVE;
-		
-		if(xiayazhen_motor_pulse > 0){
-			xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
-			if(xiayazhen_pulse_cmp < 2)
-				xiayazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
-		}
-		else
-			xiayazhen_pulse_cmp = NO_MOVE;
+			Set_Y_Value(Y2,Dir_Positive);
+			shangyazhen_motor_pulse = (shangyazhen_datou - shangyazhen_xiaotou)*shangpan_jiansubi;
+			xiayazhen_motor_pulse = (xiayazhen_datou - xiayazhen_xiaotou)*xiapan_jiansubi;
+			yazhen_total_pulse = middlequanshu*encoder1_cal_factor;
+			if(shangyazhen_motor_pulse > 0){
+				shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
+				if (shangyazhen_pulse_cmp < 2)
+					shangyazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
+			}
+			else
+				shangyazhen_pulse_cmp = NO_MOVE;
+			
+			if(xiayazhen_motor_pulse > 0){
+				xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
+				if(xiayazhen_pulse_cmp < 2)
+					xiayazhen_pulse_cmp = 2;//±£÷§œ¬Ωµ—ÿ
+			}
+			else
+				xiayazhen_pulse_cmp = NO_MOVE;
 
-		if (yazhen_total_pulse == 0){//Œﬁπ˝∂…∂Œ‘Ú≤ª∂Ø◊˜£¨k->Œﬁ«Ó¥Û
-			shangyazhen_pulse_cmp = NO_MOVE;
-			xiayazhen_pulse_cmp = NO_MOVE;
-		}
-		// shangyazhen_counter = 0;
-		// xiayazhen_counter = 0;
-		
+			if (yazhen_total_pulse == 0){//Œﬁπ˝∂…∂Œ‘Ú≤ª∂Ø◊˜£¨k->Œﬁ«Ó¥Û
+				shangyazhen_pulse_cmp = NO_MOVE;
+				xiayazhen_pulse_cmp = NO_MOVE;
+			}
 		}
 		else if ((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou)){
 			Set_Y_Value(Y2,Dir_Negative);
-			shangyazhen_motor_pulse = (shangyazhen_xiaotou - shangyazhen_datou);
-			xiayazhen_motor_pulse = (xiayazhen_xiaotou - xiayazhen_datou);
+			shangyazhen_motor_pulse = (shangyazhen_xiaotou - shangyazhen_datou)*shangpan_jiansubi;
+			xiayazhen_motor_pulse = (xiayazhen_xiaotou - xiayazhen_datou)*xiapan_jiansubi;
 			yazhen_total_pulse = middlequanshu*encoder1_cal_factor;
 
 			if(shangyazhen_motor_pulse > 0){
@@ -297,8 +313,7 @@ void Yazhen_Normal_Set(int stage){
 				shangyazhen_pulse_cmp = NO_MOVE;
 				xiayazhen_pulse_cmp = NO_MOVE;
 			}
-			// shangyazhen_counter = 0;
-			// xiayazhen_counter = 0;
+			
 		}
 		else{//¡Ω’ﬂœ‡µ»÷Æ∫Û£¨≤ª∂Ø◊˜
 			shangyazhen_pulse_cmp = NO_MOVE;
@@ -307,13 +322,24 @@ void Yazhen_Normal_Set(int stage){
 			xiayazhen_counter = 0;
 		}
 	
+		/***…Ë÷√∑µªÿK***/
+		shangyazhen_back_cmp = (shangyazhen_pulse_cmp)/Yazhen_Beilv;
+		xiayazhen_back_cmp   = (xiayazhen_pulse_cmp)/Yazhen_Beilv;
+		if(shangyazhen_back_cmp < 2)
+			shangyazhen_back_cmp = 2;
+		if(xiayazhen_back_cmp < 2)
+			xiayazhen_back_cmp = 2;
 	
 	//DEBUG
-	{
-		g_InteralMemory.Word[300] = shangyazhen_pulse_cmp;
-		g_InteralMemory.Word[301] = xiayazhen_pulse_cmp;
-	}
-	
+		{
+			g_InteralMemory.Word[300] = shangyazhen_pulse_cmp;
+			g_InteralMemory.Word[301] = xiayazhen_pulse_cmp;
+		}
+	//DEBUG
+		{
+			g_InteralMemory.Word[302] = shangyazhen_back_cmp;
+			g_InteralMemory.Word[303] = xiayazhen_back_cmp;
+		}		
 	
 }
 
@@ -321,8 +347,8 @@ void Yazhen_Normal_Set(int stage){
 void Yazhen_Normal_Get_Zero_Start(void){
 
 	/***…Ë÷√∑µªÿK***/
-	shangyazhen_back_cmp = 1500/Yazhen_Beilv;
-	xiayazhen_back_cmp   = 1500/Yazhen_Beilv;
+	shangyazhen_back_cmp = (shangyazhen_pulse_cmp)/Yazhen_Beilv;
+	xiayazhen_back_cmp   = (xiayazhen_pulse_cmp)/Yazhen_Beilv;
 	//DEBUG
 	{
 		g_InteralMemory.Word[302] = shangyazhen_back_cmp;
@@ -333,18 +359,17 @@ void Yazhen_Normal_Get_Zero_Start(void){
 	if(xiayazhen_back_cmp < 2)
 		xiayazhen_back_cmp = 2;
 	
-	if(shangyazhen_back_counter > 5)//¥Û”⁄5 «Œ™¡ÀYAZHEN_ZERO_ERR = -4
+	if(shangyazhen_back_counter > 5*shangpan_jiansubi)//¥Û”⁄5 «Œ™¡ÀYAZHEN_ZERO_ERR = -4
 		shangyazhen_back_start = 1;
-	if(xiayazhen_back_counter > 5)
+	if(xiayazhen_back_counter > 5*xiapan_jiansubi)
 		xiayazhen_back_start = 1;
 	
 }
 
-
 void Yazhen_Normal_Init(void){
-	
-}
-
+	encoder3_fun(1);
+	encoder4_fun(1);
+ }    
 void Yazhen_Normal_Init_Once(void){
 	Dir_Positive = 0;
 	
@@ -376,6 +401,9 @@ void Yazhen_Normal_Init_Once(void){
 	Err4_Miss				= 0;
 	Err4_Over				= 0;
 	yazhen_alarm_level      = 0;
+	
+	shangpan_jiansubi       = 1;
+	xiapan_jiansubi         = 1;
 }
     
 void Yazhen_Normal_Reset(void){
@@ -416,9 +444,8 @@ void Alarm_Disp_Yazhen(unsigned int Port)
 }
 
 void Yazhen_Normal_Alarm(U8* err){
-	*err = 1;
 	if(Err3_Miss > ERR_TIMES || Err3_Over > ERR_TIMES){
-		//Beep(1);
+		*err = 1;
 		previous_error_status_w=9;
 		if (yazhen_alarm_level!=level_0)
 		{
@@ -445,9 +472,9 @@ void Yazhen_Normal_Alarm(U8* err){
 			*err = 0;
 	}
 	if(Err4_Miss > ERR_TIMES || Err4_Over > ERR_TIMES){
+		*err = 1;
 		previous_error_status_w=9;
-		// Err4_Miss = 0;
-		// Err4_Over = 0;
+
 		if (yazhen_alarm_level!=level_0)
 		{
 			if (privilege_run_flag==0)

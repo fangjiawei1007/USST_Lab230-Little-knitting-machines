@@ -848,23 +848,23 @@ void __irq	encoder1_process(void)
 					shangyazhen_back_zero_counter++;
 				}
 				
-				if (shangyazhen_back_zero_counter>=(shangyazhen_back_counter + YAZHEN_ZERO_ERR)){//-4
+				if (shangyazhen_back_zero_counter>=(shangyazhen_back_counter +(int)(YAZHEN_ZERO_ERR*shangpan_jiansubi))){//-4
 					shangyazhen_back_zero_counter = 0;
 					shangyazhen_back_counter = 0;
 					shangyazhen_back_start = 0;
 					/**ÏÂÒ»´ÎÈÝ´í**/
-					if(((rGPFDAT >> 3) & 0x1) != g_InteralMemory.KeepBit[93]){
+					if(((rGPFDAT >> 3) & 0x1) == g_InteralMemory.KeepBit[93]){
 						Err3_Over = 0;
 						Err3_Miss = 0;
 						YAZHEN_ZERO_ERR = 0;
 					}
-					else if((((rGPFDAT >> 3) & 0x1) == (g_InteralMemory.KeepBit[93])) && (X3_SIG > yazhen_err)){
+					else if((((rGPFDAT >> 3) & 0x1) != (g_InteralMemory.KeepBit[93])) && (X3_SIG > yazhen_err)){
 						Err3_Over ++;
 						Err3_Miss = 0;
 						X3_SIG = 0;
 						YAZHEN_ZERO_ERR = -4;
 					}
-					else if((((rGPFDAT >> 3) & 0x1) == (g_InteralMemory.KeepBit[93])) && (X3_SIG <= yazhen_err)){
+					else if((((rGPFDAT >> 3) & 0x1) != (g_InteralMemory.KeepBit[93])) && (X3_SIG <= yazhen_err)){
 						Err3_Miss ++;
 						Err3_Over = 0;
 						X3_SIG = 0;
@@ -881,23 +881,27 @@ void __irq	encoder1_process(void)
 					xiayazhen_back_zero_counter++;
 				}
 				
-				if (xiayazhen_back_zero_counter>=(xiayazhen_back_counter + YAZHEN_ZERO_ERR)){//-4
+				if (xiayazhen_back_zero_counter>=(xiayazhen_back_counter + (int)(YAZHEN_ZERO_ERR*xiapan_jiansubi))){//-4
 					xiayazhen_back_zero_counter = 0;
 					xiayazhen_back_counter = 0;
 					xiayazhen_back_start = 0;
-					if(((rGPFDAT >> 4) & 0x1) != g_InteralMemory.KeepBit[93]){
+					if(((rGPFDAT >> 4) & 0x1) == g_InteralMemory.KeepBit[93]){
 						Err4_Over = 0;
 						Err4_Miss = 0;
 						YAZHEN_ZERO_ERR = 0;
 					}
-					else if((((rGPFDAT >> 4) & 0x1) == (g_InteralMemory.KeepBit[93])) && (X4_SIG > yazhen_err)){
+					else if((((rGPFDAT >> 4) & 0x1) != (g_InteralMemory.KeepBit[93])) && (X4_SIG > yazhen_err)){
 						Err4_Over ++;
 						Err4_Miss = 0;
 						X4_SIG = 0;
 						YAZHEN_ZERO_ERR = -4;
 					}
-					else if((((rGPFDAT >> 4) & 0x1) == (g_InteralMemory.KeepBit[93])) && (X4_SIG <= yazhen_err)){
+					else if((((rGPFDAT >> 4) & 0x1) != (g_InteralMemory.KeepBit[93])) && (X4_SIG <= yazhen_err)){
 						Err4_Miss ++;
+						//DEBUG
+						// {
+							// g_InteralMemory.Word[302] = Err4_Miss;
+						// }
 						Err4_Over = 0;
 						X4_SIG = 0;
 						YAZHEN_ZERO_ERR = 4;

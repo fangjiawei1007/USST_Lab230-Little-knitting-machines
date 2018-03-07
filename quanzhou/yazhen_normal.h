@@ -57,7 +57,11 @@ enum YAZHEN_NORMAL_CHECKOUT{
 #define Err4_Over 						g_InteralMemory.KeepWord[816]
 #define Err4_Miss 						g_InteralMemory.KeepWord[817]		
 #define ERR_TIMES						2	
-		
+
+/***上盘/下盘减速比***/
+#define shangpan_jiansubi				g_InteralMemory.KeepWord[818]	
+#define xiapan_jiansubi					g_InteralMemory.KeepWord[819]	
+	
 void __irq shangyazhen_zero_process(void);
 void __irq pwrDownHandler(void);
 void Yazhen_Normal_App(void);

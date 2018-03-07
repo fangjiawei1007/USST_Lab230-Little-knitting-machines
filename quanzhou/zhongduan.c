@@ -293,6 +293,7 @@ void zhongduan_fun(void)
 	/**ÈÝ´í**/
 	if (i>max_port && err_flag==0)
 	{
+		//Beep(1);
 		emer_stop_flag=0;
 		sys_force_run_button=0;
 		qz_error_status=0;
