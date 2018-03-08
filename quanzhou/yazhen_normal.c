@@ -36,9 +36,7 @@ void __irq shangyazhen_zero_process(void)
 	/**软件消抖未使用**/
 	X3_SIG++;
 	//Beep(1);
-	{
-		g_InteralMemory.Word[304] = X3_SIG;
-	}
+	
 	rEINTPEND=(1<<3);
 	ClearPending(BIT_EINT3);
 }
@@ -443,6 +441,9 @@ void Yazhen_Normal_Init_Once(void){
 	
 	shangpan_jiansubi       = 1;
 	xiapan_jiansubi         = 1;
+	
+	jiajiansujiangemaichong_kw = 10000;
+	yazhen_alarm_level = level_3;
 }
     
 void Yazhen_Normal_Reset(void){

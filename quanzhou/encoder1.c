@@ -853,6 +853,10 @@ void __irq	encoder1_process(void)
 					shangyazhen_back_counter = 0;
 					shangyazhen_back_start = 0;
 					/**下一次容错**/
+					//DEBUG
+					{
+						g_InteralMemory.Word[304] = X3_SIG;
+					}
 					if(((rGPFDAT >> 3) & 0x1) == g_InteralMemory.KeepBit[93]){
 						Err3_Over = 0;
 						Err3_Miss = 0;
@@ -894,6 +898,12 @@ void __irq	encoder1_process(void)
 					xiayazhen_back_zero_counter = 0;
 					xiayazhen_back_counter = 0;
 					xiayazhen_back_start = 0;
+					/**下一次容错**/
+					//DEBUG
+					{
+						g_InteralMemory.Word[305] = X4_SIG;
+					}
+					
 					if(((rGPFDAT >> 4) & 0x1) == g_InteralMemory.KeepBit[93]){
 						Err4_Over = 0;
 						Err4_Miss = 0;
