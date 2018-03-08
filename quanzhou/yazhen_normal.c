@@ -8,7 +8,7 @@
 
 
 #define Dir_Positive			(g_InteralMemory.KeepBit[90])
-#define Dir_Negative			(~(g_InteralMemory.KeepBit[90]))
+#define Dir_Negative			((~g_InteralMemory.KeepBit[90])&0x1)
 
 #define yazhen_move_status		(g_InteralMemory.KeepBit[91])
 #define yazhen_back_status		(g_InteralMemory.KeepBit[92])
@@ -18,7 +18,7 @@
 #define xiayazhen_datou			(g_InteralMemory.KeepWord[792])
 #define xiayazhen_xiaotou		(g_InteralMemory.KeepWord[793])
 #define yazhen_alarm_level		(g_InteralMemory.KeepWord[813])
-#define ERR_TIME				10
+
 int tiaoxiankaiguan_kb = -1;			//∑¿÷π±®¥Ì£¨”Îµ˜œﬂ∞Ê±æ≥ÂÕª£¨»Ù π”√µ˜œﬂ∞Ê±æ£¨«Î∞—’‚æ‰»•µÙ£¨ªÚ’ﬂ≤ª»•≥˝‘§±‡“Îµƒ«Èøˆœ¬“—æ≠Ω‚æˆ
 
 int YAZHEN_ZERO_ERR = 0;
@@ -26,13 +26,19 @@ int YAZHEN_ZERO_ERR = 0;
 unsigned int X3_SIG;
 unsigned int X4_SIG;
 
-	
-	
+enum Direction{
+	GO = 0,
+	BACK
+};
+
 void __irq shangyazhen_zero_process(void)	
 {
 	/**»Ìº˛œ˚∂∂Œ¥ π”√**/
 	X3_SIG++;
 	//Beep(1);
+	{
+		g_InteralMemory.Word[304] = X3_SIG;
+	}
 	rEINTPEND=(1<<3);
 	ClearPending(BIT_EINT3);
 }
@@ -45,6 +51,9 @@ void __irq pwrDownHandler(void)	//X4-X7µƒ÷–∂œ∑˛ŒÒ≥Ã–Ú∞Û∂®µƒ–¬√˚◊÷£¨µ´ «ƒø«∞√ª”–”
 		/**»Ìº˛œ˚∂∂Œ¥ π”√**/
 		X4_SIG++;
 		//Beep(1);
+		{
+			g_InteralMemory.Word[305] = X4_SIG;
+		}
 		rEINTPEND=(1<<4);		
 	}
 	else if ( !( rEINTMASK >>5  & 0x1 )  && (rEINTPEND & (1<<5)) )//»°œ˚∆¡±Œ±Í÷æ+π“∆”––ß	
@@ -78,13 +87,13 @@ void Yazhen_Normal_App(void){
 	
 	stage_cur = getStage(current_stage,CURRENT);
 	
-	if(stage_cur != caijianduan){
+	//if(stage_cur != caijianduan){}
 		
 		checkout_yazhen = Yazhen_Normal_Checkout();
 		if(checkout_yazhen == CHANGED){
-			Yazhen_Normal_Set(stage_cur);
+			Yazhen_Normal_Set();
 		}
-	}
+	//
 	
 	if(stage_cur == guoduduan && yazhen_move_status == 0){
 		yazhen_move_status = 1;
@@ -101,13 +110,19 @@ void Yazhen_Normal_App(void){
 	else if(stage_cur != caijianduan){
 		yazhen_back_status = 0;
 	}
-	
+	//…œµÁ «≤√ºÙ∂Œ
+	if(stage_cur == caijianduan || stage_cur == datouduan){
+		Yazhen_Set_Dir(BACK);
+	}
+	else
+		Yazhen_Set_Dir(GO);
 	//Yazhen_Normal_Alarm();
 	
 }
 
 
-void Yazhen_Normal_Start(void){
+void Yazhen_Normal_Start(void){	
+	Yazhen_Set_Dir(GO);
 	shangyazhen_motor_start = 1;
 	xiayazhen_motor_start = 1;
 }
@@ -191,7 +206,7 @@ unsigned int Yazhen_Normal_Checkout(void){
 	return NOT_CHANGED;
 }
 
-void Yazhen_Normal_Set(int stage){
+void Yazhen_Normal_Set(void){
 	int yazhen_total_pulse=0;
 	/* 
 	if (stage == guoduduan){//µ±«∞∂ŒŒ™π˝∂…∂Œ
@@ -262,7 +277,7 @@ void Yazhen_Normal_Set(int stage){
 	} */
 	//else{}
 		if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
-			Set_Y_Value(Y2,Dir_Positive);
+			Set_Y_Value(Y2,Dir_Positive);//1
 			shangyazhen_motor_pulse = (shangyazhen_datou - shangyazhen_xiaotou)*shangpan_jiansubi;
 			xiayazhen_motor_pulse = (xiayazhen_datou - xiayazhen_xiaotou)*xiapan_jiansubi;
 			yazhen_total_pulse = middlequanshu*encoder1_cal_factor;
@@ -345,20 +360,7 @@ void Yazhen_Normal_Set(int stage){
 
 
 void Yazhen_Normal_Get_Zero_Start(void){
-
-	/***…Ë÷√∑µªÿK***/
-	shangyazhen_back_cmp = (shangyazhen_pulse_cmp)/Yazhen_Beilv;
-	xiayazhen_back_cmp   = (xiayazhen_pulse_cmp)/Yazhen_Beilv;
-	//DEBUG
-	{
-		g_InteralMemory.Word[302] = shangyazhen_back_cmp;
-		g_InteralMemory.Word[303] = xiayazhen_back_cmp;
-	}
-	if(shangyazhen_back_cmp < 2)
-		shangyazhen_back_cmp = 2;
-	if(xiayazhen_back_cmp < 2)
-		xiayazhen_back_cmp = 2;
-	
+	Yazhen_Set_Dir(BACK);	
 	if(shangyazhen_back_counter > 5*shangpan_jiansubi)//¥Û”⁄5 «Œ™¡ÀYAZHEN_ZERO_ERR = -4
 		shangyazhen_back_start = 1;
 	if(xiayazhen_back_counter > 5*xiapan_jiansubi)
@@ -366,9 +368,46 @@ void Yazhen_Normal_Get_Zero_Start(void){
 	
 }
 
+void Yazhen_Set_Dir(int Direction){
+	switch(Direction){
+		case GO:
+			if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou))
+				Set_Y_Value(Y2,Dir_Positive);//0
+			else if ((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou))
+				Set_Y_Value(Y2,Dir_Negative);
+			break;
+		case BACK:
+			if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou))
+				Set_Y_Value(Y2,Dir_Negative);//0
+			else if ((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou))
+				Set_Y_Value(Y2,Dir_Positive);
+			break;
+		default:
+			break;
+	}
+}
+
 void Yazhen_Normal_Init(void){
+	
+	int tmp = 0;
+	int stage_cur;
+	tmp = rGPBCON & (~(0x3<< 4));
+	rGPBCON = tmp |(0x1<<4);	
+
 	encoder3_fun(1);
 	encoder4_fun(1);
+	
+	stage_cur = getStage(current_stage,CURRENT);
+	if(stage_cur == guoduduan && (shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou))
+		Set_Y_Value(Y2,Dir_Positive);
+	else if(stage_cur == guoduduan && (shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou))
+		Set_Y_Value(Y2,Dir_Negative);
+	else if(stage_cur != guoduduan && (shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou))
+		Set_Y_Value(Y2,Dir_Negative);
+	else if(stage_cur != guoduduan && (shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou))
+		Set_Y_Value(Y2,Dir_Positive);
+		
+		
  }    
 void Yazhen_Normal_Init_Once(void){
 	Dir_Positive = 0;
