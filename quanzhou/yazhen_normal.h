@@ -4,11 +4,9 @@
 #define YAZHEN_NORMAL_EN
 #ifdef YAZHEN_NORMAL_EN
 
+/***注意：以下注释修改过的宏，均为泉州不合理要求，再次打开注释的时候记得初始化！！***/
 
-
-#define NO_MOVE					65530
-
-
+#define NO_MOVE					65533
 
 enum YAZHEN_NORMAL_CHECKOUT{
 	NOT_CHANGED = 0,
@@ -36,7 +34,7 @@ enum YAZHEN_NORMAL_CHECKOUT{
 /***压针返回时发送脉冲量记录，用作内部变量***/
 #define shangyazhen_back_counter		g_InteralMemory.KeepWord[803]
 #define xiayazhen_back_counter			g_InteralMemory.KeepWord[804]
-/***压针返回,回零时发送脉冲量记录，用作内部变量***/
+/***压针返回,回零时发送脉冲量记录，仅在中断中使用，用作内部变量***/
 #define shangyazhen_back_zero_counter	g_InteralMemory.KeepWord[805]
 #define xiayazhen_back_zero_counter		g_InteralMemory.KeepWord[806]
 /**压针返回开始信号，用作内部变量***/
@@ -56,11 +54,14 @@ enum YAZHEN_NORMAL_CHECKOUT{
 #define Err3_Miss 						g_InteralMemory.KeepWord[815]
 #define Err4_Over 						g_InteralMemory.KeepWord[816]
 #define Err4_Miss 						g_InteralMemory.KeepWord[817]		
-#define ERR_TIMES						10	
+//10
+#define ERR_TIMES						3	
 
 /***上盘/下盘减速比***/
-#define shangpan_jiansubi				g_InteralMemory.KeepWord[818]	
-#define xiapan_jiansubi					g_InteralMemory.KeepWord[819]	
+//g_InteralMemory.KeepWord[818]
+//g_InteralMemory.KeepWord[819]
+#define shangpan_jiansubi				1	
+#define xiapan_jiansubi					1
 	
 void __irq shangyazhen_zero_process(void);
 void __irq pwrDownHandler(void);

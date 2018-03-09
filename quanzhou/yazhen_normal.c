@@ -6,9 +6,11 @@
 #define X3						3
 #define X4						4
 
-
-#define Dir_Positive			(g_InteralMemory.KeepBit[90])
-#define Dir_Negative			((~g_InteralMemory.KeepBit[90])&0x1)
+/***×¢Òâ£ºÒÔÏÂ×¢ÊÍĞŞ¸Ä¹ıµÄºê£¬¾ùÎªÈªÖİ²»ºÏÀíÒªÇó£¬ÔÙ´Î´ò¿ª×¢ÊÍµÄÊ±ºò¼ÇµÃ³õÊ¼»¯£¡£¡***/
+//(g_InteralMemory.KeepBit[90])
+//((~g_InteralMemory.KeepBit[90])&0x1)
+#define Dir_Positive			1
+#define Dir_Negative			0
 
 #define yazhen_move_status		(g_InteralMemory.KeepBit[91])
 #define yazhen_back_status		(g_InteralMemory.KeepBit[92])
@@ -31,6 +33,20 @@ enum Direction{
 	BACK
 };
 
+/*************************************************
+Function(º¯ÊıÃû³Æ): __irq shangyazhen_zero_process(void)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): ÉÏÑ¹ÕëÁãÎ»´«¸ĞÆ÷(X3)ÖĞ¶Ï·şÎñ³ÌĞò£¬ÓÃÓÚ¼ÇÂ¼ÊÇ·ñ³¬¹ıÁãµã
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): 
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 void __irq shangyazhen_zero_process(void)	
 {
 	/**Èí¼şÏû¶¶Î´Ê¹ÓÃ**/
@@ -41,6 +57,20 @@ void __irq shangyazhen_zero_process(void)
 	ClearPending(BIT_EINT3);
 }
 
+/*************************************************
+Function(º¯ÊıÃû³Æ): __irq pwrDownHandler(void)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): ÏÂÑ¹ÕëÁãÎ»´«¸ĞÆ÷(X4)ÖĞ¶Ï·şÎñ³ÌĞò£¬ÓÃÓÚ¼ÇÂ¼ÊÇ·ñ³¬¹ıÁãµã
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): 
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 void __irq pwrDownHandler(void)	//X4-X7µÄÖĞ¶Ï·şÎñ³ÌĞò°ó¶¨µÄĞÂÃû×Ö£¬µ«ÊÇÄ¿Ç°Ã»ÓĞÓÃµ½
 {
 
@@ -78,7 +108,21 @@ void __irq pwrDownHandler(void)	//X4-X7µÄÖĞ¶Ï·şÎñ³ÌĞò°ó¶¨µÄĞÂÃû×Ö£¬µ«ÊÇÄ¿Ç°Ã»ÓĞÓ
 	}
 	ClearPending(BIT_EINT4_7);
 }
-	
+
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_App(void)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): Ñ¹Õë·şÎñ´úÂë
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): main();KeyBoardScan();
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 void Yazhen_Normal_App(void){
 	int stage_cur = -1;
 	unsigned int checkout_yazhen = 0;
@@ -86,12 +130,10 @@ void Yazhen_Normal_App(void){
 	stage_cur = getStage(current_stage,CURRENT);
 	
 	//if(stage_cur != caijianduan){}
-		
-		checkout_yazhen = Yazhen_Normal_Checkout();
-		if(checkout_yazhen == CHANGED){
-			Yazhen_Normal_Set();
-		}
-	//
+	checkout_yazhen = Yazhen_Normal_Checkout();
+	if(checkout_yazhen == CHANGED){
+		Yazhen_Normal_Set();
+	}
 	
 	if(stage_cur == guoduduan && yazhen_move_status == 0){
 		yazhen_move_status = 1;
@@ -114,16 +156,42 @@ void Yazhen_Normal_App(void){
 	}
 	else
 		Yazhen_Set_Dir(GO);
-	//Yazhen_Normal_Alarm();
-	
 }
 
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_Start(void)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): Ñ¹ÕëÕı³£ÔË¶¯¿ªÊ¼£¬ÉèÖÃÑ¹Õë·½Ïò
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): Yazhen_Normal_App();
 
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 void Yazhen_Normal_Start(void){	
 	Yazhen_Set_Dir(GO);
 	shangyazhen_motor_start = 1;
 	xiayazhen_motor_start = 1;
 }
+
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_Checkout(void)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): ÅĞ¶ÏÍâ²¿ÓëÑ¹ÕëKÖµÓĞ¹ØµÄ±äÁ¿ÊÇ·ñ±»¸Ä±ä£¬Èç¹û±»¸Ä±ä£¬ÔòĞèÒªÖØĞÂ½øĞĞ¼ÆËã
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): Yazhen_Normal_App();
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: CHANGED/NOT_CHANGED;CHANGEDÔòĞèÒªÖØĞÂ½øĞĞÉèÖÃ
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 unsigned int Yazhen_Normal_Checkout(void){
 	static unsigned int first_in = 0;		//µÚÒ»´Î½øÈë
 	
@@ -183,6 +251,7 @@ unsigned int Yazhen_Normal_Checkout(void){
 		xiapan_jiansubi_cur 	 = xiapan_jiansubi;
 		Yazhen_Beilv_cur		 = Yazhen_Beilv;
 		
+		/**Íâ²¿ÓĞÒ»¸ö²ÎÊıĞèÒª±»¸Ä±ä£¬Ôò¸Ä±äËùÓĞµÄÖµ£¬²¢ÇÒÖØĞÂÉèÖÃÍâ²¿È«¾Ö±äÁ¿**/
 		if(( shangyazhen_datou_pre == shangyazhen_datou_cur ) && ( xiayazhen_datou_pre == xiayazhen_datou_cur)
 		  && (shangyazhen_xiaotou_pre == shangyazhen_xiaotou_cur) && (xiayazhen_xiaotou_pre == xiayazhen_xiaotou_cur)
 		  && (guoduquanshu_pre == guoduquanshu_cur)
@@ -203,7 +272,20 @@ unsigned int Yazhen_Normal_Checkout(void){
 	}
 	return NOT_CHANGED;
 }
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_Set(void)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): ÈôÍâ²¿±äÁ¿±»¸Ä±äÖ®ºó£¬·µ»ØCHANGEDÔòÍ¨¹ı¸Ãº¯ÊıÖØĞÂÉèÖÃÖµ(È«¾Ö±äÁ¿)
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): Yazhen_Normal_App();
 
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):È«¾Ö±äÁ¿£ºshangyazhen_pulse_cmp;xiayazhen_pulse_cmp;shangyazhen_back_cmp;xiayazhen_back_cmp
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 void Yazhen_Normal_Set(void){
 	int yazhen_total_pulse=0;
 	/* 
@@ -274,91 +356,104 @@ void Yazhen_Normal_Set(void){
 		}
 	} */
 	//else{}
-		if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
-			Set_Y_Value(Y2,Dir_Positive);//1
-			shangyazhen_motor_pulse = (shangyazhen_datou - shangyazhen_xiaotou)*shangpan_jiansubi;
-			xiayazhen_motor_pulse = (xiayazhen_datou - xiayazhen_xiaotou)*xiapan_jiansubi;
-			yazhen_total_pulse = middlequanshu*encoder1_cal_factor;
-			if(shangyazhen_motor_pulse > 0){
-				shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
-				if (shangyazhen_pulse_cmp < 2)
-					shangyazhen_pulse_cmp = 2;//±£Ö¤ÏÂ½µÑØ
-			}
-			else
-				shangyazhen_pulse_cmp = NO_MOVE;
-			
-			if(xiayazhen_motor_pulse > 0){
-				xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
-				if(xiayazhen_pulse_cmp < 2)
-					xiayazhen_pulse_cmp = 2;//±£Ö¤ÏÂ½µÑØ
-			}
-			else
-				xiayazhen_pulse_cmp = NO_MOVE;
-
-			if (yazhen_total_pulse == 0){//ÎŞ¹ı¶É¶ÎÔò²»¶¯×÷£¬k->ÎŞÇî´ó
-				shangyazhen_pulse_cmp = NO_MOVE;
-				xiayazhen_pulse_cmp = NO_MOVE;
-			}
+	if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
+		Set_Y_Value(Y2,Dir_Positive);//1
+		shangyazhen_motor_pulse = (shangyazhen_datou - shangyazhen_xiaotou)*shangpan_jiansubi;
+		xiayazhen_motor_pulse = (xiayazhen_datou - xiayazhen_xiaotou)*xiapan_jiansubi;
+		yazhen_total_pulse = middlequanshu*encoder1_cal_factor;
+		if(shangyazhen_motor_pulse > 0){
+			shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
+			if (shangyazhen_pulse_cmp < 2)
+				shangyazhen_pulse_cmp = 2;//±£Ö¤ÏÂ½µÑØ
 		}
-		else if ((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou)){
-			Set_Y_Value(Y2,Dir_Negative);
-			shangyazhen_motor_pulse = (shangyazhen_xiaotou - shangyazhen_datou)*shangpan_jiansubi;
-			xiayazhen_motor_pulse = (xiayazhen_xiaotou - xiayazhen_datou)*xiapan_jiansubi;
-			yazhen_total_pulse = middlequanshu*encoder1_cal_factor;
-
-			if(shangyazhen_motor_pulse > 0){
-				shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
-				if (shangyazhen_pulse_cmp < 2)
-					shangyazhen_pulse_cmp = 2;//±£Ö¤ÏÂ½µÑØ
-			}
-			else
-				shangyazhen_pulse_cmp = NO_MOVE;
-			
-			if(xiayazhen_motor_pulse > 0){
-				xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
-				if (xiayazhen_pulse_cmp < 2)
-					xiayazhen_pulse_cmp = 2;//±£Ö¤ÏÂ½µÑØ
-			}
-			else
-				xiayazhen_pulse_cmp = NO_MOVE;
-			
-			if (yazhen_total_pulse == 0){//ÎŞ¹ı¶É¶ÎÔò²»¶¯×÷£¬k->ÎŞÇî´ó
-				shangyazhen_pulse_cmp = NO_MOVE;
-				xiayazhen_pulse_cmp = NO_MOVE;
-			}
-			
+		else
+			shangyazhen_pulse_cmp = NO_MOVE;
+		
+		if(xiayazhen_motor_pulse > 0){
+			xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
+			if(xiayazhen_pulse_cmp < 2)
+				xiayazhen_pulse_cmp = 2;//±£Ö¤ÏÂ½µÑØ
 		}
-		else{//Á½ÕßÏàµÈÖ®ºó£¬²»¶¯×÷
+		else
+			xiayazhen_pulse_cmp = NO_MOVE;
+
+		if (yazhen_total_pulse == 0){//ÎŞ¹ı¶É¶ÎÔò²»¶¯×÷£¬k->ÎŞÇî´ó
 			shangyazhen_pulse_cmp = NO_MOVE;
 			xiayazhen_pulse_cmp = NO_MOVE;
-			shangyazhen_counter = 0;
-			xiayazhen_counter = 0;
 		}
-	
-		/***ÉèÖÃ·µ»ØK***/
-		shangyazhen_back_cmp = (shangyazhen_pulse_cmp)/Yazhen_Beilv;
-		xiayazhen_back_cmp   = (xiayazhen_pulse_cmp)/Yazhen_Beilv;
-		if(shangyazhen_back_cmp < 2)
-			shangyazhen_back_cmp = 2;
-		if(xiayazhen_back_cmp < 2)
-			xiayazhen_back_cmp = 2;
-	
-	//DEBUG
-		{
-			g_InteralMemory.Word[300] = shangyazhen_pulse_cmp;
-			g_InteralMemory.Word[301] = xiayazhen_pulse_cmp;
+	}
+	else if ((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou)){
+		Set_Y_Value(Y2,Dir_Negative);
+		shangyazhen_motor_pulse = (shangyazhen_xiaotou - shangyazhen_datou)*shangpan_jiansubi;
+		xiayazhen_motor_pulse = (xiayazhen_xiaotou - xiayazhen_datou)*xiapan_jiansubi;
+		yazhen_total_pulse = middlequanshu*encoder1_cal_factor;
+
+		if(shangyazhen_motor_pulse > 0){
+			shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
+			if (shangyazhen_pulse_cmp < 2)
+				shangyazhen_pulse_cmp = 2;//±£Ö¤ÏÂ½µÑØ
 		}
+		else
+			shangyazhen_pulse_cmp = NO_MOVE;
+		
+		if(xiayazhen_motor_pulse > 0){
+			xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
+			if (xiayazhen_pulse_cmp < 2)
+				xiayazhen_pulse_cmp = 2;//±£Ö¤ÏÂ½µÑØ
+		}
+		else
+			xiayazhen_pulse_cmp = NO_MOVE;
+		
+		if (yazhen_total_pulse == 0){//ÎŞ¹ı¶É¶ÎÔò²»¶¯×÷£¬k->ÎŞÇî´ó
+			shangyazhen_pulse_cmp = NO_MOVE;
+			xiayazhen_pulse_cmp = NO_MOVE;
+		}
+		
+	}
+	else{//Á½ÕßÏàµÈÖ®ºó£¬²»¶¯×÷
+		shangyazhen_pulse_cmp = NO_MOVE;
+		xiayazhen_pulse_cmp = NO_MOVE;
+		shangyazhen_counter = 0;
+		xiayazhen_counter = 0;
+	}
+
+	/***ÉèÖÃ·µ»ØK***/
+	shangyazhen_back_cmp = (shangyazhen_pulse_cmp)/Yazhen_Beilv;
+	xiayazhen_back_cmp   = (xiayazhen_pulse_cmp)/Yazhen_Beilv;
+	if(shangyazhen_back_cmp < 2)
+		shangyazhen_back_cmp = 2;
+	if(xiayazhen_back_cmp < 2)
+		xiayazhen_back_cmp = 2;
+
 	//DEBUG
-		{
-			g_InteralMemory.Word[302] = shangyazhen_back_cmp;
-			g_InteralMemory.Word[303] = xiayazhen_back_cmp;
-		}		
+	{
+		g_InteralMemory.Word[300] = shangyazhen_pulse_cmp;
+		g_InteralMemory.Word[301] = xiayazhen_pulse_cmp;
+	}
+	//DEBUG
+	{
+		g_InteralMemory.Word[302] = shangyazhen_back_cmp;
+		g_InteralMemory.Word[303] = xiayazhen_back_cmp;
+	}		
 	
 }
 
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_Get_Zero_Start(void)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): Ñ¹ÕëÕı³£ÔË¶¯¿ªÊ¼£¬ÉèÖÃÑ¹Õë·½Ïò£¬µ±Ñ¹Õë·µ»Øcounter>5¸öÂö³åµÄÊ±ºò
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): Yazhen_Normal_App();
 
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 void Yazhen_Normal_Get_Zero_Start(void){
-	Yazhen_Set_Dir(BACK);	
+	Yazhen_Set_Dir(BACK);
 	if(shangyazhen_back_counter > 5*shangpan_jiansubi)//´óÓÚ5ÊÇÎªÁËYAZHEN_ZERO_ERR = -4
 		shangyazhen_back_start = 1;
 	if(xiayazhen_back_counter > 5*xiapan_jiansubi)
@@ -366,6 +461,20 @@ void Yazhen_Normal_Get_Zero_Start(void){
 	
 }
 
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Set_Dir(int Direction)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): ÉèÖÃÑ¹Õë·½ÏòÊµÏÖº¯Êı
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): Yazhen_Normal_App();Yazhen_Normal_Set();Yazhen_Normal_Get_Zero_Start();
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 void Yazhen_Set_Dir(int Direction){
 	switch(Direction){
 		case GO:
@@ -385,6 +494,20 @@ void Yazhen_Set_Dir(int Direction){
 	}
 }
 
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_Init(int Direction)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): Ñ¹Õë³õÊ¼»¯º¯Êı£¬ÉèÖÃY2¿Ú£¬¿ªÖĞ¶Ï
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): App_Init(void);
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/	
 void Yazhen_Normal_Init(void){
 	
 	int tmp = 0;
@@ -404,11 +527,24 @@ void Yazhen_Normal_Init(void){
 		Set_Y_Value(Y2,Dir_Negative);
 	else if(stage_cur != guoduduan && (shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou))
 		Set_Y_Value(Y2,Dir_Positive);
-		
-		
- }    
+} 
+
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_Init_Once(int Direction)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): Ñ¹Õëkw/kb²Á³ıÖ®ºóµÚÒ»´Î³õÊ¼»¯
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): menu_init(void);
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/ 
 void Yazhen_Normal_Init_Once(void){
-	Dir_Positive = 0;
+	//Dir_Positive = 0;
 	
 	yazhen_move_status  = 0;	
 	yazhen_back_status  = 0;	
@@ -439,13 +575,27 @@ void Yazhen_Normal_Init_Once(void){
 	Err4_Over				= 0;
 	yazhen_alarm_level      = 0;
 	
-	shangpan_jiansubi       = 1;
-	xiapan_jiansubi         = 1;
+//	shangpan_jiansubi       = 1;
+//	xiapan_jiansubi         = 1;
 	
 	jiajiansujiangemaichong_kw = 10000;
 	yazhen_alarm_level = level_3;
 }
-    
+
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_Reset(int Direction)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): Ñ¹Õë¸´Î»£¬ĞèÒª»ØÁãÉèÖÃ
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): encoder1_data_reset(void);
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/     
 void Yazhen_Normal_Reset(void){
 	shangyazhen_motor_start = 0;
 	xiayazhen_motor_start	= 0;
@@ -455,7 +605,20 @@ void Yazhen_Normal_Reset(void){
 	Yazhen_Normal_Get_Zero_Start();
 }
 
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Alarm_Disp_Yazhen(unsigned int Port)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): Ñ¹Õë»ØÁã³öÏÖÎÊÌâÖ®ºó£¬Ìø³öĞ¡»­Ãæ
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): Yazhen_Normal_Alarm();
 
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/
 void Alarm_Disp_Yazhen(unsigned int Port)
 {
 	char Info_X3[]={33,67,46,27,20,11,24,48,41,47,'\0'};  //CharString:¡°ÁãÎ»´«¸ĞÉÏ¡±
@@ -483,6 +646,20 @@ void Alarm_Disp_Yazhen(unsigned int Port)
 	delay_qz(0,10,1);	//´ò¿ªbeep_alarmÓÃ
 }
 
+/*************************************************
+Function(º¯ÊıÃû³Æ): void Yazhen_Normal_Alarm(U8* err)
+Description(º¯Êı¹¦ÄÜ¡¢ĞÔÄÜµÈµÄÃèÊö): Ñ¹Õë±¨¾¯APP
+Calls (±»±¾º¯Êıµ÷ÓÃµÄº¯ÊıÇåµ¥): 
+Called By (µ÷ÓÃ±¾º¯ÊıµÄº¯ÊıÇåµ¥): void zhongduan_fun(void);
+
+Input(ÊäÈë²ÎÊıËµÃ÷£¬°üÀ¨Ã¿¸ö²ÎÊıµÄ×÷ÓÃ¡¢È¡ÖµËµÃ÷¼°²ÎÊı¼ä¹ØÏµ): 
+Output(¶ÔÊä³ö²ÎÊıµÄËµÃ÷):
+Return: 
+Others: 
+Author:·½¼ÑÎ°
+Modified:
+Commented:·½¼ÑÎ°
+*************************************************/
 void Yazhen_Normal_Alarm(U8* err){
 	if(Err3_Miss > ERR_TIMES || Err3_Over > ERR_TIMES){
 		*err = 1;

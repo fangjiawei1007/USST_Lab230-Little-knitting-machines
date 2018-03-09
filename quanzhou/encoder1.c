@@ -840,7 +840,7 @@ void __irq	encoder1_process(void)
 				}
 			}
 			/**********************************上压针电机结束*********************************************/
-			if (shangyazhen_back_start == 1){
+			if (shangyazhen_back_start == 1 && (shangyazhen_pulse_cmp != NO_MOVE)){
 				motor_factor_back_shangyazhen++;
 				if (motor_factor_back_shangyazhen >= shangyazhen_back_cmp){
 					rGPEDAT &= ~(1<<Y9_Bit);
@@ -886,7 +886,7 @@ void __irq	encoder1_process(void)
 				}
 			}
 			/**********************************下压针电机结束*********************************************/
-			if (xiayazhen_back_start == 1){
+			if (xiayazhen_back_start == 1 && (xiayazhen_pulse_cmp != NO_MOVE)){
 				motor_factor_back_xiayazhen++;
 				if (motor_factor_back_xiayazhen >= xiayazhen_back_cmp){
 					rGPEDAT &= ~(1<<Y10_Bit);
