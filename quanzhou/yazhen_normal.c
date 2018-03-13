@@ -1,28 +1,52 @@
 #include "includes.h"
+/****************************************************************************************************************************
+									Yazhen_Normal_FUN
+1.压针功能源码在此处实现
+2.压针功能的电机K值比较在__irq	encoder1_process(void)中实现
+3.小键盘的"确定"在function.c->KeyScan()->default:中实现，通过此处“确定”，清除 Err_Miss以及Err_Over
 
+programmed by 方佳伟
+****************************************************************************************************************************/
 #ifdef YAZHEN_NORMAL_EN
 
 #define Y2						2
 #define X3						3
 #define X4						4
+#define X5						5
+#define X11						11
 
+#define Debug_Speed				30
+#define Debug_CMP				13
+#define Debug_Back_CMP			5
 /***注意：以下注释修改过的宏，均为泉州不合理要求，再次打开注释的时候记得初始化！！***/
 //(g_InteralMemory.KeepBit[90])
 //((~g_InteralMemory.KeepBit[90])&0x1)
-#define Dir_Positive			1
-#define Dir_Negative			0
+#define Dir_Positive				1
+#define Dir_Negative				0
 
-#define yazhen_move_status		(g_InteralMemory.KeepBit[91])
-#define yazhen_back_status		(g_InteralMemory.KeepBit[92])
+#define yazhen_move_status				(g_InteralMemory.KeepBit[91])
+#define yazhen_back_status				(g_InteralMemory.KeepBit[92])
 
-#define shangyazhen_datou		(g_InteralMemory.KeepWord[790])
-#define shangyazhen_xiaotou		(g_InteralMemory.KeepWord[791])
-#define xiayazhen_datou			(g_InteralMemory.KeepWord[792])
-#define xiayazhen_xiaotou		(g_InteralMemory.KeepWord[793])
-#define yazhen_alarm_level		(g_InteralMemory.KeepWord[813])
+#define shangyazhen_datou				(g_InteralMemory.KeepWord[790])
+#define shangyazhen_xiaotou				(g_InteralMemory.KeepWord[791])
+#define xiayazhen_datou					(g_InteralMemory.KeepWord[792])
+#define xiayazhen_xiaotou				(g_InteralMemory.KeepWord[793])
+#define yazhen_alarm_level				(g_InteralMemory.KeepWord[813])
+
+/*******************************压针调试*********************************************/
+
+
+#define datou_shangyazhen_monitor_clear_b		(g_InteralMemory.Bit[80])
+#define datou_xiayazhen_monitor_clear_b			(g_InteralMemory.Bit[81])
+#define xiaotou_shangyazhen_monitor_clear_b		(g_InteralMemory.Bit[82])
+#define xiaotou_xiayazhen_monitor_clear_b		(g_InteralMemory.Bit[83])
+
+#define yazhen_datou_choose_kb					(g_InteralMemory.KeepBit[94])
+#define yazhen_xiaotou_choose_kb 				(g_InteralMemory.KeepBit[95])
+
 
 int tiaoxiankaiguan_kb = -1;			//防止报错，与调线版本冲突，若使用调线版本，请把这句去掉，或者不去除预编译的情况下已经解决
-
+int yazhen_datou_choose = 0;
 int YAZHEN_ZERO_ERR = 0;
 
 unsigned int X3_SIG;
@@ -32,7 +56,15 @@ enum Direction{
 	GO = 0,
 	BACK
 };
-
+	
+enum EXT_Button{
+	ON = 0,
+	OFF
+};
+enum Yazhen_Choose{
+	UP_YAZHEN = 0,
+	DOWN_YAZHEN
+};
 /*************************************************
 Function(函数名称): __irq shangyazhen_zero_process(void)
 Description(函数功能、性能等的描述): 上压针零位传感器(X3)中断服务程序，用于记录是否超过零点
@@ -126,36 +158,46 @@ Commented:方佳伟
 void Yazhen_Normal_App(void){
 	int stage_cur = -1;
 	unsigned int checkout_yazhen = 0;
-	
 	stage_cur = getStage(current_stage,CURRENT);
 	
-	//if(stage_cur != caijianduan){}
-	checkout_yazhen = Yazhen_Normal_Checkout();
-	if(checkout_yazhen == CHANGED){
-		Yazhen_Normal_Set();
+	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1)){
+		//bianpingqi_set_speed(Debug_Speed);
+		if(stage_cur == datouduan || stage_cur == xiaotouduan){
+			Yazhen_Debug_App();
+		}
+		
 	}
-	
-	if(stage_cur == guoduduan && yazhen_move_status == 0){
-		yazhen_move_status = 1;
-		Yazhen_Normal_Start();
+	else{
+	//	stage_cur = getStage(current_stage,CURRENT);
+		
+		//if(stage_cur != caijianduan){}
+		checkout_yazhen = Yazhen_Normal_Checkout();
+		if(checkout_yazhen == CHANGED){
+			Yazhen_Normal_Set();
+		}
+		
+		if(stage_cur == guoduduan && yazhen_move_status == 0){
+			yazhen_move_status = 1;
+			Yazhen_Normal_Start();
+		}
+		else if(stage_cur != guoduduan){
+			yazhen_move_status = 0;
+		}
+		
+		if(stage_cur == caijianduan && yazhen_back_status == 0){
+			yazhen_back_status = 1;
+			Yazhen_Normal_Get_Zero_Start();	
+		}
+		else if(stage_cur != caijianduan){
+			yazhen_back_status = 0;
+		}
+		//上电是裁剪段
+		if(stage_cur == caijianduan || stage_cur == datouduan){
+			Yazhen_Set_Dir(BACK);
+		}
+		else
+			Yazhen_Set_Dir(GO);
 	}
-	else if(stage_cur != guoduduan){
-		yazhen_move_status = 0;
-	}
-	
-	if(stage_cur == caijianduan && yazhen_back_status == 0){
-		yazhen_back_status = 1;
-		Yazhen_Normal_Get_Zero_Start();	
-	}
-	else if(stage_cur != caijianduan){
-		yazhen_back_status = 0;
-	}
-	//上电是裁剪段
-	if(stage_cur == caijianduan || stage_cur == datouduan){
-		Yazhen_Set_Dir(BACK);
-	}
-	else
-		Yazhen_Set_Dir(GO);
 }
 
 /*************************************************
@@ -288,74 +330,7 @@ Commented:方佳伟
 *************************************************/	
 void Yazhen_Normal_Set(void){
 	int yazhen_total_pulse=0;
-	/* 
-	if (stage == guoduduan){//当前段为过渡段
-		if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
-			Set_Y_Value(Y2,Dir_Positive);
-			yazhen_total_pulse = (daduanquanshu + middlequanshu-dapan_round)*encoder1_cal_factor;
-			
-			if(shangyazhen_counter > shangyazhen_xiaotou){
-				shangyazhen_motor_pulse = ((shangyazhen_datou - shangyazhen_xiaotou) - shangyazhen_counter);
-				shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
-				if (shangyazhen_pulse_cmp < 2)
-					shangyazhen_pulse_cmp = 2;//保证下降沿
-			}
-			else
-				shangyazhen_pulse_cmp = NO_MOVE;
-			
-			if(xiayazhen_counter > xiayazhen_xiaotou){
-				xiayazhen_motor_pulse = ((xiayazhen_datou - xiayazhen_xiaotou) - xiayazhen_counter);
-				xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
-				if (xiayazhen_pulse_cmp < 2)
-					xiayazhen_pulse_cmp = 2;//保证下降沿
-			}
-			else
-				xiayazhen_pulse_cmp = NO_MOVE;
-
-			if (yazhen_total_pulse == 0){//无过渡段则不动作，k->无穷大
-				shangyazhen_pulse_cmp = NO_MOVE;
-				xiayazhen_pulse_cmp = NO_MOVE;
-			}
-			shangyazhen_counter = 0;
-			xiayazhen_counter = 0;
-		}
-		else if ((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou)){
-			Set_Y_Value(Y2,Dir_Negative);
-			yazhen_total_pulse = (daduanquanshu + middlequanshu-dapan_round)*encoder1_cal_factor;
-			
-			if(shangyazhen_counter > shangyazhen_datou){
-				shangyazhen_motor_pulse = ((shangyazhen_xiaotou - shangyazhen_datou)-shangyazhen_counter);
-				shangyazhen_pulse_cmp = yazhen_total_pulse/shangyazhen_motor_pulse;
-				if (shangyazhen_pulse_cmp < 2)
-					shangyazhen_pulse_cmp = 2;//保证下降沿	
-			}
-			else
-				shangyazhen_pulse_cmp = NO_MOVE;
-			
-			if(xiayazhen_counter > xiayazhen_datou){
-				xiayazhen_motor_pulse = ((xiayazhen_xiaotou - xiayazhen_datou)- xiayazhen_counter);
-				xiayazhen_pulse_cmp = yazhen_total_pulse/xiayazhen_motor_pulse;
-				if (xiayazhen_pulse_cmp < 2)
-					xiayazhen_pulse_cmp = 2;//保证下降沿
-			}
-			else
-				xiayazhen_pulse_cmp = NO_MOVE;
-
-			if (yazhen_total_pulse == 0){//无过渡段则不动作，k->无穷大
-				shangyazhen_pulse_cmp = NO_MOVE;
-				xiayazhen_pulse_cmp = NO_MOVE;
-			}
-			shangyazhen_counter = 0;
-			xiayazhen_counter = 0;
-		}
-		else{//两者方向不同，不动作
-			shangyazhen_pulse_cmp = NO_MOVE;
-			xiayazhen_pulse_cmp = NO_MOVE;
-			shangyazhen_counter = 0;
-			xiayazhen_counter = 0;
-		}
-	} */
-	//else{}
+	
 	if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
 		Set_Y_Value(Y2,Dir_Positive);//1
 		shangyazhen_motor_pulse = (shangyazhen_datou - shangyazhen_xiaotou)*shangpan_jiansubi;
@@ -418,12 +393,12 @@ void Yazhen_Normal_Set(void){
 	}
 
 	/***设置返回K***/
-	shangyazhen_back_cmp = (shangyazhen_pulse_cmp)/Yazhen_Beilv;
-	xiayazhen_back_cmp   = (xiayazhen_pulse_cmp)/Yazhen_Beilv;
-	if(shangyazhen_back_cmp < 2)
+	shangyazhen_back_cmp = Yazhen_Beilv;//(shangyazhen_pulse_cmp)/
+	xiayazhen_back_cmp   = Yazhen_Beilv;//(xiayazhen_pulse_cmp)/
+	/* if(shangyazhen_back_cmp < 2)
 		shangyazhen_back_cmp = 2;
 	if(xiayazhen_back_cmp < 2)
-		xiayazhen_back_cmp = 2;
+		xiayazhen_back_cmp = 2; */
 
 	//DEBUG
 	{
@@ -527,6 +502,24 @@ void Yazhen_Normal_Init(void){
 		Set_Y_Value(Y2,Dir_Negative);
 	else if(stage_cur != guoduduan && (shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou))
 		Set_Y_Value(Y2,Dir_Positive);
+	
+	datou_shangyazhen_monitor_clear_b	= 0;
+	datou_xiayazhen_monitor_clear_b		= 0;
+	xiaotou_shangyazhen_monitor_clear_b	= 0;
+	xiaotou_xiayazhen_monitor_clear_b	= 0;
+	
+	datou_shangyazhen_zero_kb	= 0;
+	datou_xiayazhen_zero_kb		= 0;
+	xiaotou_shangyazhen_zero_kb	= 0;
+	xiaotou_xiayazhen_zero_kb	= 0;
+	
+	shangyazhen_zero_confirm_kb	= 0;
+	xiayazhen_zero_confirm_kb	= 0;
+	
+	yazhen_datou_choose_kb		= 0;
+	yazhen_xiaotou_choose_kb 	= 0;
+	yazhen_datou_debug_kb		= 0;
+	yazhen_xiaotou_debug_kb		= 0;
 } 
 
 /*************************************************
@@ -580,6 +573,60 @@ void Yazhen_Normal_Init_Once(void){
 	
 	jiajiansujiangemaichong_kw = 10000;
 	yazhen_alarm_level = level_3;
+	
+	datou_shangyazhen_monitor     = 0;
+	datou_xiayazhen_monitor	  	= 0;
+	xiaotou_shangyazhen_monitor	= 0;
+	xiaotou_xiayazhen_monitor 		= 0;
+	
+	datou_shangyazhen_monitor_clear_b	= 0;
+	datou_xiayazhen_monitor_clear_b		= 0;
+	xiaotou_shangyazhen_monitor_clear_b	= 0;
+	xiaotou_xiayazhen_monitor_clear_b	= 0;
+	
+	datou_shangyazhen_zero_kb	= 0;
+	datou_xiayazhen_zero_kb		= 0;
+	xiaotou_shangyazhen_zero_kb	= 0;
+	xiaotou_xiayazhen_zero_kb	= 0;
+	
+	shangyazhen_zero_confirm_kb	= 0;
+	xiayazhen_zero_confirm_kb	= 0;
+	
+	yazhen_datou_choose_kb		= 0;
+	yazhen_xiaotou_choose_kb 	= 0;
+	yazhen_datou_debug_kb		= 0;
+	yazhen_xiaotou_debug_kb		= 0;
+	
+	DBG_shangyazhen_back_cmp    = 0;
+	DBG_xiayazhen_back_cmp  	= 0;
+	
+	DBG_shangyazhen_back_zero_counter		  	= 0;
+	DBG_xiayazhen_back_zero_counter				= 0;
+	DBG_shangyazhen_back_zero_counter_xiaotou	= 0;
+	DBG_xiayazhen_back_zero_counter_xiaotou		= 0;
+	
+	DBG_shangyazhen_back_counter				= 0;
+	DBG_xiayazhen_back_counter					= 0;
+	DBG_shangyazhen_back_counter_xiaotou		= 0;
+	DBG_xiayazhen_back_counter_xiaotou			= 0;
+	
+	shangyazhen_pos_start			= 0;
+	shangyazhen_neg_start			= 0;
+	xiayazhen_pos_start				= 0;
+	xiayazhen_neg_start        		= 0;
+	                              
+	
+	DBG_shangyazhen_pulse_cmp		= 0;
+	DBG_xiayazhen_pulse_cmp         = 0;
+	
+	DBG_shangyazhen_motor_pulse		= 0;
+	DBG_xiayazhen_motor_pulse       = 0;
+	
+	DBG_shangyazhen_counter			= 0;
+	DBG_xiayazhen_counter			= 0;
+	DBG_shangyazhen_counter_xiaotou	= 0;
+	DBG_xiayazhen_counter_xiaotou	= 0;
+
 }
 
 /*************************************************
@@ -607,7 +654,7 @@ void Yazhen_Normal_Reset(void){
 
 /*************************************************
 Function(函数名称): void Alarm_Disp_Yazhen(unsigned int Port)
-Description(函数功能、性能等的描述): 压针回零出现问题之后，跳出小画面
+Description(函数功能、性能等的描述): 压针回零出现问题之后，跳出小画面,小画面的
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): Yazhen_Normal_Alarm();
 
@@ -648,7 +695,7 @@ void Alarm_Disp_Yazhen(unsigned int Port)
 
 /*************************************************
 Function(函数名称): void Yazhen_Normal_Alarm(U8* err)
-Description(函数功能、性能等的描述): 压针报警APP
+Description(函数功能、性能等的描述): 压针报警APP，小键盘的确定在function.c->KeyScan()->default:
 Calls (被本函数调用的函数清单): 
 Called By (调用本函数的函数清单): void zhongduan_fun(void);
 
@@ -718,4 +765,126 @@ void Yazhen_Normal_Alarm(U8* err){
 	}
 }
 
+
+void Yazhen_Debug_App(void){
+	Clear_Monitor();
+	//Get_Monitor();
+	Yazhen_Debug_K_Set();
+	Yazhen_Zero_Confirm();
+	if((yazhen_datou_debug_kb == 1) && (yazhen_xiaotou_debug_kb == 1)){
+		return;
+	}
+	else if(yazhen_datou_debug_kb == 1){
+		if(yazhen_datou_choose_kb == UP_YAZHEN){
+			Yazhen_EXT_Button(UP_YAZHEN);
+		}
+		else{
+			Yazhen_EXT_Button(DOWN_YAZHEN);
+		}
+	}
+	else if(yazhen_xiaotou_debug_kb == 1){
+		if(yazhen_xiaotou_choose_kb == UP_YAZHEN){
+			Yazhen_EXT_Button(UP_YAZHEN);
+		}
+		else{
+			Yazhen_EXT_Button(DOWN_YAZHEN);
+		}
+	}	
+}
+
+void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
+	if(Get_X_Value(X5) == ON && Get_X_Value(X11) == ON){
+		return;
+	}
+	else if(Get_X_Value(X5) == ON){
+		Set_Y_Value(Y2,Dir_Positive);
+		switch(Yazhen_type){
+			case UP_YAZHEN:
+				shangyazhen_pos_start = 1;
+				
+				break;
+			case DOWN_YAZHEN:
+				xiayazhen_pos_start = 1;
+				break;
+			default:
+				break;
+		}
+	}
+	else if(Get_X_Value(X11) == ON){
+		Set_Y_Value(Y2,Dir_Negative);
+		switch(Yazhen_type){
+			case UP_YAZHEN:
+				shangyazhen_neg_start = 1;
+				break;
+			case DOWN_YAZHEN:
+				xiayazhen_neg_start = 1;
+				break;
+			default:
+				break;
+		}
+	}
+	else{
+		shangyazhen_pos_start 	= 0;
+		shangyazhen_neg_start 	= 0;
+		xiayazhen_pos_start	 	= 0;
+		xiayazhen_neg_start   	= 0;
+	}   
+}
+
+void Yazhen_Debug_K_Set(void){
+	DBG_shangyazhen_pulse_cmp 	= Debug_CMP;
+	DBG_xiayazhen_pulse_cmp 	= Debug_CMP;	
+	DBG_shangyazhen_back_cmp	= Debug_Back_CMP;
+	DBG_xiayazhen_back_cmp 		= Debug_Back_CMP;
+}
+
+
+void Get_Monitor(void){
+	datou_shangyazhen_monitor 	= DBG_shangyazhen_counter;
+	datou_xiayazhen_monitor	  	= DBG_xiayazhen_counter;
+	xiaotou_shangyazhen_monitor = DBG_shangyazhen_counter_xiaotou;
+	xiaotou_xiayazhen_monitor 	= DBG_xiayazhen_counter_xiaotou;
+}
+
+void Clear_Monitor(void){
+	if(datou_shangyazhen_monitor_clear_b == 1){
+		datou_shangyazhen_monitor = 0;
+	}
+	if(datou_xiayazhen_monitor_clear_b == 1){
+		datou_xiayazhen_monitor = 0;
+	}
+	if(xiaotou_shangyazhen_monitor_clear_b == 1){
+		xiaotou_shangyazhen_monitor = 0;
+	}
+	if(xiaotou_xiayazhen_monitor_clear_b == 1){
+		xiaotou_xiayazhen_monitor = 0;
+	}
+}
+
+void Yazhen_Zero_Confirm(void){
+	if(shangyazhen_zero_confirm_kb == 1){
+		if(yazhen_datou_debug_kb == 1){
+			DBG_shangyazhen_counter = 0;
+			DBG_shangyazhen_back_counter = 0;
+			DBG_shangyazhen_back_zero_counter = 0;
+		}
+		else if(yazhen_xiaotou_debug_kb == 1){
+			DBG_shangyazhen_counter_xiaotou = 0;
+			DBG_shangyazhen_back_counter_xiaotou = 0;
+			DBG_shangyazhen_back_zero_counter_xiaotou = 0;
+		}
+	}
+	if(xiayazhen_zero_confirm_kb == 1){
+		if(yazhen_datou_debug_kb == 1){
+			DBG_xiayazhen_counter = 0;
+			DBG_xiayazhen_back_counter = 0;
+			DBG_xiayazhen_back_zero_counter = 0;
+		}
+		else if(yazhen_xiaotou_debug_kb == 1){
+			DBG_xiayazhen_counter_xiaotou = 0;
+			DBG_xiayazhen_back_counter_xiaotou = 0;
+			DBG_xiayazhen_back_zero_counter_xiaotou = 0;
+		}
+	}
+}
 #endif

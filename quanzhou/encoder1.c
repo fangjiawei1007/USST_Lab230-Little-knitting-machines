@@ -36,12 +36,16 @@ volatile unsigned int yazhen_2nd_counter=0;
 #endif
 
 #ifdef YAZHEN_NORMAL_EN
-/**************************友峰调线****************************/
+/**************************压针版本(YAZHEN_NORMAL)****************************/
 volatile unsigned int motor_factor_shangyazhen=0;
 volatile unsigned int motor_factor_xiayazhen=0;
 volatile unsigned int motor_factor_back_shangyazhen = 0;
 volatile unsigned int motor_factor_back_xiayazhen = 0;
 
+volatile unsigned int DBG_motor_factor_shangyazhen=0;
+volatile unsigned int DBG_motor_factor_xiayazhen=0;
+volatile unsigned int DBG_motor_factor_back_shangyazhen = 0;
+volatile unsigned int DBG_motor_factor_back_xiayazhen = 0;
 // volatile unsigned int shangyazhen_counter=0;
 // volatile unsigned int xiayazhen_counter=0;
 #endif
@@ -804,9 +808,10 @@ void __irq	encoder1_process(void)
 		encoder1_pulse_number++;	//编码器脉冲数记录
 		
 #ifdef YAZHEN_NORMAL_EN
-		/**普通压针功能**/
+	/**普通压针功能**/
 		/**********************************上压针电机开始*********************************************/
-			if (shangyazhen_motor_start == 1 && (shangyazhen_pulse_cmp != NO_MOVE)){
+			if (shangyazhen_motor_start == 1 && (shangyazhen_pulse_cmp != NO_MOVE) 
+			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0)){
 					motor_factor_shangyazhen++;
 					if (motor_factor_shangyazhen >= shangyazhen_pulse_cmp){
 						rGPEDAT &= ~(1<<Y9_Bit);
@@ -823,7 +828,8 @@ void __irq	encoder1_process(void)
 					}
 				}
 			/**********************************下压针电机开始*********************************************/
-			if (xiayazhen_motor_start == 1 && (xiayazhen_pulse_cmp != NO_MOVE)){
+			if (xiayazhen_motor_start == 1 && (xiayazhen_pulse_cmp != NO_MOVE)
+			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0)){
 				motor_factor_xiayazhen++;
 				if (motor_factor_xiayazhen >= xiayazhen_pulse_cmp){
 					rGPEDAT &= ~(1<<Y10_Bit);
@@ -840,7 +846,8 @@ void __irq	encoder1_process(void)
 				}
 			}
 			/**********************************上压针电机结束*********************************************/
-			if (shangyazhen_back_start == 1 && (shangyazhen_pulse_cmp != NO_MOVE)){
+			if (shangyazhen_back_start == 1 && (shangyazhen_pulse_cmp != NO_MOVE)
+			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0)){
 				motor_factor_back_shangyazhen++;
 				if (motor_factor_back_shangyazhen >= shangyazhen_back_cmp){
 					rGPEDAT &= ~(1<<Y9_Bit);
@@ -886,7 +893,8 @@ void __irq	encoder1_process(void)
 				}
 			}
 			/**********************************下压针电机结束*********************************************/
-			if (xiayazhen_back_start == 1 && (xiayazhen_pulse_cmp != NO_MOVE)){
+			if (xiayazhen_back_start == 1 && (xiayazhen_pulse_cmp != NO_MOVE)
+			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0)){
 				motor_factor_back_xiayazhen++;
 				if (motor_factor_back_xiayazhen >= xiayazhen_back_cmp){
 					rGPEDAT &= ~(1<<Y10_Bit);
@@ -931,6 +939,222 @@ void __irq	encoder1_process(void)
 						X4_SIG = 0;
 						YAZHEN_ZERO_ERR = 4;
 					}	
+				}
+			}
+			
+	/**普通压针调试功能**/
+		/*****************************压针电机开始(大/小;上/下;正向/反向)*******************************************/
+			if(((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1)) 
+			  && ((datou_shangyazhen_zero_kb == 0) && (datou_xiayazhen_zero_kb == 0) 
+			  && (xiaotou_shangyazhen_zero_kb == 0) && (xiaotou_xiayazhen_zero_kb == 0))){				
+				/********************上压针正向/反向************************/
+				if(shangyazhen_pos_start == 1 || shangyazhen_neg_start == 1){
+					DBG_motor_factor_shangyazhen++;
+					if(DBG_motor_factor_shangyazhen >= DBG_shangyazhen_pulse_cmp){
+						rGPEDAT &= ~(1<<Y9_Bit);
+						DBG_motor_factor_shangyazhen = 0;
+						/***********大头上压针*************/
+						if((yazhen_datou_debug_kb == 1)){
+							/***********大头上压针正转*************/
+							if(shangyazhen_pos_start == 1){
+								if(DBG_shangyazhen_counter >=65532 || DBG_shangyazhen_back_counter>=65532){
+									shangyazhen_pos_start = 0;
+									yazhen_datou_debug_kb = 0;
+								}
+								else{
+									DBG_shangyazhen_counter++;
+									DBG_shangyazhen_back_counter++;
+									datou_shangyazhen_monitor++;
+								}
+								
+							}
+							/***********大头上压针反转*************/
+							if(shangyazhen_neg_start == 1){
+								if(DBG_shangyazhen_counter == 0)// || DBG_shangyazhen_counter >=65532 || DBG_shangyazhen_back_counter>=65532)
+								{
+									shangyazhen_neg_start = 0;
+									yazhen_datou_debug_kb = 0;
+								}
+								else{
+									DBG_shangyazhen_counter--;
+									DBG_shangyazhen_back_counter--;
+									datou_shangyazhen_monitor--;
+								}
+								
+							}
+						}
+						/***********小头上压针*************/
+						if((yazhen_xiaotou_debug_kb == 1)){
+							/***********小头上压针正转*************/
+							if(shangyazhen_pos_start == 1){
+								if(DBG_shangyazhen_counter_xiaotou >=65532 || DBG_shangyazhen_back_counter_xiaotou>=65532){
+									shangyazhen_pos_start = 0;
+									yazhen_xiaotou_debug_kb = 0;
+								}
+								else{
+									DBG_shangyazhen_counter_xiaotou++;
+									DBG_shangyazhen_back_counter_xiaotou++;
+									xiaotou_shangyazhen_monitor++;
+								}
+								
+							}
+							/**********小头上压针反转*************/
+							if(shangyazhen_neg_start == 1){
+								if(DBG_shangyazhen_counter_xiaotou == 0)//|| DBG_shangyazhen_counter_xiaotou >=65532 || DBG_shangyazhen_back_counter_xiaotou>=65532)
+								{
+									shangyazhen_neg_start = 0;
+									yazhen_xiaotou_debug_kb = 0;
+								}
+								else{
+									DBG_shangyazhen_counter_xiaotou--;
+									DBG_shangyazhen_back_counter_xiaotou--;
+									xiaotou_shangyazhen_monitor--;
+								}
+								
+							}
+						}	
+					}	
+				}
+				/********************下压针正向/反向************************/
+				if(xiayazhen_pos_start == 1 ||xiayazhen_neg_start == 1){
+					DBG_motor_factor_xiayazhen++;
+					if(DBG_motor_factor_xiayazhen >= DBG_xiayazhen_pulse_cmp){
+						rGPEDAT &= ~(1<<Y10_Bit);
+						DBG_motor_factor_xiayazhen = 0;
+						/***********大头下压针*************/
+						if((yazhen_datou_debug_kb == 1)){
+							/***********大头下压针正向*************/
+							if(xiayazhen_pos_start == 1){
+								if(DBG_xiayazhen_counter >=65532 || DBG_xiayazhen_back_counter>=65532){
+									xiayazhen_pos_start = 0;
+									yazhen_datou_debug_kb = 0;
+								}
+								else{
+									DBG_xiayazhen_counter++;
+									DBG_xiayazhen_back_counter++;
+									datou_xiayazhen_monitor++;
+								}	
+							}
+							/***********大头下压针反向*************/
+							if(xiayazhen_neg_start == 1){
+								if(DBG_xiayazhen_counter == 0)// || DBG_xiayazhen_counter >=65532 || DBG_xiayazhen_back_counter>=65532)
+								{
+									xiayazhen_neg_start = 0;
+									yazhen_datou_debug_kb = 0;
+								}
+								else{
+									DBG_xiayazhen_counter--;
+									DBG_xiayazhen_back_counter--;
+									datou_xiayazhen_monitor--;
+								}
+								
+							}
+						}
+						/***********小头下压针*************/
+						if((yazhen_xiaotou_debug_kb == 1)){
+							/***********小头下压针正向*************/
+							if(xiayazhen_pos_start == 1){
+								if(DBG_xiayazhen_counter_xiaotou >=65532 || DBG_xiayazhen_back_counter_xiaotou>=65532){
+									xiayazhen_pos_start = 0;
+									yazhen_datou_debug_kb = 0;
+								}
+								else{
+									DBG_xiayazhen_counter_xiaotou++;
+									DBG_xiayazhen_back_counter_xiaotou++;
+									xiaotou_xiayazhen_monitor++;
+								}
+								
+							}
+							/***********小头下压针反向*************/
+							if(xiayazhen_neg_start == 1){
+								if(DBG_xiayazhen_counter_xiaotou == 0)//|| DBG_xiayazhen_counter_xiaotou >=65532 || DBG_xiayazhen_back_counter_xiaotou>=65532)
+								{
+									xiayazhen_neg_start = 0;
+									yazhen_datou_debug_kb = 0;
+								}
+								else{
+									DBG_xiayazhen_counter_xiaotou--;
+									DBG_xiayazhen_back_counter_xiaotou--;
+									xiaotou_xiayazhen_monitor--;
+								}
+								
+							}
+						}
+					}
+					
+				}
+			}
+		/*****************************压针电机结束(大/小;上/下;正向/反向)*******************************************/
+			/**********大头上压针回零***********/
+			if(datou_shangyazhen_zero_kb == 1){
+				DBG_motor_factor_back_shangyazhen++;
+				if (DBG_motor_factor_back_shangyazhen >= DBG_shangyazhen_back_cmp){
+					rGPEDAT &= ~(1<<Y9_Bit);
+					DBG_motor_factor_back_shangyazhen = 0;
+					DBG_shangyazhen_back_zero_counter++;
+				}
+				if (DBG_shangyazhen_back_zero_counter>=(DBG_shangyazhen_back_counter)){//-4
+					DBG_shangyazhen_back_zero_counter = 0;
+					DBG_shangyazhen_back_counter = 0;
+					
+					/**********上压针计数清零**********/
+					DBG_shangyazhen_counter = 0;
+					
+					datou_shangyazhen_zero_kb = 0;
+				}
+			}
+			/**********小头上压针回零***********/
+			else if(xiaotou_shangyazhen_zero_kb == 1){
+				DBG_motor_factor_back_shangyazhen++;
+				if (DBG_motor_factor_back_shangyazhen >= DBG_shangyazhen_back_cmp){
+					rGPEDAT &= ~(1<<Y9_Bit);
+					DBG_motor_factor_back_shangyazhen = 0;
+					DBG_shangyazhen_back_zero_counter_xiaotou++;
+				}
+				if (DBG_shangyazhen_back_zero_counter_xiaotou>=(DBG_shangyazhen_back_counter_xiaotou)){//-4
+					DBG_shangyazhen_back_zero_counter_xiaotou = 0;
+					DBG_shangyazhen_back_counter_xiaotou = 0;
+					
+					/**********上压针计数清零**********/
+					DBG_shangyazhen_counter_xiaotou = 0;
+					
+					xiaotou_shangyazhen_zero_kb = 0;
+				}
+			}
+			/**********大头下压针回零***********/
+			if(datou_xiayazhen_zero_kb == 1){
+				DBG_motor_factor_back_xiayazhen++;
+				if (DBG_motor_factor_back_xiayazhen >= DBG_xiayazhen_back_cmp){
+					rGPEDAT &= ~(1<<Y10_Bit);
+					DBG_motor_factor_back_xiayazhen = 0;
+					DBG_xiayazhen_back_zero_counter++;
+				}
+				if (DBG_xiayazhen_back_zero_counter>=(DBG_xiayazhen_back_counter)){//-4
+					DBG_xiayazhen_back_zero_counter = 0;
+					DBG_xiayazhen_back_counter = 0;
+					
+					/*******下压针计数清零********/
+					DBG_shangyazhen_counter = 0;
+					
+					datou_xiayazhen_zero_kb = 0;
+				}
+			}
+			/**********小头下压针回零***********/
+			else if(xiaotou_xiayazhen_zero_kb == 1){
+				DBG_motor_factor_back_xiayazhen++;
+				if (DBG_motor_factor_back_xiayazhen >= DBG_xiayazhen_back_cmp){
+					rGPEDAT &= ~(1<<Y10_Bit);
+					DBG_motor_factor_back_xiayazhen = 0;
+					DBG_xiayazhen_back_zero_counter_xiaotou++;
+				}
+				if (DBG_xiayazhen_back_zero_counter_xiaotou>=(DBG_xiayazhen_back_counter_xiaotou)){//-4
+					DBG_xiayazhen_back_zero_counter_xiaotou = 0;
+					DBG_xiayazhen_back_counter_xiaotou = 0;
+					
+					/*******下压针计数清零********/
+					DBG_shangyazhen_counter_xiaotou = 0;
+					
+					xiaotou_xiayazhen_zero_kb = 0;
 				}
 			}
 #endif		
@@ -1059,34 +1283,65 @@ void __irq	encoder1_process(void)
 #ifdef YAZHEN_NORMAL_EN
 			//压针电机代码段,用于优化占空比
 			/************************上压针开始*******************************/
-			if (shangyazhen_motor_start == 1 && shangyazhen_pulse_cmp != NO_MOVE){
+			if (shangyazhen_motor_start == 1 && shangyazhen_pulse_cmp != NO_MOVE
+			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0)){
 				if (motor_factor_shangyazhen >= (shangyazhen_pulse_cmp/2)){
 					rGPEDAT |= (1<<Y9_Bit);
 				}
 			}
 			/************************下压针电机开始*******************************/
-			if (xiayazhen_motor_start == 1 && xiayazhen_pulse_cmp != NO_MOVE){
+			if (xiayazhen_motor_start == 1 && xiayazhen_pulse_cmp != NO_MOVE
+			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0)){
 				if (motor_factor_xiayazhen >= (xiayazhen_pulse_cmp/2)){
 					rGPEDAT |= (1<<Y10_Bit);
 				}
 			}
 			/************************上压针结束*******************************/
-			if (shangyazhen_back_start == 1){
+			if (shangyazhen_back_start == 1 && (shangyazhen_pulse_cmp != NO_MOVE)
+			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0)){
 				if (motor_factor_back_shangyazhen >= (shangyazhen_back_cmp/2)){
 					rGPEDAT |= (1<<Y9_Bit);
 				}
 			}
 			/************************下压针电机结束*******************************/
-			if (xiayazhen_back_start == 1){
+			if (xiayazhen_back_start == 1 && (xiayazhen_pulse_cmp != NO_MOVE)
+			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0)){
 				if (motor_factor_back_xiayazhen >= (xiayazhen_back_cmp/2)){
 					rGPEDAT |= (1<<Y10_Bit);
 				}
 			}
 			
-			
-			
-			
-			
+/**调试普通压针功能**/
+			/**********************压针开始*************************************/
+			if(((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1))
+			   && ((datou_shangyazhen_zero_kb == 0) && (datou_xiayazhen_zero_kb == 0) 
+			   && (xiaotou_shangyazhen_zero_kb == 0) && (xiaotou_xiayazhen_zero_kb == 0))){
+			/********************上压针正向/反向************************/
+				if(shangyazhen_pos_start == 1 || shangyazhen_neg_start == 1){
+					if (DBG_motor_factor_shangyazhen >= (DBG_shangyazhen_pulse_cmp/2)){
+						rGPEDAT |= (1<<Y9_Bit);
+					}
+				}
+			/********************下压针正向/反向************************/	
+				if(xiayazhen_pos_start == 1 ||xiayazhen_neg_start == 1){
+					if (DBG_motor_factor_xiayazhen >= (DBG_xiayazhen_pulse_cmp/2)){
+						rGPEDAT |= (1<<Y10_Bit);
+					}
+				}
+			}
+			/**********************压针结束*************************************/
+			/****大头/小头上压针****/
+			if(datou_shangyazhen_zero_kb == 1 || xiaotou_shangyazhen_zero_kb == 1)	{
+				if (DBG_motor_factor_back_shangyazhen >= DBG_shangyazhen_back_cmp/2){
+						rGPEDAT |= (1<<Y9_Bit);
+				}
+			}
+			/****大头/小头下压针****/
+			if(datou_xiayazhen_zero_kb == 1 || xiaotou_xiayazhen_zero_kb == 1){
+				if (DBG_motor_factor_back_xiayazhen >= DBG_xiayazhen_back_cmp/2){
+					rGPEDAT |= (1<<Y10_Bit);
+				}
+			}	
 #endif
 		//友峰调线压针电机
 #ifdef TIAOXIAN_YOUFENG_EN
