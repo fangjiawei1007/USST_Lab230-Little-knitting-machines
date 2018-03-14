@@ -44,6 +44,10 @@ programmed by 方佳伟
 #define yazhen_datou_choose_kb					(g_InteralMemory.KeepBit[94])
 #define yazhen_xiaotou_choose_kb 				(g_InteralMemory.KeepBit[95])
 
+#define datou_shangyazhen_monitor_w 			(g_InteralMemory.Word[70])
+#define datou_xiayazhen_monitor_w	  			(g_InteralMemory.Word[71])
+#define xiaotou_shangyazhen_monitor_w			(g_InteralMemory.Word[72])
+#define xiaotou_xiayazhen_monitor_w 			(g_InteralMemory.Word[73])
 
 int tiaoxiankaiguan_kb = -1;			//防止报错，与调线版本冲突，若使用调线版本，请把这句去掉，或者不去除预编译的情况下已经解决
 int yazhen_datou_choose = 0;
@@ -51,20 +55,19 @@ int YAZHEN_ZERO_ERR = 0;
 
 unsigned int X3_SIG;
 unsigned int X4_SIG;
-
-enum Direction{
-	GO = 0,
-	BACK
-};
+unsigned int mode = 0;
+unsigned int null = 0;
 	
 enum EXT_Button{
 	ON = 0,
 	OFF
 };
+	
 enum Yazhen_Choose{
 	UP_YAZHEN = 0,
 	DOWN_YAZHEN
 };
+
 /*************************************************
 Function(函数名称): __irq shangyazhen_zero_process(void)
 Description(函数功能、性能等的描述): 上压针零位传感器(X3)中断服务程序，用于记录是否超过零点
@@ -161,16 +164,13 @@ void Yazhen_Normal_App(void){
 	stage_cur = getStage(current_stage,CURRENT);
 	
 	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1)){
-		//bianpingqi_set_speed(Debug_Speed);
 		if(stage_cur == datouduan || stage_cur == xiaotouduan){
 			Yazhen_Debug_App();
 		}
-		
 	}
 	else{
 	//	stage_cur = getStage(current_stage,CURRENT);
 		
-		//if(stage_cur != caijianduan){}
 		checkout_yazhen = Yazhen_Normal_Checkout();
 		if(checkout_yazhen == CHANGED){
 			Yazhen_Normal_Set();
@@ -484,7 +484,6 @@ Modified:
 Commented:方佳伟
 *************************************************/	
 void Yazhen_Normal_Init(void){
-	
 	int tmp = 0;
 	int stage_cur;
 	tmp = rGPBCON & (~(0x3<< 4));
@@ -520,6 +519,8 @@ void Yazhen_Normal_Init(void){
 	yazhen_xiaotou_choose_kb 	= 0;
 	yazhen_datou_debug_kb		= 0;
 	yazhen_xiaotou_debug_kb		= 0;
+	
+	bianpingqi_yazhen_speed_set = 1000;
 } 
 
 /*************************************************
@@ -768,7 +769,7 @@ void Yazhen_Normal_Alarm(U8* err){
 
 void Yazhen_Debug_App(void){
 	Clear_Monitor();
-	//Get_Monitor();
+	Get_Monitor();
 	Yazhen_Debug_K_Set();
 	Yazhen_Zero_Confirm();
 	if((yazhen_datou_debug_kb == 1) && (yazhen_xiaotou_debug_kb == 1)){
@@ -789,7 +790,7 @@ void Yazhen_Debug_App(void){
 		else{
 			Yazhen_EXT_Button(DOWN_YAZHEN);
 		}
-	}	
+	}
 }
 
 void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
@@ -797,7 +798,7 @@ void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
 		return;
 	}
 	else if(Get_X_Value(X5) == ON){
-		Set_Y_Value(Y2,Dir_Positive);
+		Yazhen_Set_Dir(GO);
 		switch(Yazhen_type){
 			case UP_YAZHEN:
 				shangyazhen_pos_start = 1;
@@ -811,7 +812,7 @@ void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
 		}
 	}
 	else if(Get_X_Value(X11) == ON){
-		Set_Y_Value(Y2,Dir_Negative);
+		Yazhen_Set_Dir(BACK);
 		switch(Yazhen_type){
 			case UP_YAZHEN:
 				shangyazhen_neg_start = 1;
@@ -840,10 +841,10 @@ void Yazhen_Debug_K_Set(void){
 
 
 void Get_Monitor(void){
-	datou_shangyazhen_monitor 	= DBG_shangyazhen_counter;
-	datou_xiayazhen_monitor	  	= DBG_xiayazhen_counter;
-	xiaotou_shangyazhen_monitor = DBG_shangyazhen_counter_xiaotou;
-	xiaotou_xiayazhen_monitor 	= DBG_xiayazhen_counter_xiaotou;
+	datou_shangyazhen_monitor_w 	= shangyazhen_counter+datou_shangyazhen_monitor;
+	datou_xiayazhen_monitor_w	  	= xiayazhen_counter + datou_xiayazhen_monitor;
+	xiaotou_shangyazhen_monitor_w 	= shangyazhen_counter + xiaotou_shangyazhen_monitor;
+	xiaotou_xiayazhen_monitor_w 	= xiayazhen_counter + xiaotou_xiayazhen_monitor;
 }
 
 void Clear_Monitor(void){
@@ -887,4 +888,40 @@ void Yazhen_Zero_Confirm(void){
 		}
 	}
 }
+
+void button_huchi(unsigned char* button0, unsigned char* button1, unsigned int* status_record,  unsigned int condition_flag)
+{
+	
+	if(*button0 == 1 || *button1 ==1)
+	{
+		if(*status_record == 0)
+		{
+				if(*button1 == 1)
+				{
+					*button0 =0;
+					*status_record = 1;
+				}
+		}
+		
+		else 
+		{
+			if(*button0 == 1)
+			{
+				*button1 = 0;
+				*status_record = 0;
+			}
+		}
+		condition_flag = 1;		//condition_flag用于判断点动同时停和启动条件
+	}
+	
+	else if((*button0 == 0) && (*button1 == 0))		//此处修改= 为== 之前有逻辑小错误。2017.2.7 下午进行测试
+	{
+		
+		*status_record = 0;
+		condition_flag = 0;
+		
+	}
+}
+
+
 #endif

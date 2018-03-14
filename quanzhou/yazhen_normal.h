@@ -13,6 +13,12 @@ enum YAZHEN_NORMAL_CHECKOUT{
 	CHANGED	= 1
 };
 
+enum Direction{
+	GO = 0,
+	BACK
+};
+
+
 #define Y9								9
 #define Y10								10
 #define Y9_Bit							5
@@ -124,6 +130,11 @@ enum YAZHEN_NORMAL_CHECKOUT{
 #define yazhen_datou_debug_kb			(g_InteralMemory.KeepBit[96])
 #define yazhen_xiaotou_debug_kb			(g_InteralMemory.KeepBit[97])
 
+#define bianpingqi_yazhen_speed_set		(g_InteralMemory.KeepWord[844])
+
+extern unsigned int mode;
+extern unsigned int null;
+
 void __irq shangyazhen_zero_process(void);
 void __irq pwrDownHandler(void);
 void Yazhen_Normal_App(void);
@@ -145,6 +156,7 @@ void Yazhen_Debug_K_Set(void);
 void Get_Monitor(void);
 void Clear_Monitor(void);
 void Yazhen_Zero_Confirm(void);
+void button_huchi(unsigned char* button0, unsigned char* button1, unsigned int* status_record,  unsigned int condition_flag);
 #endif
 
 #endif

@@ -343,20 +343,31 @@ void bianpingqi_speed_cal(void){
 			bianpingqi_fencen_speed_set += 100;
 		if (bianpingqi_tiaoxian_speed_set < 7000)
 			bianpingqi_tiaoxian_speed_set += 100;
+		if(bianpingqi_yazhen_speed_set < 1500)
+			bianpingqi_yazhen_speed_set += 100;
 		bianpingqi_speed_up_b = 0;
 	}
 	
 	if (bianpingqi_speed_down_b == 1){
-		if (bianpingqi_fullspeed_set > 0)
+		if (bianpingqi_fullspeed_set >=100)
 			bianpingqi_fullspeed_set -=100;
-		if (bianpingqi_fencen_speed_set > 0)
+		if (bianpingqi_fencen_speed_set >=100)
 			bianpingqi_fencen_speed_set -= 100;
-		if (bianpingqi_tiaoxian_speed_set > 0)
+		if (bianpingqi_tiaoxian_speed_set >=100)
 			bianpingqi_tiaoxian_speed_set -= 100;
+		if(bianpingqi_yazhen_speed_set >=100)
+			bianpingqi_yazhen_speed_set -= 100;
+		
 		bianpingqi_speed_down_b = 0;
-	}		
+	}
 	/*************************************************************/
-
+#ifdef YAZHEN_NORMAL_EN
+	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1)){
+		bianpingqi_speed = bianpingqi_yazhen_speed_set;
+		return;
+	}
+	
+#endif
 	//µ÷Ïß
 	/**************************************************************/
 	#ifndef YAZHEN_NORMAL_EN
