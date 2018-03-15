@@ -515,10 +515,10 @@ void Yazhen_Normal_Init(void){
 	shangyazhen_zero_confirm_kb	= 0;
 	xiayazhen_zero_confirm_kb	= 0;
 	
-	yazhen_datou_choose_kb		= 0;
-	yazhen_xiaotou_choose_kb 	= 0;
-	yazhen_datou_debug_kb		= 0;
-	yazhen_xiaotou_debug_kb		= 0;
+	// yazhen_datou_choose_kb		= 0;
+	// yazhen_xiaotou_choose_kb 	= 0;
+	// yazhen_datou_debug_kb		= 0;
+	// yazhen_xiaotou_debug_kb		= 0;
 	
 	bianpingqi_yazhen_speed_set = 1000;
 } 
@@ -841,10 +841,10 @@ void Yazhen_Debug_K_Set(void){
 
 
 void Get_Monitor(void){
-	datou_shangyazhen_monitor_w 	= shangyazhen_counter+datou_shangyazhen_monitor;
-	datou_xiayazhen_monitor_w	  	= xiayazhen_counter + datou_xiayazhen_monitor;
-	xiaotou_shangyazhen_monitor_w 	= shangyazhen_counter + xiaotou_shangyazhen_monitor;
-	xiaotou_xiayazhen_monitor_w 	= xiayazhen_counter + xiaotou_xiayazhen_monitor;
+	datou_shangyazhen_monitor_w 	=  datou_shangyazhen_monitor;//shangyazhen_back_counter +
+	datou_xiayazhen_monitor_w	  	=  datou_xiayazhen_monitor;// xiayazhen_back_counter + 
+	xiaotou_shangyazhen_monitor_w 	=  xiaotou_shangyazhen_monitor;//shangyazhen_back_counter +
+	xiaotou_xiayazhen_monitor_w 	=  xiaotou_xiayazhen_monitor;//xiayazhen_back_counter +
 }
 
 void Clear_Monitor(void){
