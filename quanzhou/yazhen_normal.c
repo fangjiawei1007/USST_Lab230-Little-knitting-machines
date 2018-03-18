@@ -520,7 +520,7 @@ void Yazhen_Normal_Init(void){
 	// yazhen_datou_debug_kb		= 0;
 	// yazhen_xiaotou_debug_kb		= 0;
 	
-	bianpingqi_yazhen_speed_set = 1000;
+	bianpingqi_yazhen_speed_set = 300;
 } 
 
 /*************************************************
