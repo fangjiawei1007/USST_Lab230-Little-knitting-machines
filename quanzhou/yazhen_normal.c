@@ -25,30 +25,41 @@ programmed by 方佳伟
 #define Dir_Negative				0
 
 #define yazhen_move_status				(g_InteralMemory.KeepBit[91])
+#define yazhen_fenceng_status			(g_InteralMemory.KeepBit[111])
 #define yazhen_back_status				(g_InteralMemory.KeepBit[92])
-
+			
 #define shangyazhen_datou				(g_InteralMemory.KeepWord[790])
 #define shangyazhen_xiaotou				(g_InteralMemory.KeepWord[791])
 #define xiayazhen_datou					(g_InteralMemory.KeepWord[792])
 #define xiayazhen_xiaotou				(g_InteralMemory.KeepWord[793])
+
+#define shangyazhen_fenceng				(g_InteralMemory.KeepWord[877])
+#define xiayazhen_fenceng 				(g_InteralMemory.KeepWord[878])
+
 #define yazhen_alarm_level				(g_InteralMemory.KeepWord[813])
 
 /*******************************压针调试*********************************************/
-
-
 #define datou_shangyazhen_monitor_clear_b		(g_InteralMemory.Bit[80])
 #define datou_xiayazhen_monitor_clear_b			(g_InteralMemory.Bit[81])
 #define xiaotou_shangyazhen_monitor_clear_b		(g_InteralMemory.Bit[82])
 #define xiaotou_xiayazhen_monitor_clear_b		(g_InteralMemory.Bit[83])
+#define fenceng_shangyazhen_monitor_clear_b		(g_InteralMemory.Bit[84])
+#define fenceng_xiayazhen_monitor_clear_b		(g_InteralMemory.Bit[85])
+
+
+
 
 #define yazhen_datou_choose_kb					(g_InteralMemory.KeepBit[94])
 #define yazhen_xiaotou_choose_kb 				(g_InteralMemory.KeepBit[95])
+#define yazhen_fenceng_choose_kb 				(g_InteralMemory.KeepBit[113])
 
 #define datou_shangyazhen_monitor_w 			(g_InteralMemory.Word[70])
 #define datou_xiayazhen_monitor_w	  			(g_InteralMemory.Word[71])
 #define xiaotou_shangyazhen_monitor_w			(g_InteralMemory.Word[72])
 #define xiaotou_xiayazhen_monitor_w 			(g_InteralMemory.Word[73])
-
+#define fenceng_shangyazhen_monitor_w			(g_InteralMemory.Word[74])
+#define fenceng_xiayazhen_monitor_w 			(g_InteralMemory.Word[75])
+        
 int tiaoxiankaiguan_kb = -1;			//防止报错，与调线版本冲突，若使用调线版本，请把这句去掉，或者不去除预编译的情况下已经解决
 int yazhen_datou_choose = 0;
 int YAZHEN_ZERO_ERR = 0;
@@ -175,7 +186,7 @@ void Yazhen_Normal_App(void){
 		if(checkout_yazhen == CHANGED){
 			Yazhen_Normal_Set();
 		}
-		
+		/**过渡段**/
 		if(stage_cur == guoduduan && yazhen_move_status == 0){
 			yazhen_move_status = 1;
 			Yazhen_Normal_Start();
@@ -183,7 +194,15 @@ void Yazhen_Normal_App(void){
 		else if(stage_cur != guoduduan){
 			yazhen_move_status = 0;
 		}
-		
+		/**分层段**/
+		if(stage_cur == fencenduan && yazhen_fenceng_status == 0){
+			yazhen_fenceng_status = 1;
+			Yazhen_Fenceng_Start();
+		}
+		else if(stage_cur != fencenduan){
+			yazhen_fenceng_status = 0;
+		}
+		/***裁剪段***/
 		if(stage_cur == caijianduan && yazhen_back_status == 0){
 			yazhen_back_status = 1;
 			Yazhen_Normal_Get_Zero_Start();	
@@ -220,6 +239,23 @@ void Yazhen_Normal_Start(void){
 	xiayazhen_motor_start = 1;
 }
 
+void Yazhen_Fenceng_Start(void){
+	if(fenceng_dir_judge == SAME_DIR){
+		Yazhen_Set_Dir(GO);
+	}
+	else if(fenceng_dir_judge == DIFF_DIR){
+		Yazhen_Set_Dir(BACK);
+	}
+	if(shangyazhen_fenceng != shangyazhen_xiaotou)
+		shangyazhen_fenceng_motor_start = 1;
+	else 
+		shangyazhen_fenceng_motor_start = 0;
+	
+	if(xiayazhen_fenceng != xiayazhen_xiaotou)
+		xiayazhen_fenceng_motor_start 	= 1;
+	else
+		xiayazhen_fenceng_motor_start 	= 0;
+}
 /*************************************************
 Function(函数名称): void Yazhen_Normal_Checkout(void)
 Description(函数功能、性能等的描述): 判断外部与压针K值有关的变量是否被改变，如果被改变，则需要重新进行计算
@@ -247,9 +283,17 @@ unsigned int Yazhen_Normal_Checkout(void){
 	static unsigned int shangyazhen_xiaotou_cur = 0;
 	static unsigned int xiayazhen_xiaotou_cur = 0;
 	
+	static unsigned int shangyazhen_fenceng_pre = 0;
+	static unsigned int xiayazhen_fenceng_pre = 0;
+	static unsigned int shangyazhen_fenceng_cur = 0;
+	static unsigned int xiayazhen_fenceng_cur = 0; 
+	
 	static unsigned int guoduquanshu_cur = 0;
 	static unsigned int guoduquanshu_pre = 0;
 	
+	static unsigned int bianpingqi_huanchongquan_num_pre = 0;
+	static unsigned int bianpingqi_huanchongquan_num_cur = 0;
+		
 	static unsigned int shangpan_jiansubi_cur = 0;
 	static unsigned int xiapan_jiansubi_cur = 0;
 	static unsigned int shangpan_jiansubi_pre = 0;
@@ -268,6 +312,14 @@ unsigned int Yazhen_Normal_Checkout(void){
 		xiayazhen_xiaotou_pre = xiayazhen_xiaotou;
 		shangyazhen_xiaotou_cur = shangyazhen_xiaotou;
 		xiayazhen_xiaotou_cur = xiayazhen_xiaotou;
+		
+		shangyazhen_fenceng_pre = shangyazhen_fenceng;
+		xiayazhen_fenceng_pre = xiayazhen_fenceng;
+		shangyazhen_fenceng_cur = shangyazhen_fenceng;
+		xiayazhen_fenceng_cur = xiayazhen_fenceng;
+		
+		bianpingqi_huanchongquan_num_pre = bianpingqi_huanchongquan_num;
+		bianpingqi_huanchongquan_num_cur = bianpingqi_huanchongquan_num;
 		
 		guoduquanshu_cur = middlequanshu;
 		guoduquanshu_pre = middlequanshu;
@@ -293,12 +345,18 @@ unsigned int Yazhen_Normal_Checkout(void){
 		xiapan_jiansubi_cur 	 = xiapan_jiansubi;
 		Yazhen_Beilv_cur		 = Yazhen_Beilv;
 		
+		shangyazhen_fenceng_cur = shangyazhen_fenceng;
+		xiayazhen_fenceng_cur = xiayazhen_fenceng;
+		bianpingqi_huanchongquan_num_cur = bianpingqi_huanchongquan_num;
 		/**外部有一个参数需要被改变，则改变所有的值，并且重新设置外部全局变量**/
 		if(( shangyazhen_datou_pre == shangyazhen_datou_cur ) && ( xiayazhen_datou_pre == xiayazhen_datou_cur)
 		  && (shangyazhen_xiaotou_pre == shangyazhen_xiaotou_cur) && (xiayazhen_xiaotou_pre == xiayazhen_xiaotou_cur)
 		  && (guoduquanshu_pre == guoduquanshu_cur)
 		  && (shangpan_jiansubi_pre == shangpan_jiansubi_cur) && (xiapan_jiansubi_pre == xiapan_jiansubi_cur)
-		  && (Yazhen_Beilv_pre == Yazhen_Beilv_cur))
+		  && (Yazhen_Beilv_pre == Yazhen_Beilv_cur)
+		  && (shangyazhen_fenceng_pre == shangyazhen_fenceng_cur) && (xiayazhen_fenceng_pre == xiayazhen_fenceng_cur) 
+		  && (bianpingqi_huanchongquan_num_pre == bianpingqi_huanchongquan_num_cur)
+		  )
 			return NOT_CHANGED;
 		else{
 			shangyazhen_datou_pre 	= shangyazhen_datou_cur;
@@ -309,6 +367,10 @@ unsigned int Yazhen_Normal_Checkout(void){
 			shangpan_jiansubi_pre 	= shangpan_jiansubi_cur;
 			xiapan_jiansubi_pre 	= xiapan_jiansubi_cur;
 			Yazhen_Beilv_pre		= Yazhen_Beilv_cur;
+			shangyazhen_fenceng_pre = shangyazhen_fenceng_cur;
+			xiayazhen_fenceng_pre 	= xiayazhen_fenceng_cur;
+			bianpingqi_huanchongquan_num_pre = bianpingqi_huanchongquan_num_cur;
+	
 			return CHANGED;
 		}
 	}
@@ -330,6 +392,7 @@ Commented:方佳伟
 *************************************************/	
 void Yazhen_Normal_Set(void){
 	int yazhen_total_pulse=0;
+	int yazhen_total_pulse_fenceng = 0;
 	
 	if((shangyazhen_datou >= shangyazhen_xiaotou) && (xiayazhen_datou >= xiayazhen_xiaotou)){
 		Set_Y_Value(Y2,Dir_Positive);//1
@@ -356,8 +419,59 @@ void Yazhen_Normal_Set(void){
 			shangyazhen_pulse_cmp = NO_MOVE;
 			xiayazhen_pulse_cmp = NO_MOVE;
 		}
+	/**********************分层段设置****************************/
+		if(shangyazhen_xiaotou >= shangyazhen_fenceng && xiayazhen_xiaotou >= xiayazhen_fenceng){
+			fenceng_dir_judge = SAME_DIR;
+			shangyazhen_fenceng_motor_pulse = (shangyazhen_xiaotou - shangyazhen_fenceng);
+			xiayazhen_fenceng_motor_pulse	= (xiayazhen_xiaotou - xiayazhen_fenceng);
+			yazhen_total_pulse_fenceng 		= (bianpingqi_huanchongquan_num)*encoder1_cal_factor;
+
+			if(shangyazhen_fenceng_motor_pulse > 0){
+				shangyazhen_fenceng_pulse_cmp = yazhen_total_pulse_fenceng/shangyazhen_fenceng_motor_pulse;
+				if (shangyazhen_fenceng_pulse_cmp < 2)
+					shangyazhen_fenceng_pulse_cmp = 2;//保证下降沿
+			}
+			else
+				shangyazhen_fenceng_pulse_cmp = NO_MOVE;
+			
+			if(xiayazhen_fenceng_motor_pulse > 0){
+				xiayazhen_fenceng_pulse_cmp = yazhen_total_pulse_fenceng/xiayazhen_fenceng_motor_pulse;
+				if (xiayazhen_fenceng_pulse_cmp < 2)
+					xiayazhen_fenceng_pulse_cmp = 2;//保证下降沿
+			}
+			else
+				xiayazhen_fenceng_pulse_cmp = NO_MOVE;
+		}
+		else if(shangyazhen_xiaotou <= shangyazhen_fenceng && xiayazhen_xiaotou <= xiayazhen_fenceng){
+			fenceng_dir_judge = DIFF_DIR;
+			shangyazhen_fenceng_motor_pulse = (shangyazhen_fenceng - shangyazhen_xiaotou);
+			xiayazhen_fenceng_motor_pulse	= (xiayazhen_fenceng - xiayazhen_xiaotou);
+			yazhen_total_pulse_fenceng 		= (bianpingqi_huanchongquan_num)*encoder1_cal_factor;
+
+			if(shangyazhen_fenceng_motor_pulse > 0){
+				shangyazhen_fenceng_pulse_cmp = yazhen_total_pulse_fenceng/shangyazhen_fenceng_motor_pulse;
+				if (shangyazhen_fenceng_pulse_cmp < 2)
+					shangyazhen_fenceng_pulse_cmp = 2;//保证下降沿
+			}
+			else
+				shangyazhen_fenceng_pulse_cmp = NO_MOVE;
+			
+			if(xiayazhen_fenceng_motor_pulse > 0){
+				xiayazhen_fenceng_pulse_cmp = yazhen_total_pulse_fenceng/xiayazhen_fenceng_motor_pulse;
+				if (xiayazhen_fenceng_pulse_cmp < 2)
+					xiayazhen_fenceng_pulse_cmp = 2;//保证下降沿
+			}
+			else
+				xiayazhen_fenceng_pulse_cmp = NO_MOVE;
+		}
+		else{
+			shangyazhen_fenceng_pulse_cmp = NO_MOVE;
+			xiayazhen_fenceng_pulse_cmp = NO_MOVE;
+			shangyazhen_fenceng_counter = 0;
+			xiayazhen_fenceng_counter = 0;
+		}	
 	}
-	else if ((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou)){
+	else if((shangyazhen_datou <= shangyazhen_xiaotou) && (xiayazhen_datou <= xiayazhen_xiaotou)){
 		Set_Y_Value(Y2,Dir_Negative);
 		shangyazhen_motor_pulse = (shangyazhen_xiaotou - shangyazhen_datou)*shangpan_jiansubi;
 		xiayazhen_motor_pulse = (xiayazhen_xiaotou - xiayazhen_datou)*xiapan_jiansubi;
@@ -384,8 +498,59 @@ void Yazhen_Normal_Set(void){
 			xiayazhen_pulse_cmp = NO_MOVE;
 		}
 		
+	/**********************分层段设置****************************/
+		if(shangyazhen_xiaotou >= shangyazhen_fenceng && xiayazhen_xiaotou >= xiayazhen_fenceng){
+			fenceng_dir_judge = DIFF_DIR;
+			shangyazhen_fenceng_motor_pulse = (shangyazhen_xiaotou - shangyazhen_fenceng);
+			xiayazhen_fenceng_motor_pulse	= (xiayazhen_xiaotou - xiayazhen_fenceng);
+			yazhen_total_pulse_fenceng 		= (bianpingqi_huanchongquan_num)*encoder1_cal_factor;
+
+			if(shangyazhen_fenceng_motor_pulse > 0){
+				shangyazhen_fenceng_pulse_cmp = yazhen_total_pulse_fenceng/shangyazhen_fenceng_motor_pulse;
+				if (shangyazhen_fenceng_pulse_cmp < 2)
+					shangyazhen_fenceng_pulse_cmp = 2;//保证下降沿
+			}
+			else
+				shangyazhen_fenceng_pulse_cmp = NO_MOVE;
+			
+			if(xiayazhen_fenceng_motor_pulse > 0){
+				xiayazhen_fenceng_pulse_cmp = yazhen_total_pulse_fenceng/xiayazhen_fenceng_motor_pulse;
+				if (xiayazhen_fenceng_pulse_cmp < 2)
+					xiayazhen_fenceng_pulse_cmp = 2;//保证下降沿
+			}
+			else
+				xiayazhen_fenceng_pulse_cmp = NO_MOVE;
+		}
+		else if(shangyazhen_xiaotou <= shangyazhen_fenceng && xiayazhen_xiaotou <= xiayazhen_fenceng){
+			fenceng_dir_judge = SAME_DIR;
+			shangyazhen_fenceng_motor_pulse = (shangyazhen_fenceng - shangyazhen_xiaotou);
+			xiayazhen_fenceng_motor_pulse	= (xiayazhen_fenceng - xiayazhen_xiaotou);
+			yazhen_total_pulse_fenceng 		= (bianpingqi_huanchongquan_num)*encoder1_cal_factor;
+
+			if(shangyazhen_fenceng_motor_pulse > 0){
+				shangyazhen_fenceng_pulse_cmp = yazhen_total_pulse_fenceng/shangyazhen_fenceng_motor_pulse;
+				if (shangyazhen_fenceng_pulse_cmp < 2)
+					shangyazhen_fenceng_pulse_cmp = 2;//保证下降沿
+			}
+			else
+				shangyazhen_fenceng_pulse_cmp = NO_MOVE;
+			
+			if(xiayazhen_fenceng_motor_pulse > 0){
+				xiayazhen_fenceng_pulse_cmp = yazhen_total_pulse_fenceng/xiayazhen_fenceng_motor_pulse;
+				if (xiayazhen_fenceng_pulse_cmp < 2)
+					xiayazhen_fenceng_pulse_cmp = 2;//保证下降沿
+			}
+			else
+				xiayazhen_fenceng_pulse_cmp = NO_MOVE;
+		}
+		else{
+			shangyazhen_fenceng_pulse_cmp = NO_MOVE;
+			xiayazhen_fenceng_pulse_cmp = NO_MOVE;
+			shangyazhen_fenceng_counter = 0;
+			xiayazhen_fenceng_counter = 0;
+		}	
 	}
-	else{//两者相等之后，不动作
+	else{//两者相反之后，不动作
 		shangyazhen_pulse_cmp = NO_MOVE;
 		xiayazhen_pulse_cmp = NO_MOVE;
 		shangyazhen_counter = 0;
@@ -393,12 +558,9 @@ void Yazhen_Normal_Set(void){
 	}
 
 	/***设置返回K***/
-	shangyazhen_back_cmp = Yazhen_Beilv;//(shangyazhen_pulse_cmp)/
-	xiayazhen_back_cmp   = Yazhen_Beilv;//(xiayazhen_pulse_cmp)/
-	/* if(shangyazhen_back_cmp < 2)
-		shangyazhen_back_cmp = 2;
-	if(xiayazhen_back_cmp < 2)
-		xiayazhen_back_cmp = 2; */
+	shangyazhen_back_cmp = Yazhen_Beilv;
+	xiayazhen_back_cmp   = Yazhen_Beilv;
+	
 
 	//DEBUG
 	{
@@ -506,6 +668,8 @@ void Yazhen_Normal_Init(void){
 	datou_xiayazhen_monitor_clear_b		= 0;
 	xiaotou_shangyazhen_monitor_clear_b	= 0;
 	xiaotou_xiayazhen_monitor_clear_b	= 0;
+	fenceng_shangyazhen_monitor_clear_b	= 0;
+	fenceng_xiayazhen_monitor_clear_b	= 0;
 	
 	datou_shangyazhen_zero_kb	= 0;
 	datou_xiayazhen_zero_kb		= 0;
@@ -540,7 +704,8 @@ Commented:方佳伟
 void Yazhen_Normal_Init_Once(void){
 	//Dir_Positive = 0;
 	
-	yazhen_move_status  = 0;	
+	yazhen_move_status  = 0;
+	yazhen_fenceng_status = 0;
 	yazhen_back_status  = 0;	
 	shangyazhen_datou	= 0;		
 	shangyazhen_xiaotou	= 0;	
@@ -568,9 +733,6 @@ void Yazhen_Normal_Init_Once(void){
 	Err4_Miss				= 0;
 	Err4_Over				= 0;
 	yazhen_alarm_level      = 0;
-	
-//	shangpan_jiansubi       = 1;
-//	xiapan_jiansubi         = 1;
 	
 	jiajiansujiangemaichong_kw = 10000;
 	yazhen_alarm_level = level_3;
@@ -628,6 +790,52 @@ void Yazhen_Normal_Init_Once(void){
 	DBG_shangyazhen_counter_xiaotou	= 0;
 	DBG_xiayazhen_counter_xiaotou	= 0;
 
+	err_feed						= 4;
+	
+	fenceng_shangyazhen_zero_kb		= 0;
+	fenceng_xiayazhen_zero_kb	    = 0;
+	yazhen_fenceng_debug_kb         = 0;
+	                                
+	fenceng_shangyazhen_monitor		= 0;
+	fenceng_xiayazhen_monitor	    = 0;
+	                              
+	DBG_shangyazhen_back_zero_counter_fenceng	= 0;
+	DBG_xiayazhen_back_zero_counter_fenceng     = 0;
+	                                          
+	DBG_shangyazhen_back_counter_fenceng	= 0;
+	DBG_xiayazhen_back_counter_fenceng	    = 0;
+	                                      
+	DBG_shangyazhen_counter_fenceng			= 0;
+	DBG_xiayazhen_counter_fenceng	        = 0;
+	                                      
+	shangyazhen_fenceng_motor_start			= 0;
+	xiayazhen_fenceng_motor_start	        = 0;
+	                                      
+	shangyazhen_fenceng_pulse_cmp			= 0;
+	xiayazhen_fenceng_pulse_cmp             = 0;
+	                                      
+	shangyazhen_fenceng_motor_pulse			= 0;
+	xiayazhen_fenceng_motor_pulse           = 0;
+	                                      
+	shangyazhen_fenceng_counter				= 0;
+	xiayazhen_fenceng_counter		        = 0;
+	                                      
+	shangyazhen_fenceng						= 0;
+	xiayazhen_fenceng 	                    = 0;
+	                                      
+	fenceng_shangyazhen_monitor_clear_b		= 0;
+	fenceng_xiayazhen_monitor_clear_b	    = 0;
+	                                      
+	fenceng_shangyazhen_monitor_w			= 0;
+	fenceng_xiayazhen_monitor_w 			= 0;
+	
+	
+	
+	
+	
+	
+	
+	
 }
 
 /*************************************************
@@ -791,6 +999,14 @@ void Yazhen_Debug_App(void){
 			Yazhen_EXT_Button(DOWN_YAZHEN);
 		}
 	}
+	else if(yazhen_fenceng_debug_kb == 1){
+		if(yazhen_fenceng_choose_kb == UP_YAZHEN){
+			Yazhen_EXT_Button_Fengceng(UP_YAZHEN);
+		}
+		else{
+			Yazhen_EXT_Button_Fengceng(DOWN_YAZHEN);
+		}
+	}
 }
 
 void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
@@ -802,7 +1018,6 @@ void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
 		switch(Yazhen_type){
 			case UP_YAZHEN:
 				shangyazhen_pos_start = 1;
-				
 				break;
 			case DOWN_YAZHEN:
 				xiayazhen_pos_start = 1;
@@ -832,9 +1047,54 @@ void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
 	}   
 }
 
+void Yazhen_EXT_Button_Fengceng(unsigned int Yazhen_type){//int stage,
+	if(Get_X_Value(X5) == ON && Get_X_Value(X11) == ON){
+		return;
+	}
+	else if(Get_X_Value(X5) == ON){
+		if(fenceng_dir_judge == SAME_DIR)
+			Yazhen_Set_Dir(GO);
+		else
+			Yazhen_Set_Dir(BACK);
+		switch(Yazhen_type){
+			case UP_YAZHEN:
+				shangyazhen_pos_start = 1;
+				break;
+			case DOWN_YAZHEN:
+				xiayazhen_pos_start = 1;
+				break;
+			default:
+				break;
+		}
+	}
+	else if(Get_X_Value(X11) == ON){
+		if(fenceng_dir_judge == SAME_DIR)
+			Yazhen_Set_Dir(BACK);
+		else
+			Yazhen_Set_Dir(GO);
+		switch(Yazhen_type){
+			case UP_YAZHEN:
+				shangyazhen_neg_start = 1;
+				break;
+			case DOWN_YAZHEN:
+				xiayazhen_neg_start = 1;
+				break;
+			default:
+				break;
+		}
+	}
+	else{
+		shangyazhen_pos_start 	= 0;
+		shangyazhen_neg_start 	= 0;
+		xiayazhen_pos_start	 	= 0;
+		xiayazhen_neg_start   	= 0;
+	}   
+}
+
 void Yazhen_Debug_K_Set(void){
 	DBG_shangyazhen_pulse_cmp 	= Debug_CMP;
-	DBG_xiayazhen_pulse_cmp 	= Debug_CMP;	
+	DBG_xiayazhen_pulse_cmp 	= Debug_CMP;
+	
 	DBG_shangyazhen_back_cmp	= Debug_Back_CMP;
 	DBG_xiayazhen_back_cmp 		= Debug_Back_CMP;
 }
@@ -845,6 +1105,8 @@ void Get_Monitor(void){
 	datou_xiayazhen_monitor_w	  	=  datou_xiayazhen_monitor;// xiayazhen_back_counter + 
 	xiaotou_shangyazhen_monitor_w 	=  xiaotou_shangyazhen_monitor;//shangyazhen_back_counter +
 	xiaotou_xiayazhen_monitor_w 	=  xiaotou_xiayazhen_monitor;//xiayazhen_back_counter +
+	fenceng_shangyazhen_monitor_w   =  fenceng_shangyazhen_monitor;
+	fenceng_xiayazhen_monitor_w		=  fenceng_xiayazhen_monitor;
 }
 
 void Clear_Monitor(void){
@@ -854,11 +1116,19 @@ void Clear_Monitor(void){
 	if(datou_xiayazhen_monitor_clear_b == 1){
 		datou_xiayazhen_monitor = 0;
 	}
+	
 	if(xiaotou_shangyazhen_monitor_clear_b == 1){
 		xiaotou_shangyazhen_monitor = 0;
 	}
 	if(xiaotou_xiayazhen_monitor_clear_b == 1){
 		xiaotou_xiayazhen_monitor = 0;
+	}
+	
+	if(fenceng_shangyazhen_monitor_clear_b == 1){
+		fenceng_shangyazhen_monitor = 0;
+	}
+	if(fenceng_xiayazhen_monitor_clear_b == 1){
+		fenceng_xiayazhen_monitor = 0;
 	}
 }
 
@@ -874,6 +1144,11 @@ void Yazhen_Zero_Confirm(void){
 			DBG_shangyazhen_back_counter_xiaotou = 0;
 			DBG_shangyazhen_back_zero_counter_xiaotou = 0;
 		}
+		else if(yazhen_fenceng_debug_kb == 1){
+			DBG_shangyazhen_counter_fenceng = 0;
+			DBG_shangyazhen_back_counter_fenceng = 0;
+			DBG_shangyazhen_back_zero_counter_fenceng = 0;
+		}
 	}
 	if(xiayazhen_zero_confirm_kb == 1){
 		if(yazhen_datou_debug_kb == 1){
@@ -886,7 +1161,12 @@ void Yazhen_Zero_Confirm(void){
 			DBG_xiayazhen_back_counter_xiaotou = 0;
 			DBG_xiayazhen_back_zero_counter_xiaotou = 0;
 		}
-	}
+		else if(yazhen_fenceng_debug_kb == 1){
+			DBG_xiayazhen_counter_fenceng = 0;
+			DBG_xiayazhen_back_counter_fenceng = 0;
+			DBG_xiayazhen_back_zero_counter_fenceng = 0;
+		}
+	}	
 }
 
 void button_huchi(unsigned char* button0, unsigned char* button1, unsigned int* status_record,  unsigned int condition_flag)
