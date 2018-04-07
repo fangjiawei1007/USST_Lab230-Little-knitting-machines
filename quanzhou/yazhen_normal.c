@@ -68,7 +68,9 @@ unsigned int X3_SIG;
 unsigned int X4_SIG;
 unsigned int mode = 0;
 unsigned int null = 0;
-	
+
+unsigned int status_record1,status_record2;
+
 enum EXT_Button{
 	ON = 0,
 	OFF
@@ -174,7 +176,7 @@ void Yazhen_Normal_App(void){
 	unsigned int checkout_yazhen = 0;
 	stage_cur = getStage(current_stage,CURRENT);
 	
-	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1)){
+	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1) || (yazhen_fenceng_debug_kb == 1)){
 		if(stage_cur == datouduan || stage_cur == xiaotouduan){
 			Yazhen_Debug_App();
 		}
@@ -214,6 +216,14 @@ void Yazhen_Normal_App(void){
 		if(stage_cur == caijianduan || stage_cur == datouduan){
 			Yazhen_Set_Dir(BACK);
 		}
+		else if(stage_cur == fencenduan){
+			if(fenceng_dir_judge == SAME_DIR){
+				Yazhen_Set_Dir(GO);
+			}
+			else if(fenceng_dir_judge == DIFF_DIR){
+				Yazhen_Set_Dir(BACK);
+			}
+		}
 		else
 			Yazhen_Set_Dir(GO);
 	}
@@ -246,6 +256,7 @@ void Yazhen_Fenceng_Start(void){
 	else if(fenceng_dir_judge == DIFF_DIR){
 		Yazhen_Set_Dir(BACK);
 	}
+	
 	if(shangyazhen_fenceng != shangyazhen_xiaotou)
 		shangyazhen_fenceng_motor_start = 1;
 	else 
@@ -345,8 +356,8 @@ unsigned int Yazhen_Normal_Checkout(void){
 		xiapan_jiansubi_cur 	 = xiapan_jiansubi;
 		Yazhen_Beilv_cur		 = Yazhen_Beilv;
 		
-		shangyazhen_fenceng_cur = shangyazhen_fenceng;
-		xiayazhen_fenceng_cur = xiayazhen_fenceng;
+		shangyazhen_fenceng_cur  = shangyazhen_fenceng;
+		xiayazhen_fenceng_cur 	 = xiayazhen_fenceng;
 		bianpingqi_huanchongquan_num_cur = bianpingqi_huanchongquan_num;
 		/**外部有一个参数需要被改变，则改变所有的值，并且重新设置外部全局变量**/
 		if(( shangyazhen_datou_pre == shangyazhen_datou_cur ) && ( xiayazhen_datou_pre == xiayazhen_datou_cur)
@@ -1202,6 +1213,97 @@ void button_huchi(unsigned char* button0, unsigned char* button1, unsigned int* 
 		
 	}
 }
+
+
+void button_3_huchi(unsigned char* button0,unsigned char* button1, unsigned char* button2,unsigned int* status_record1,unsigned int* status_record2){ 
+	if(*button0 ==1 || *button1 == 1 || *button2 == 1)
+	{
+		if(*status_record1 == 0 && *status_record2 == 0)
+		{
+			if(*button0 == 1)
+			{
+				*button1 = 0;
+				*button2 = 0;
+				*status_record1 = 1;
+				*status_record2 = 0;
+			}
+			
+			else if(*button1 == 1 && *button0 ==0)
+			{
+				*button2 = 0;
+				*status_record1 = 0;
+				*status_record2 = 1;
+			}
+			
+			else if(*button2 == 1 && *button1 == 0 && *button0 ==0)
+			{
+				*status_record1 = 1;
+				*status_record2 = 1;
+			}
+			
+		}
+		
+		else if(*status_record1 == 1 && *status_record2 == 0){
+			if (*button1 == 1)
+			{
+				*button0 = 0;
+				*button2 = 0;
+				*status_record1 = 0;
+				*status_record2 = 1;
+			}
+
+			else if (*button2 == 1 && *button1 == 0)
+			{
+				*button0 = 0;
+				*status_record1 = 1;
+				*status_record2 = 1;
+			}
+		}	
+		
+		
+		else if(*status_record1 == 0 && *status_record2 == 1){
+			if(*button2 == 1)
+			{
+				*button1 = 0;
+				*button0 = 0;
+				*status_record1 = 1;
+				*status_record2 = 1;
+			}
+			
+			
+			else if(*button2 == 0 && *button0 == 1)
+			{
+				*button1 = 0;
+				*status_record1 = 1;
+				*status_record2 = 0;
+			}
+		}
+		
+		else if(*status_record1 == 1 && *status_record2 == 1){
+			if(*button0 == 1){
+				*button1 = 0;
+				*button2 = 0;
+				*status_record1 = 1;
+				*status_record2 = 0;
+			}
+			
+			else if(*button1 == 1 && *button0 == 0)
+			{
+				*button0 = 0;
+				*button2 = 0;
+				*status_record1 = 0;
+				*status_record2 = 1;
+			}
+		}
+		
+	  }
+	
+	  else{
+		  *status_record1 = 0;
+		  *status_record2 = 0;
+	  }
+}
+
 
 
 #endif

@@ -878,8 +878,8 @@ void __irq	encoder1_process(void)
 			   && (yazhen_datou_debug_kb == 0) && (yazhen_xiaotou_debug_kb == 0) && (yazhen_fenceng_debug_kb == 0)){
 				motor_factor_xiayazhen++;
 				if (motor_factor_xiayazhen >= xiayazhen_fenceng_pulse_cmp){
-					rGPEDAT &= ~(1<<Y9_Bit);
-					motor_factor_shangyazhen = 0;
+					rGPEDAT &= ~(1<<Y10_Bit);
+					motor_factor_xiayazhen = 0;
 					xiayazhen_fenceng_counter++;
 					//xiayazhen_fenceng_back_counter++;
 					if(fenceng_dir_judge == SAME_DIR){

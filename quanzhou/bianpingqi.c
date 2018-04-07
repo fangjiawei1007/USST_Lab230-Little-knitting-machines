@@ -362,7 +362,7 @@ void bianpingqi_speed_cal(void){
 	}
 	/*************************************************************/
 #ifdef YAZHEN_NORMAL_EN
-	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1)){
+	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1) || (yazhen_fenceng_debug_kb == 1)){
 		bianpingqi_speed = bianpingqi_yazhen_speed_set;
 		return;
 	}

@@ -170,6 +170,8 @@ enum Direction_Fenceng{
 
 extern unsigned int mode;
 extern unsigned int null;
+extern unsigned int status_record1;
+extern unsigned int status_record2;
 
 void __irq shangyazhen_zero_process(void);
 void __irq pwrDownHandler(void);
@@ -195,6 +197,8 @@ void Clear_Monitor(void);
 void Yazhen_Zero_Confirm(void);
 void Yazhen_Fenceng_Start(void);
 void button_huchi(unsigned char* button0, unsigned char* button1, unsigned int* status_record,  unsigned int condition_flag);
+void button_3_huchi(unsigned char* button0,unsigned char* button1, unsigned char* button2,unsigned int* status_record1,unsigned int* status_record2);
+
 #endif
 
 #endif
