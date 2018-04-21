@@ -537,6 +537,22 @@ void tiaoxian(void)
 				tongxunnum[zushu]=0;
 				chudao_shoudao_start[zushu][i] = 1;
 			}
+			/**原来不退回的方案**/
+			else if(shinengwei[i] == 1 && (weisha_jiange_kw == 0) &&
+				((chudao_shoudao_start[zushu][i] == 0))){						 
+					
+				if(chudao_shoudao_start[zushu][i] == 0){
+					weisha(i,zushu,ON);
+					weisha_jiange_status[zushu][i] = 1;
+				}
+				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
+				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
+				chudao_shoudao_status[zushu][i] = 1;
+				// previous_stage[i] = current_stage;
+				tongxunstart[zushu] = 1;
+				tongxunnum[zushu]=0;
+				chudao_shoudao_start[zushu][i] = 1;
+			}
 			/***********使能位==0之后(即该段不需要调线，那么就要把刀收回来)，
 					   设置出刀收刀，设置通讯开始标志位，出刀收刀开始标志
 			*********/
