@@ -180,7 +180,7 @@ void Yazhen_Normal_App(void){
 	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1) || (yazhen_fenceng_debug_kb == 1)){
 		if(stage_cur == datouduan || stage_cur == xiaotouduan){
 			yazhen_run_start_com = 0;//压针控制板运行通讯开始标志位
-			Yazhen_Debug_App_Com();
+			Yazhen_Debug_App();
 		}
 	}
 	else{
@@ -667,6 +667,14 @@ void Yazhen_Normal_Init(void){
 	tmp = rGPBCON & (~(0x3<< 4));
 	rGPBCON = tmp |(0x1<<4);	
 
+	//将X5设置为输入模式
+	tmp = rGPFCON & (~(0x3<< 10)); 
+	rGPFCON = tmp | (0x0<<10);
+	
+	//将X11设置为输入模式
+	tmp = rGPGCON &(~(0x3<<6));						//by FJW
+	rGPGCON = tmp | (0x0<<6);						//SET GPG3 AS Input X11	//by FJW
+	
 	encoder3_fun(1);
 	encoder4_fun(1);
 	
@@ -993,6 +1001,7 @@ void Yazhen_Normal_Alarm(U8* err){
 
 
 void Yazhen_Debug_App(void){
+	
 	if(yazhen_debug_start_com == 0){
 		yazhen_debug_start_com = 1;
 		Yazhen_Debug_App_Com();

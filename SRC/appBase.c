@@ -618,8 +618,8 @@ void Pulse_In_Init(void)
     rGPGUDP &= (~(0x3<< 0)) & (~(0x3<< 2))& (~(0x3<< 4)) & (~(0x3<< 6))& (~(0x3<< 8))& (~(0x3<< 10))& (~(0x3<< 12))& (~(0x3<< 14));
 	
 	//配置X11为中断模式，压针零位传感器
-	tmp = rGPGCON &(~(0x3<<6));						//by FJW
-	rGPGCON = tmp | (0x2<<6);						//SET GPG3 AS EINT X11	//by FJW
+	// tmp = rGPGCON &(~(0x3<<6));						//by FJW
+	// rGPGCON = tmp | (0x2<<6);						//SET GPG3 AS EINT X11	//by FJW
 	
 	rEXTINT0 = (rEXTINT0 & (~(0x7<<4))) | (0x6<<4);		// Eint1	Both edge triggered
 	//rEXTINT0 = (rEXTINT0 & (~(0x7<<4))) | (0x2<<4);		// Eint1	Falling edge triggered
