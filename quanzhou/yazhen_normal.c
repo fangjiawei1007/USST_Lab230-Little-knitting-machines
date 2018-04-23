@@ -875,7 +875,7 @@ void Yazhen_Normal_Reset(void){
 	xiayazhen_counter  = 0;
 	
 	Yazhen_Zero_App_Com();
-	//Yazhen_Normal_Get_Zero_Start();
+	Yazhen_Normal_Get_Zero_Start();
 }
 
 /*************************************************

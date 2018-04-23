@@ -1329,7 +1329,7 @@ void __irq	encoder1_process(void)
 			/***拉高3个电机电平(或者拉低，具体看原理图，有修改过)，
 				并且优化占空比(步进电机的响应时间会变长一些，但是一个周期之内不影响)
 			***/
-			if (jj != 3 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
+			if (jj == 0 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
 				rGPEDAT |= (1<<(jj + 4));
 			}
 		}
@@ -1337,7 +1337,7 @@ void __irq	encoder1_process(void)
 		/********7组电机的K值的变化之后，从K_Current多次变化到->K_Target;
 				具体的改变在Speed_Change()中求解
 		**********/
-		for (jj = 0; jj < 7; jj ++){
+		for (jj = 0; jj < 5; jj ++){
 			if (speedUpFlag[jj]==1){
 				if (huanchongmaichong!=0&&speedUpCnt[jj]<speedUpMax&&
 				++speedChangeCnt[0][jj]%huanchongmaichong==0)
@@ -1452,7 +1452,7 @@ void __irq	encoder1_process(void)
 		/**将7组电机分为上下沿两次进行判断，以减小每次循环次数(下半部分)**/
 		for (jj=4;jj<8;jj++)
 		{
-			if (jj != 7){
+			if (jj == 4){
 				motor_factor[jj] += k_motor[jj];
 				if (motor_factor[jj]>=1000000)
 				{
@@ -1541,7 +1541,7 @@ void __irq	encoder1_process(void)
 /**************************************************************************************************/		
 		
 		/*********Speed_Change()中降速阶段，与上升沿中断相对称*********/
-		for (jj = 0; jj < 7; jj ++){
+		for (jj = 0; jj < 5; jj ++){
 			if (speedDownFlag[jj]==1){
 				if (huanchongmaichong!=0&&speedDownCnt[jj]<speedDownMax&&
 				++speedChangeCnt[1][jj]%huanchongmaichong==0)
