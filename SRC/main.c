@@ -354,7 +354,7 @@ void Main(void)
 				songsha_fre_change();
 				encoder1_data_process();
 				shachang_xianshi();
-				
+				button_3_huchi(&yazhen_datou_debug_kb,&yazhen_xiaotou_debug_kb,&yazhen_fenceng_debug_kb,&status_record1,&status_record2);
 			/**********要求：停机之后把风扇和油泵关掉；大盘开始后又再打开***********/			
 				if (bianpingqi_previous_run_status==0 && jidianqi_shut==0)
 				{
