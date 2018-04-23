@@ -1323,7 +1323,9 @@ double KeyBoardScan(double MaxValue,double MinValue,U8 DigitNumb,char Flag)
 			count = 0;
 			KeyBoard_Refresh();
 		}
-	
+	#ifdef YAZHEN_NORMAL_EN
+		Yazhen_Normal_App();
+    #endif
 		if(flag==1&&(qz_error_status==0 || privilege_run_flag==1))//增加泉州小圆机进入条件
 		{
 			CalibrateXY();

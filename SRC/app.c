@@ -75,6 +75,9 @@ void App_Init(void)
 		InPulseCount[i] = 0;
 	}
 
+	#ifdef YAZHEN_NORMAL_EN
+	Yazhen_Normal_Init();
+	#endif
 }
 
 

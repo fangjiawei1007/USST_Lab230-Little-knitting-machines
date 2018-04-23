@@ -356,6 +356,13 @@ void bianpingqi_speed_cal(void){
 		bianpingqi_speed_down_b = 0;
 	}		
 	/*************************************************************/
+#ifdef YAZHEN_NORMAL_EN
+	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1) || (yazhen_fenceng_debug_kb == 1)){
+		bianpingqi_speed = bianpingqi_yazhen_speed_set;
+		return;
+	}
+	
+#endif
 
 	//调线
 	/**************************************************************/
@@ -374,13 +381,6 @@ void bianpingqi_speed_cal(void){
 			return;
 		}
 		
-		// if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
-			// (encoder1_cal_factor - jiajiansujiangemaichong_kw))||
-			// (at_check((dapan_round)) && encoder1_pulse_number < jiajiansujiangemaichong_kw)){
-			
-			
-		// }
-		// weisha_pre_speed_status = 0;
 	}
 	
 	/**quanshu[x+1]，后面的功能代码的next_stage其实是表示的current_stage，因为其没有+1，

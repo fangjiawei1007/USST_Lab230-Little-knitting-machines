@@ -501,7 +501,9 @@ void Main(void)
 				{
 					tiaoxian();
 				}
-				
+			#ifdef YAZHEN_NORMAL_EN
+				Yazhen_Normal_App();
+			#endif		
 				
 				dangban_jianshu_dis_w=*banci[jianshu_no];//当班产量显示
 				g_InteralMemory.Word[23]=bianpingqi_fullspeed_set*(bianpingqi_delta_num/100.0);
