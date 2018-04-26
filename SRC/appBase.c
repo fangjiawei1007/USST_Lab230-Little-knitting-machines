@@ -696,7 +696,11 @@ void Pulse_In_Init(void)
  void __irq PulseOut_1_Process(void)
 {
 	OutPulse_Counter[1]++;	
-	
+	if(OutPulse_Counter[1] >= OutPulse_PreSet[1]){
+		PulseOut_1_Stop();
+		enter_run_mode_status = 0;
+		enter_debug_mode_status = 0;
+	}
 	
 	ClearPending((U32)BIT_TIMER1);
 	
@@ -713,7 +717,6 @@ void Pulse_In_Init(void)
 void PulseOut_1_Start(unsigned int frequence, int pulse_PreSet)
 {
 	DWORD tmp;
-	
 	if(0 == pulse_PreSet)
 	{
 		PulseOut_1_Stop();
@@ -732,15 +735,15 @@ void PulseOut_1_Start(unsigned int frequence, int pulse_PreSet)
 		return;
 	}
 	
-	rTCNTB1= 300300/frequence;	// Timer input clock Frequency = PCLK / {prescaler value+1} / {divider value}
+	rTCNTB1= 300300/frequence;	//3750 Timer input clock Frequency = PCLK / {prescaler value+1} / {divider value}   
 	
 	rTCMPB1 = rTCNTB1/2;
 	
 	rSRCPND1 = rSRCPND1 | ((U32)0x1<<11);   //清空定时器1源请求
     rINTPND1 = rINTPND1 | ((U32)0x1<<11);   //清空定时器1中断请求
    
-	rINTMSK1 |=(BIT_TIMER1);
-	//rINTMSK1 &=~(BIT_TIMER1);
+	//rINTMSK1 |=(BIT_TIMER1);
+	rINTMSK1 &=~(BIT_TIMER1);
 	tmp = rTCON & (~(0xf << 8));	// dead zone Disable
 	rTCON = tmp | (2 << 8);		/* update TCVNTB0, stop					*/
 	rTCON = tmp | (9 << 8);		/* interval mode,  start				*/	

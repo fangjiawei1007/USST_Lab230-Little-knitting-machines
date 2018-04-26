@@ -225,7 +225,7 @@ void Test_HighSpeedOut_Init()	// OUT 1~2   2路高速输出
 
 
 	// Timer1 Initialize	----HS Out1
-	pISR_TIMER1 = (int)Timer1_HS_Out1;	// Timer ISR for HS Out
+	//pISR_TIMER1 = (int)Timer1_HS_Out1;	// Timer ISR for HS Out
 	rTCFG0 &= ~(0xff << 0); 
 	rTCFG0 |= (10 << 0); 	// Dead zone=0, Prescaler0=10(0xff)
 	rTCFG1 &= ~(0xf << 4); 

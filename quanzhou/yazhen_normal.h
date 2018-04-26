@@ -170,11 +170,14 @@ enum Direction_Fenceng{
 #define err_feed						(g_InteralMemory.KeepWord[880])
 /***回零补偿，外部控件，在中断中返回使用***/
 #define Huiling_Buchang					(g_InteralMemory.KeepWord[881])
+//work_status,用于通讯板的锁
+//#define work_status						(g_InteralMemory.KeepBit[116])
 extern unsigned int mode;
 extern unsigned int null;
 extern unsigned int status_record1;
 extern unsigned int status_record2;
-
+extern unsigned int enter_run_mode_status;
+extern unsigned int enter_debug_mode_status;
 void __irq shangyazhen_zero_process(void);
 void __irq pwrDownHandler(void);
 void Yazhen_Normal_App(void);
@@ -201,9 +204,11 @@ void Yazhen_Fenceng_Start(void);
 void button_huchi(unsigned char* button0, unsigned char* button1, unsigned int* status_record,  unsigned int condition_flag);
 void button_3_huchi(unsigned char* button0,unsigned char* button1, unsigned char* button2,unsigned int* status_record1,unsigned int* status_record2);
 
-void Yazhen_Debug_App_Com(void);
-void Yazhen_Run_App_Com(void);
-void Yazhen_Zero_App_Com(void);
+void Enter_Debug_Mode(void);
+void Enter_Run_Mode(void);
+void Enter_Zero_Mode(void);
+
+void Motor_Mode_Alternate(void);
 
 #endif
 

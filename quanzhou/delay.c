@@ -90,7 +90,7 @@ Commented:方佳伟
 void Timer0_init_quanzhou(void)
 {
 	pISR_TIMER0 = (int)Timer0_Proc;			// Timer ISR for 延时
-	Timer0_Init();							// 每100ms中断一次，也就是100HZ,0.01s
+	Timer0_Init();						// 每100ms中断一次，也就是100HZ,0.01s
 }
 
 

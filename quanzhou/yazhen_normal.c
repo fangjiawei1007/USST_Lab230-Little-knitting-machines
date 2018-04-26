@@ -59,7 +59,11 @@ programmed by 方佳伟
 #define xiaotou_xiayazhen_monitor_w 			(g_InteralMemory.Word[73])
 #define fenceng_shangyazhen_monitor_w			(g_InteralMemory.Word[74])
 #define fenceng_xiayazhen_monitor_w 			(g_InteralMemory.Word[75])
-        
+
+#define COM_TIMES								3
+#define EXT_Zhengzhuan							(g_InteralMemory.Bit[86])
+#define EXT_Fanzhuan							(g_InteralMemory.Bit[87])
+#define Motor_COM_DELAY							100000
 //int tiaoxiankaiguan_kb = -1;			//防止报错，与调线版本冲突，若使用调线版本，请把这句去掉，或者不去除预编译的情况下已经解决
 int yazhen_datou_choose = 0;
 int YAZHEN_ZERO_ERR = 0;
@@ -72,7 +76,7 @@ unsigned int null = 0;
 unsigned int status_record1,status_record2;
 
 unsigned int yazhen_debug_start_com,yazhen_run_start_com;//用于压针通讯板
-
+unsigned int enter_debug_mode_status,enter_run_mode_status,enter_zero_status;
 enum EXT_Button{
 	EXT_ON = 0,
 	EXT_OFF
@@ -80,6 +84,10 @@ enum EXT_Button{
 enum Yazhen_Choose{
 	UP_YAZHEN = 0,
 	DOWN_YAZHEN
+};
+enum In_Button{
+	In_OFF = 0,
+	In_ON = 1
 };
 
 /*************************************************
@@ -177,18 +185,21 @@ void Yazhen_Normal_App(void){
 	unsigned int checkout_yazhen = 0;
 	stage_cur = getStage(current_stage,CURRENT);
 	
+	Motor_Mode_Alternate();
+	
 	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1) || (yazhen_fenceng_debug_kb == 1)){
 		if(stage_cur == datouduan || stage_cur == xiaotouduan){
-			yazhen_run_start_com = 0;//压针控制板运行通讯开始标志位
-			Yazhen_Debug_App();
+				Yazhen_Debug_App();
 		}
 	}
 	else{
-		yazhen_debug_start_com = 0;//压针控制板调试通讯开始标志位
-		if(yazhen_run_start_com == 0){
-			yazhen_run_start_com = 1;
-			Yazhen_Run_App_Com();
-		}
+		//yazhen_debug_start_com = 0;//压针控制板调试通讯开始标志位
+		// if(yazhen_run_start_com == 0){
+			// int i = 0;
+			// yazhen_run_start_com = 1;
+			// for(i = 0;i<COM_TIMES;i++)
+				// Yazhen_Run_App_Com();
+		// }
 		checkout_yazhen = Yazhen_Normal_Checkout();
 		if(checkout_yazhen == CHANGED){
 			Yazhen_Normal_Set();
@@ -877,13 +888,31 @@ Modified:
 Commented:方佳伟
 *************************************************/     
 void Yazhen_Normal_Reset(void){
+	int i = 0;
 	shangyazhen_motor_start = 0;
 	xiayazhen_motor_start	= 0;
 	shangyazhen_counter = 0;
 	xiayazhen_counter  = 0;
 	
-	Yazhen_Zero_App_Com();
-	Yazhen_Normal_Get_Zero_Start();
+	//Yazhen_Normal_Get_Zero_Start();
+	{
+		shangyazhen_back_zero_counter = 0;
+		shangyazhen_back_counter = 0;
+		shangyazhen_back_start = 0;
+		
+		xiayazhen_back_zero_counter = 0;
+		xiayazhen_back_counter = 0;
+		xiayazhen_back_start = 0;
+		
+		//work_status = 0;
+		
+		for(i = 0;i<COM_TIMES;i++){
+			Enter_Zero_Mode();
+		}
+		//本质上开了一个定时器Timer1，中断服务函数为Pulseout_1_Process()
+		PulseOut_1_Start(800,3000);
+			
+	}
 }
 
 /*************************************************
@@ -1001,11 +1030,6 @@ void Yazhen_Normal_Alarm(U8* err){
 
 
 void Yazhen_Debug_App(void){
-	
-	if(yazhen_debug_start_com == 0){
-		yazhen_debug_start_com = 1;
-		Yazhen_Debug_App_Com();
-	}
 	Clear_Monitor();
 	Get_Monitor();
 	Yazhen_Debug_K_Set();
@@ -1039,11 +1063,11 @@ void Yazhen_Debug_App(void){
 	}
 }
 
-void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
+void Yazhen_EXT_Button(unsigned int Yazhen_type){
 	if(Get_X_Value(X5) == EXT_ON && Get_X_Value(X11) == EXT_ON){
 		return;
 	}
-	else if(Get_X_Value(X5) == EXT_ON){
+	else if(Get_X_Value(X5) == EXT_ON || EXT_Zhengzhuan == 1){
 		Yazhen_Set_Dir(GO);
 		switch(Yazhen_type){
 			case UP_YAZHEN:
@@ -1056,7 +1080,7 @@ void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
 				break;
 		}
 	}
-	else if(Get_X_Value(X11) == EXT_ON){
+	else if(Get_X_Value(X11) == EXT_ON || EXT_Fanzhuan == 1){
 		Yazhen_Set_Dir(BACK);
 		switch(Yazhen_type){
 			case UP_YAZHEN:
@@ -1069,6 +1093,8 @@ void Yazhen_EXT_Button(unsigned int Yazhen_type){//int stage,
 				break;
 		}
 	}
+	/** if(Get_X_Value(X11) == EXT_OFF && Get_X_Value(X5) == EXT_OFF 
+		   && EXT_Fanzhuan == 0 && EXT_Zhengzhuan == 0)**/
 	else{
 		shangyazhen_pos_start 	= 0;
 		shangyazhen_neg_start 	= 0;
@@ -1081,7 +1107,7 @@ void Yazhen_EXT_Button_Fengceng(unsigned int Yazhen_type){//int stage,
 	if(Get_X_Value(X5) == EXT_ON && Get_X_Value(X11) == EXT_ON){
 		return;
 	}
-	else if(Get_X_Value(X5) == EXT_ON){
+	else if(Get_X_Value(X5) == EXT_ON || EXT_Zhengzhuan == 1){
 		if(fenceng_dir_judge == SAME_DIR)
 			Yazhen_Set_Dir(GO);
 		else
@@ -1097,7 +1123,7 @@ void Yazhen_EXT_Button_Fengceng(unsigned int Yazhen_type){//int stage,
 				break;
 		}
 	}
-	else if(Get_X_Value(X11) == EXT_ON){
+	else if(Get_X_Value(X11) == EXT_ON || EXT_Fanzhuan == 1){
 		if(fenceng_dir_judge == SAME_DIR)
 			Yazhen_Set_Dir(BACK);
 		else
@@ -1113,6 +1139,8 @@ void Yazhen_EXT_Button_Fengceng(unsigned int Yazhen_type){//int stage,
 				break;
 		}
 	}
+	/**if(Get_X_Value(X11) == EXT_OFF && Get_X_Value(X5) == EXT_OFF 
+		   && EXT_Fanzhuan == 0 && EXT_Zhengzhuan == 0**/
 	else{
 		shangyazhen_pos_start 	= 0;
 		shangyazhen_neg_start 	= 0;
@@ -1323,16 +1351,146 @@ void button_3_huchi(unsigned char* button0,unsigned char* button1, unsigned char
 	  }
 }
 
-void Yazhen_Debug_App_Com(void){
+void Enter_Debug_Mode(void){
+	U8 auchMsg[3],SendArray[3];  
+	U8 Count,waitTime;
+	int i;
+	U32 ErrorLoop;
+	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;
 	
+	if (rULCON3!=0x03) 
+		rULCON3 =0x03;  							//0x03=00 000 0 011  普通 无校验 1停止位 8数据位
+	auchMsg[0]=0xA5;
+	auchMsg[1]=0x5A;		//3492~3491  2016.1.3 quanzhou
+	auchMsg[2]=0x01;
+	
+	for (i=0;i<3;i++)
+	{
+		SendArray[i]=auchMsg[i];
+	}
+	rGPHDAT |= 0x1000;	//GPH12	+Write
+	Delay(DELAY_TIME_RTU);
+	for (Count=0;Count<3;Count++)
+	{
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+		waitTime=0;
+		WrUTXH3(SendArray[Count]);wdt_feed_dog();main_enter_flag = 1;
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+	}
+	Delay(Motor_COM_DELAY);
 }
 
-void Yazhen_Run_App_Com(void){
+void Enter_Run_Mode(void){
+	U8 auchMsg[3],SendArray[3];  
+	U8 Count,waitTime;
+	int i;
+	U32 ErrorLoop;
+	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;
 	
+	if (rULCON3!=0x03) 
+		rULCON3 =0x03;  							//0x03=00 000 0 011  普通 无校验 1停止位 8数据位
+	auchMsg[0]=0xA5;
+	auchMsg[1]=0x5A;		//3492~3491  2016.1.3 quanzhou
+	auchMsg[2]=0x03;
+	
+	for (i=0;i<3;i++)
+	{
+		SendArray[i]=auchMsg[i];
+	}
+	rGPHDAT |= 0x1000;	//GPH12	+Write
+	Delay(DELAY_TIME_RTU);
+	for (Count=0;Count<3;Count++)
+	{
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+		waitTime=0;
+		WrUTXH3(SendArray[Count]);wdt_feed_dog();main_enter_flag = 1;
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+	}
+	Delay(Motor_COM_DELAY);
 }
 
-void Yazhen_Zero_App_Com(void){
+void Enter_Zero_Mode(void){
+	U8 auchMsg[3],SendArray[3];  
+	U8 Count,waitTime;
+	int i;
+	U32 ErrorLoop;
+	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;
 	
+	if (rULCON3!=0x03) 
+		rULCON3 =0x03;  							//0x03=00 000 0 011  普通 无校验 1停止位 8数据位
+	auchMsg[0]=0xA5;
+	auchMsg[1]=0x5A;		//3492~3491  2016.1.3 quanzhou
+	auchMsg[2]=0x02;
+	
+	for (i=0;i<3;i++)
+	{
+		SendArray[i]=auchMsg[i];
+	}
+	rGPHDAT |= 0x1000;	//GPH12	+Write
+	Delay(DELAY_TIME_RTU);
+	for (Count=0;Count<3;Count++)
+	{
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+		waitTime=0;
+		WrUTXH3(SendArray[Count]);wdt_feed_dog();main_enter_flag = 1;
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+	}
+	Delay(Motor_COM_DELAY);
+}
+
+
+void Motor_Mode_Alternate(void){
+	int i = 0;
+	if((yazhen_datou_debug_kb == 1 || yazhen_xiaotou_debug_kb == 1 || yazhen_fenceng_debug_kb == 1)
+	    && enter_debug_mode_status == 0){
+		enter_debug_mode_status = 1;
+		enter_run_mode_status = 0;
+		for(i = 0;i<COM_TIMES;i++)
+			Enter_Debug_Mode();
+	}
+	else if((yazhen_datou_debug_kb == 0 && yazhen_xiaotou_debug_kb == 0 && yazhen_fenceng_debug_kb == 0) 
+		     && enter_run_mode_status == 0){
+		enter_run_mode_status = 1;
+		enter_debug_mode_status = 0;
+		for(i = 0;i<COM_TIMES;i++)
+			Enter_Run_Mode();
+	}
+	
+	// if(reset_button == 1 && enter_zero_mode_status == 0){
+		// enter_zero_mode_status = 1;
+		// Enter_Zero_Mode();
+		
+	// }
+	
+	// if(Time_Delay >= TIME_SET && timer_start_status == 1){
+		// enter_run_mode_status = 0;
+		// enter_debug_mode_status = 0;
+		// timer_start_status = 0;
+	// }
 }
 
 #endif
