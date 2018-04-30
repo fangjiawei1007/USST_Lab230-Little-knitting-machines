@@ -209,7 +209,8 @@ void Enter_Run_Mode(void);
 void Enter_Zero_Mode(void);
 
 void Motor_Mode_Alternate(void);
-
+void Zero_Com_Delay(void);
+void Yazhen_Get_Zero_Start_Com(void);
 #endif
 
 #endif

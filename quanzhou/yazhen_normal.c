@@ -193,13 +193,6 @@ void Yazhen_Normal_App(void){
 		}
 	}
 	else{
-		//yazhen_debug_start_com = 0;//压针控制板调试通讯开始标志位
-		// if(yazhen_run_start_com == 0){
-			// int i = 0;
-			// yazhen_run_start_com = 1;
-			// for(i = 0;i<COM_TIMES;i++)
-				// Yazhen_Run_App_Com();
-		// }
 		checkout_yazhen = Yazhen_Normal_Checkout();
 		if(checkout_yazhen == CHANGED){
 			Yazhen_Normal_Set();
@@ -223,7 +216,8 @@ void Yazhen_Normal_App(void){
 		/***裁剪段***/
 		if(stage_cur == caijianduan && yazhen_back_status == 0){
 			yazhen_back_status = 1;
-			Yazhen_Normal_Get_Zero_Start();	
+			//Yazhen_Normal_Get_Zero_Start();
+			Yazhen_Get_Zero_Start_Com();
 		}
 		else if(stage_cur != caijianduan){
 			yazhen_back_status = 0;
@@ -906,13 +900,11 @@ void Yazhen_Normal_Reset(void){
 		xiayazhen_back_counter = 0;
 		xiayazhen_back_start = 0;
 		
-		//work_status = 0;
-		
 		for(i = 0;i<COM_TIMES;i++){
 			Enter_Zero_Mode();
 		}
 		//本质上开了一个定时器Timer1，中断服务函数为Pulseout_1_Process()
-		PulseOut_1_Start(800,4000);		
+		Zero_Com_Delay();
 	}
 	
 }
@@ -1483,6 +1475,27 @@ void Motor_Mode_Alternate(void){
 			Enter_Debug_Mode();
 			//Enter_Run_Mode();//去除运行模式
 	}
+}
+
+void Zero_Com_Delay(void){
+	PulseOut_1_Start(800,4000);
+}
+
+void Yazhen_Get_Zero_Start_Com(void){
+		int i = 0;
+		shangyazhen_back_zero_counter = 0;
+		shangyazhen_back_counter = 0;
+		shangyazhen_back_start = 0;
+		
+		xiayazhen_back_zero_counter = 0;
+		xiayazhen_back_counter = 0;
+		xiayazhen_back_start = 0;
+		
+		for(i = 0;i<COM_TIMES;i++){
+			Enter_Zero_Mode();
+		}
+		//本质上开了一个定时器Timer1，中断服务函数为Pulseout_1_Process()
+		Zero_Com_Delay();
 }
 
 #endif
