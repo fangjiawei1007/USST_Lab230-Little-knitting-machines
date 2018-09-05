@@ -26,6 +26,12 @@
 /***喂纱间隔 2018.1.24***/
 #define weisha_jiange_kw				g_InteralMemory.KeepWord[460]	//喂纱间隔
 
+/******************调线控制执行卡***************/
+#define WEISHA_State					1
+#define JIANDAO_State					3
+#define SONGSHA_State					4
+
+extern unsigned int Ports_state[ZUSHU_MAX];
 /*************************/
 typedef struct{
 	INT16U* kaishiquanshu;				//调线开始圈数
@@ -54,7 +60,7 @@ void tiaoxian_init(void); 				//by FJW 调线功能
 void tiaoxian_reset(void);
 int weisha_check(unsigned int roundShineng);
 unsigned int tiqushuzi(INT16U channal_choose);
-
+int jidianqi_write_card(unsigned int zushu);
 
 #endif
 

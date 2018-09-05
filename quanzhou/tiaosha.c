@@ -25,9 +25,7 @@ unsigned int shoudao_tozero_status[ZUSHU_MAX]={0};	//刀具归零复位标志
 unsigned int shoudao_reset_flag = 0;
 unsigned int tongxunnum[6] = {0};
 /******************调线控制执行卡***************/
-unsigned int tiaoxianka_weisha_status[ZUSHU_MAX] = {0};
-unsigned int tiaoxianka_jiandao_status[ZUSHU_MAX] = {0};
-unsigned int tiaoxianka_songsha_status[ZUSHU_MAX] = {0};
+unsigned int Ports_state[ZUSHU_MAX] = {0};
 
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
@@ -528,9 +526,8 @@ void tiaoxian(void)
 					weisha_jiange_status[zushu][i] = 1;
 					
 					/******************调线控制执行卡***************/
-					tiaoxianka_weisha_status[zushu] = 1;
-					tiaoxianka_jiandao_status[zushu] = 0;
-					tiaoxianka_songsha_status[zushu] = 0;
+					Ports_state[zushu] = WEISHA_State;
+					
 				}
 				
 				else
@@ -556,9 +553,8 @@ void tiaoxian(void)
 					weisha_jiange_status[zushu][i] = 1;
 					
 					/******************调线控制执行卡***************/
-					tiaoxianka_weisha_status[zushu] = 1;
-					tiaoxianka_jiandao_status[zushu] = 0;
-					tiaoxianka_songsha_status[zushu] = 0;	
+					Ports_state[zushu] = WEISHA_State;
+						
 				}
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
@@ -590,12 +586,12 @@ void tiaoxian(void)
 				tongxunnum[zushu] ++ ;
 			}
 			else{
-				
-				for(i = 0;i<4;i++){
-					tiaoxian_jidianqi_tiaoxianka(zushu);
-				}
-				tongxunnum[zushu] = 0;
-				tongxunstart[zushu] = 0;
+					/******************调线控制执行卡***************/
+					jidianqi_write_card(zushu);
+					jidianqi_write_card(zushu);
+					
+					tongxunnum[zushu] = 0;
+					tongxunstart[zushu] = 0;
 			}
 		}
 		/**5次通讯错误之后**/
@@ -802,10 +798,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			weisha_jiange_status[zushu][i] = 1;
 			
 			/******************调线控制执行卡***************/
-			tiaoxianka_weisha_status[zushu] = 0;
-			tiaoxianka_jiandao_status[zushu] = 1;
-			tiaoxianka_songsha_status[zushu] = 0;	
-			
+			Ports_state[zushu] = JIANDAO_State;
 		}
 		else if(weisha_jiange[zushu][i]<weisha_jiange_kw){
 			return;
@@ -822,9 +815,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			tongxunnum[zushu] = 0;
 			
 			/******************调线控制执行卡***************/
-			tiaoxianka_weisha_status[zushu] = 1;
-			tiaoxianka_jiandao_status[zushu] = 1;
-			tiaoxianka_songsha_status[zushu] = 0;	
+			Ports_state[zushu] = JIANDAO_State;
 		}
 		/* Set_Y_Value(Y9,LOW);
 		Set_Y_Value(Y10,LOW); */
@@ -843,9 +834,8 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			tongxunnum[zushu] = 0;
 			
 			/******************调线控制执行卡***************/
-			tiaoxianka_weisha_status[zushu] = 1;
-			tiaoxianka_jiandao_status[zushu] = 1;
-			tiaoxianka_songsha_status[zushu] = 0;	
+			Ports_state[zushu] = JIANDAO_State;
+				
 		}
 		/* Set_Y_Value(Y9,HIGH);
 		Set_Y_Value(Y10,LOW); */
@@ -866,9 +856,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			tongxunnum[zushu] = 0;
 			
 			/******************调线控制执行卡***************/
-			tiaoxianka_weisha_status[zushu] = 0;
-			tiaoxianka_jiandao_status[zushu] = 0;
-			tiaoxianka_songsha_status[zushu] = 1;	
+			Ports_state[zushu] = SONGSHA_State;	
 		}
 		
 		/* Set_Y_Value(Y9,HIGH);
@@ -921,4 +909,99 @@ void weisha(unsigned int i,unsigned int zushu,unsigned int on_off)
 	shoudao_start_status[zushu][i]= 0;
 	chudao_jiange_tmp[zushu][i] = 0;
 	shoudao_jiange_tmp[zushu][i] = 0;
+}
+
+/*************************************************
+Function(函数名称): jidianqi_write_tiaoxian(U8 which_port,U8 button_bit)
+Description(函数功能、性能等的描述): 继电器板的通讯协议
+Calls (被本函数调用的函数清单): 
+Called By (调用本函数的函数清单): 
+
+Input(输入参数说明，包括每个参数的作用、取值说明及参数间关系): 
+Output(对输出参数的说明):
+Return: 
+Others: 
+Author:王德铭
+Modified:
+Commented:方佳伟
+*************************************************/
+int jidianqi_write_card(unsigned int zushu)
+{
+	U8 auchMsg[8],SendArray[8],RecArray[8];  
+	U8 Count,jdqCheck,waitTime;
+	int i;
+	U32 ErrorLoop;
+	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;
+	
+	//rUBRDIV3 = ( (int)(SYS_PCLK/16./57600+0.5) -1 );
+	//Uart_Init(0,9600);
+	if (rULCON3!=0x03) 
+		rULCON3 =0x03; 								//0x03=00 000 0 011  普通 无校验 1停止位 8数据位
+	
+	auchMsg[0]=0xA5;
+		switch (zushu){
+		case 0:
+			auchMsg[1]=55;break;
+		case 1:
+			auchMsg[1]=56;break;
+		case 2:
+			auchMsg[1]=57;break;
+		case 3:
+			auchMsg[1]=58;break;
+		case 4:
+			auchMsg[1]=59;break;
+		case 5:
+			auchMsg[1]=60;break;	
+	}
+	
+	auchMsg[2]=Ports_state[zushu];
+	auchMsg[3]=0x00;
+	auchMsg[4]=0x00;
+	auchMsg[5]=0x00;
+	for (i=0;i<6;i++)
+	{
+		SendArray[i]=auchMsg[i];
+	}
+	rGPHDAT |= 0x1000;	//GPH12	+Write
+	Delay(DELAY_TIME_RTU);
+	for (Count=0;Count<6;Count++)
+	{
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+		waitTime=0;
+		WrUTXH3(SendArray[Count]);wdt_feed_dog();main_enter_flag = 1;
+		while((!(rUTRSTAT3 & 0x4)) && (waitTime<=ErrorLoop)){
+			for (i=0;i<50;i++){
+				waitTime++;wdt_feed_dog();main_enter_flag = 1;
+			}
+		}
+	}
+	rGPHDAT &= 0xefff;	//GPH12	-Read
+	Count = 0;
+	/**20次读取uart的值，读到值直接退出循环**/
+	while ((RecArray[0]=qz_Uart_Getch())!=0xA5 && Count<=20)
+	{
+		Count++;
+	}
+	if (RecArray[0]==0x5A){
+		for (Count=1;Count<6;Count++)
+		{
+			RecArray[Count]=qz_Uart_Getch();
+			if (RecArray[Count]==auchMsg[Count]){
+				jdqCheck++;
+			}
+		}
+		if (jdqCheck>=3){		
+			return 1;
+		}
+		else{
+			return 0;
+		}	
+	}
+	else{
+			return 0;
+		}
 }
