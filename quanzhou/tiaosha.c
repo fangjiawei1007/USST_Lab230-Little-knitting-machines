@@ -24,6 +24,11 @@ unsigned int weisha_jiange[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int shoudao_tozero_status[ZUSHU_MAX]={0};	//刀具归零复位标志
 unsigned int shoudao_reset_flag = 0;
 unsigned int tongxunnum[6] = {0};
+/******************调线控制执行卡***************/
+unsigned int tiaoxianka_weisha_status[ZUSHU_MAX] = {0};
+unsigned int tiaoxianka_jiandao_status[ZUSHU_MAX] = {0};
+unsigned int tiaoxianka_songsha_status[ZUSHU_MAX] = {0};
+
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
@@ -521,6 +526,11 @@ void tiaoxian(void)
 				{
 					weisha(i,zushu,ON);
 					weisha_jiange_status[zushu][i] = 1;
+					
+					/******************调线控制执行卡***************/
+					tiaoxianka_weisha_status[zushu] = 1;
+					tiaoxianka_jiandao_status[zushu] = 0;
+					tiaoxianka_songsha_status[zushu] = 0;
 				}
 				
 				else
@@ -544,6 +554,11 @@ void tiaoxian(void)
 				if(chudao_shoudao_start[zushu][i] == 0){
 					weisha(i,zushu,ON);
 					weisha_jiange_status[zushu][i] = 1;
+					
+					/******************调线控制执行卡***************/
+					tiaoxianka_weisha_status[zushu] = 1;
+					tiaoxianka_jiandao_status[zushu] = 0;
+					tiaoxianka_songsha_status[zushu] = 0;	
 				}
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
@@ -575,6 +590,10 @@ void tiaoxian(void)
 				tongxunnum[zushu] ++ ;
 			}
 			else{
+				
+				for(i = 0;i<4;i++){
+					tiaoxian_jidianqi_tiaoxianka(zushu);
+				}
 				tongxunnum[zushu] = 0;
 				tongxunstart[zushu] = 0;
 			}
@@ -781,6 +800,12 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			tongxunstart[zushu] = 1;
 			tongxunnum[zushu] = 0;
 			weisha_jiange_status[zushu][i] = 1;
+			
+			/******************调线控制执行卡***************/
+			tiaoxianka_weisha_status[zushu] = 0;
+			tiaoxianka_jiandao_status[zushu] = 1;
+			tiaoxianka_songsha_status[zushu] = 0;	
+			
 		}
 		else if(weisha_jiange[zushu][i]<weisha_jiange_kw){
 			return;
@@ -795,6 +820,11 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			kaiguan[zushu][i] = 0x03;		//(0b) 11
 			tongxunstart[zushu] = 1;
 			tongxunnum[zushu] = 0;
+			
+			/******************调线控制执行卡***************/
+			tiaoxianka_weisha_status[zushu] = 1;
+			tiaoxianka_jiandao_status[zushu] = 1;
+			tiaoxianka_songsha_status[zushu] = 0;	
 		}
 		/* Set_Y_Value(Y9,LOW);
 		Set_Y_Value(Y10,LOW); */
@@ -811,6 +841,11 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			kaiguan[zushu][i] = 0x02;		//(0b)10
 			tongxunstart[zushu] = 1;
 			tongxunnum[zushu] = 0;
+			
+			/******************调线控制执行卡***************/
+			tiaoxianka_weisha_status[zushu] = 1;
+			tiaoxianka_jiandao_status[zushu] = 1;
+			tiaoxianka_songsha_status[zushu] = 0;	
 		}
 		/* Set_Y_Value(Y9,HIGH);
 		Set_Y_Value(Y10,LOW); */
@@ -829,6 +864,11 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			kaiguan[zushu][i] = 0x00;		//(0b) 00
 			tongxunstart[zushu] = 1;
 			tongxunnum[zushu] = 0;
+			
+			/******************调线控制执行卡***************/
+			tiaoxianka_weisha_status[zushu] = 0;
+			tiaoxianka_jiandao_status[zushu] = 0;
+			tiaoxianka_songsha_status[zushu] = 1;	
 		}
 		
 		/* Set_Y_Value(Y9,HIGH);
