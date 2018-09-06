@@ -57,7 +57,7 @@ void tiaoxian_init(void)	//调线初始化 by FJW
 		for (bb = 0 ; bb < ZUSHU_MAX; bb++){
 			for (ii = 0 ; ii < 5 ; ii++){
 				//通讯成功之后会直接退出循环,5次为容错
-				if (tiaoxian_jidianqi_write(bb) == 1){
+				if (jidianqi_write_card(bb) == 1){//tiaoxian_jidianqi_write(bb) 
 					break;
 				}
 			}
@@ -582,13 +582,13 @@ void tiaoxian(void)
 		/***通讯开始***/
 		if (tongxunstart[zushu] == 1 && tongxunnum[zushu] <5){
 			/***5次通讯容错***/
-			if (tiaoxian_jidianqi_write(zushu) != 1){
+			if (jidianqi_write_card(zushu) != 1){//tiaoxian_jidianqi_write(zushu)
 				tongxunnum[zushu] ++ ;
 			}
 			else{
 					/******************调线控制执行卡***************/
-					jidianqi_write_card(zushu);
-					jidianqi_write_card(zushu);
+					// jidianqi_write_card(zushu);
+					// jidianqi_write_card(zushu);
 					
 					tongxunnum[zushu] = 0;
 					tongxunstart[zushu] = 0;
@@ -939,24 +939,24 @@ int jidianqi_write_card(unsigned int zushu)
 		rULCON3 =0x03; 								//0x03=00 000 0 011  普通 无校验 1停止位 8数据位
 	
 	auchMsg[0]=0xA5;
-		switch (zushu){
-		case 0:
-			auchMsg[1]=55;break;
-		case 1:
-			auchMsg[1]=56;break;
-		case 2:
-			auchMsg[1]=57;break;
-		case 3:
-			auchMsg[1]=58;break;
-		case 4:
-			auchMsg[1]=59;break;
-		case 5:
-			auchMsg[1]=60;break;	
+	switch (zushu){
+	case 0:
+		auchMsg[1]=55;break;
+	case 1:
+		auchMsg[1]=56;break;
+	case 2:
+		auchMsg[1]=57;break;
+	case 3:
+		auchMsg[1]=58;break;
+	case 4:
+		auchMsg[1]=59;break;
+	case 5:
+		auchMsg[1]=60;break;	
 	}
 	
-	auchMsg[2]=Ports_state[zushu];
-	auchMsg[3]=0x00;
-	auchMsg[4]=0x00;
+	auchMsg[2]=tongxunzhen[zushu] & 0xff;
+	auchMsg[3]=(tongxunzhen[zushu] >> 8);
+	auchMsg[4]=Ports_state[zushu];
 	auchMsg[5]=0x00;
 	for (i=0;i<6;i++)
 	{
