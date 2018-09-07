@@ -553,7 +553,7 @@ void tiaoxian(void)
 					weisha_jiange_status[zushu][i] = 1;
 					
 					/******************调线控制执行卡***************/
-					Ports_state[zushu] = WEISHA_State;
+					Ports_state[zushu] = WEISHA_State_None;
 						
 				}
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
@@ -798,7 +798,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			weisha_jiange_status[zushu][i] = 1;
 			
 			/******************调线控制执行卡***************/
-			Ports_state[zushu] = JIANDAO_State;
+			Ports_state[zushu] = WEISHA_State_None;
 		}
 		else if(weisha_jiange[zushu][i]<weisha_jiange_kw){
 			return;
@@ -815,7 +815,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			tongxunnum[zushu] = 0;
 			
 			/******************调线控制执行卡***************/
-			Ports_state[zushu] = JIANDAO_State;
+			Ports_state[zushu] = WEISHA_State;
 		}
 		/* Set_Y_Value(Y9,LOW);
 		Set_Y_Value(Y10,LOW); */
