@@ -52,6 +52,8 @@ void tiaoxian_init(void)	//调线初始化 by FJW
 	if (tiaoxiankaiguan_kb ==1 ){
 		for (ii = 0 ;ii<ZUSHU_MAX;ii++){
 			tongxunzhen[ii] = 0x0;//初始化继电器吸合
+			/******************调线控制执行卡***************/
+			Ports_state[ii] = WEISHA_State_None;
 		}
 		
 		for (bb = 0 ; bb < ZUSHU_MAX; bb++){
