@@ -1,5 +1,8 @@
 #include "includes.h"
+/******************调线控制执行卡***************/
 
+unsigned int Ports_state[ZUSHU_MAX][DAOSHU_MAX] = {0};
+unsigned int tongxunzhen_Ports_state[ZUSHU_MAX] = {0x0000};
 
 
 
@@ -24,8 +27,7 @@ unsigned int weisha_jiange[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int shoudao_tozero_status[ZUSHU_MAX]={0};	//刀具归零复位标志
 unsigned int shoudao_reset_flag = 0;
 unsigned int tongxunnum[6] = {0};
-/******************调线控制执行卡***************/
-unsigned int Ports_state[ZUSHU_MAX] = {0};
+
 
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
@@ -53,7 +55,7 @@ void tiaoxian_init(void)	//调线初始化 by FJW
 		for (ii = 0 ;ii<ZUSHU_MAX;ii++){
 			tongxunzhen[ii] = 0x0;//初始化继电器吸合
 			/******************调线控制执行卡***************/
-			Ports_state[ii] = 0x0;
+			tongxunzhen_Ports_state[ii] = 0x0;
 		}
 		
 		for (bb = 0 ; bb < ZUSHU_MAX; bb++){
@@ -128,6 +130,9 @@ void tiaoxian_reset(void){
 			chudao_shoudao_start[bb][ii] = 0;
 			chudao_jiange_tmp[bb][ii] = 0;		
 			shoudao_jiange_tmp[bb][ii] = 0;	
+			
+			/******************调线控制执行卡***************/
+			Ports_state[bb][ii]=0;
 			
 			shinengwei[ii]=0;					//将上面放下来
 			
@@ -525,24 +530,22 @@ void tiaoxian(void)
 				if(chudao_shoudao_start[zushu][i] == 0)
 				{
 					weisha(i,zushu,ON);
-					weisha_jiange_status[zushu][i] = 1;
-					
-					/******************调线控制执行卡***************/
-					Ports_state[zushu] = WEISHA_1_State;//WEISHA_State
-					
+					weisha_jiange_status[zushu][i] = 1;	
 				}
 				
 				else
 				{
 					weisha(i,zushu,OFF);
 					weisha_jiange_status[zushu][i] = 0;
-					weisha_jiange[zushu][i] = 0;
-					
-					/******************调线控制执行卡***************/
-					Ports_state[zushu] = WEISHA_1_Back_State;//WEISHA_State
+					weisha_jiange[zushu][i] = 0;	
 				}				
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
+				
+				/******************调线控制执行卡***************/
+				tongxunzhen_Ports_state[zushu] &=(~(1 << (i)));
+				tongxunzhen_Ports_state[zushu] |=(Ports_state[zushu][i] << (i));	
+					
 				chudao_shoudao_status[zushu][i] = 1;
 				// previous_stage[i] = current_stage;
 				tongxunstart[zushu] = 1;
@@ -556,13 +559,15 @@ void tiaoxian(void)
 				if(chudao_shoudao_start[zushu][i] == 0){
 					weisha(i,zushu,ON);
 					weisha_jiange_status[zushu][i] = 1;
-					
-					/******************调线控制执行卡***************/
-					Ports_state[zushu] = WEISHA_0_State;//WEISHA_State_None
-						
 				}
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
+				
+				/******************调线控制执行卡***************/
+				tongxunzhen_Ports_state[zushu] &=(~(1 << (i)));
+				tongxunzhen_Ports_state[zushu] |=(Ports_state[zushu][i] << (i));	
+				
+				
 				chudao_shoudao_status[zushu][i] = 1;
 				// previous_stage[i] = current_stage;
 				tongxunstart[zushu] = 1;
@@ -576,6 +581,11 @@ void tiaoxian(void)
 				chudao_shoudao_process(i,zushu);					//出刀收刀
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2)); //设置
+				
+				/******************调线控制执行卡***************/
+				tongxunzhen_Ports_state[zushu] &=(~(1 << (i)));
+				tongxunzhen_Ports_state[zushu] |=(Ports_state[zushu][i] << (i));	
+				
 				chudao_shoudao_start[zushu][i] = 0; 
 				
 				/*********出刀收刀完成之后，将weisha_间隔复位***************/
@@ -803,7 +813,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			weisha_jiange_status[zushu][i] = 1;
 			
 			/******************调线控制执行卡***************/
-			Ports_state[zushu] = WEISHA_1_JIANSHA_1st;//WEISHA_State_None
+			Ports_state[zushu][i] = WEISHA_1_JIANSHA_1st;//WEISHA_State_None
 		}
 		else if(weisha_jiange[zushu][i]<weisha_jiange_kw){
 			return;
@@ -820,7 +830,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			tongxunnum[zushu] = 0;
 			
 			/******************调线控制执行卡***************/
-			Ports_state[zushu] = WEISHA_0_JIANSHA_1st;//WEISHA_State
+			Ports_state[zushu][i] = WEISHA_0_JIANSHA_1st;//WEISHA_State
 		}
 		/* Set_Y_Value(Y9,LOW);
 		Set_Y_Value(Y10,LOW); */
@@ -839,7 +849,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			tongxunnum[zushu] = 0;
 			
 			/******************调线控制执行卡***************/
-			Ports_state[zushu] = WEISHA_0_JIANSHA_2nd;//JIANDAO_State
+			Ports_state[zushu][i] = WEISHA_0_JIANSHA_2nd;//JIANDAO_State
 				
 		}
 		/* Set_Y_Value(Y9,HIGH);
@@ -861,7 +871,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			tongxunnum[zushu] = 0;
 			
 			/******************调线控制执行卡***************/
-			Ports_state[zushu] = WEISHA_0_JIANSHA_3rd;	//SONGSHA_State
+			Ports_state[zushu][i] = WEISHA_0_JIANSHA_3rd;	//SONGSHA_State
 		}
 		
 		/* Set_Y_Value(Y9,HIGH);
@@ -899,10 +909,16 @@ Commented:方佳伟
 *************************************************/
 void weisha(unsigned int i,unsigned int zushu,unsigned int on_off)
 {
-	if(on_off == ON)
+	if(on_off == ON){
 		kaiguan[zushu][i] = 0x01;		//(0b) 01
+		/******************调线控制执行卡***************/
+		Ports_state[zushu][i] = WEISHA_1_State;//WEISHA_State
+	}
+		
 	else{
 		kaiguan[zushu][i] = 0x00;		//(0b) 00
+		/******************调线控制执行卡***************/
+		Ports_state[zushu][i] = WEISHA_1_State;//WEISHA_State
 	}
 		
 	/* Set_Y_Value(Y9,LOW);
@@ -961,7 +977,7 @@ int jidianqi_write_card(unsigned int zushu)
 	
 	auchMsg[2]=tongxunzhen[zushu] & 0xff;
 	auchMsg[3]=(tongxunzhen[zushu] >> 8);
-	auchMsg[4]=Ports_state[zushu];
+	auchMsg[4]=tongxunzhen_Ports_state[zushu];
 	auchMsg[5]=0x00;
 	for (i=0;i<6;i++)
 	{

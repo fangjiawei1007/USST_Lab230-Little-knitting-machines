@@ -27,14 +27,14 @@
 #define weisha_jiange_kw				g_InteralMemory.KeepWord[460]	//喂纱间隔
 
 /******************调线控制执行卡***************/
-#define WEISHA_0_State					5
-#define WEISHA_0_JIANSHA_1st			7
-#define WEISHA_0_JIANSHA_2nd			6
-#define WEISHA_0_JIANSHA_3rd			0
+#define WEISHA_0_State					1	//5
+#define WEISHA_0_JIANSHA_1st			1	//7
+#define WEISHA_0_JIANSHA_2nd			1	//6
+#define WEISHA_0_JIANSHA_3rd			0	//0
 
-#define WEISHA_1_State					5
-#define WEISHA_1_Back_State				4
-#define WEISHA_1_JIANSHA_1st			5
+#define WEISHA_1_State					1	//5
+#define WEISHA_1_Back_State				1	//4
+#define WEISHA_1_JIANSHA_1st			1	//5
 // #define WEISHA_1_JIANSHA_2nd			7
 // #define WEISHA_1_JIANSHA_3rd			6
 // #define WEISHA_1_JIANSHA_4th			0
@@ -44,7 +44,8 @@
 // #define JIANDAO_State					3
 // #define SONGSHA_State					4
 
-extern unsigned int Ports_state[ZUSHU_MAX];
+extern unsigned int Ports_state[ZUSHU_MAX][DAOSHU_MAX];
+extern unsigned int tongxunzhen_Ports_state[ZUSHU_MAX];
 /*************************/
 typedef struct{
 	INT16U* kaishiquanshu;				//调线开始圈数
