@@ -207,7 +207,7 @@ static EnvParams Env;
 
 
 #define BEEP_DELAY				500000	// 500000   3500000  //TJ 2015-6-27更改为3500 原本值为3500000
-#define DELAY_TIME_RTU			10000	// RTU 通讯延时时间10000
+#define DELAY_TIME_RTU			5000	// RTU 通讯延时时间10000
 //#define DELAY_TIME_RTU			5000	// RTU 通讯延时时间10000
 
 //#define SCR_RELATIVE			30		// 中英文画面的相对量

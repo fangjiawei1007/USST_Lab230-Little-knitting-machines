@@ -1000,6 +1000,7 @@ int jidianqi_write_card(unsigned int zushu)
 			}
 		}
 	}
+	#if 0
 	rGPHDAT &= 0xefff;	//GPH12	-Read
 	Count = 0;
 	/**20次读取uart的值，读到值直接退出循环**/
@@ -1025,4 +1026,8 @@ int jidianqi_write_card(unsigned int zushu)
 	else{
 			return 0;
 		}
+	#endif
+		
+	return 1;//仅仅通讯一次
+
 }
