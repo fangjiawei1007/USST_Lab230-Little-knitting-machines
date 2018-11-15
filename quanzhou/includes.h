@@ -166,6 +166,9 @@ extern unsigned int ewaiduan_fencen_status;
 
 extern unsigned int weisha_jiange[6][6];
 extern unsigned int weisha_jiange_status[6][6];
+extern unsigned int tongxun_jiange[6];
+extern unsigned int tongxun_jiange_status[6];
+extern unsigned int tongxun_permmit[6];
 
 extern TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 

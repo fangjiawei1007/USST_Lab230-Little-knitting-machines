@@ -44,6 +44,8 @@
 // #define JIANDAO_State					3
 // #define SONGSHA_State					4
 
+#define HCJ_SB_TIME						100000
+
 extern unsigned int Ports_state[ZUSHU_MAX][DAOSHU_MAX];
 extern unsigned int tongxunzhen_Ports_state[ZUSHU_MAX];
 /*************************/
@@ -58,6 +60,7 @@ typedef struct{
 enum TIAOXIAN_MACRO{
 	ON,
 	OFF,
+	MIDDLE,
 	WEISHAJIANSU,
 	WEISHABUJIANSU
 };

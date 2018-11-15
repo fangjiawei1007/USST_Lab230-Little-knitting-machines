@@ -737,6 +737,16 @@ void __irq	encoder1_process(void)
 		/**调线功能**/
 		if(tiaoxiankaiguan_kb == 1){//mode_choose == tiaoxian_mode
 			for (zushu =0; zushu < tiaoxianzu; zushu++){
+				
+				if(tongxun_jiange_status[zushu] == 1){
+						tongxun_jiange[zushu]++;
+						
+						if(tongxun_jiange[zushu] >= encoder1_cal_factor){
+							tongxun_permmit[zushu] = 1;
+							tongxun_jiange[zushu]=0;
+						}
+				}
+				
 				for (jj = 0 ; jj < DAOSHU_MAX ; jj++){
 					if (chudao_start[zushu][jj] == 1 && 
 						chudao_start_status[zushu][jj] == 0){	//出刀间隔计算 by FJW
@@ -752,6 +762,9 @@ void __irq	encoder1_process(void)
 					{
 						weisha_jiange[zushu][jj]++;
 					}
+					
+					
+					
 				}	
 			}
 		}
