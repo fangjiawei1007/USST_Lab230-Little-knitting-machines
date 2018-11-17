@@ -22,7 +22,8 @@
 #define	choose_not_ewaiduan				0
 
 #define ZUSHU_MAX						6
-#define DAOSHU_MAX						6
+#define DAOSHU_MAX						7
+//6
 /***Î¹É´¼ä¸ô 2018.1.24***/
 #define weisha_jiange_kw				g_InteralMemory.KeepWord[460]	//Î¹É´¼ä¸ô
 

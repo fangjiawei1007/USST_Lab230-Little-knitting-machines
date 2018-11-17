@@ -545,8 +545,8 @@ void tiaoxian(void)
 				
 				tongxun_jiange_status[zushu] = 1;
 				
-			   if((tongxun_jiange[zushu] >= i*encoder1_cal_factor/6)
-			   && (tongxun_jiange[zushu] < (i+1)*encoder1_cal_factor/6)
+			   if((tongxun_jiange[zushu] >= i*encoder1_cal_factor/7)
+			   && (tongxun_jiange[zushu] < (i+1)*encoder1_cal_factor/7)
 			   )
 			   {	
 
@@ -621,8 +621,6 @@ void tiaoxian(void)
 			}	
 		}
 		
-		
-		g_InteralMemory.Bit[568] = tongxun_jiange[zushu];
 		
 		/***通讯开始***/
 		if (tongxunstart[zushu] == 1 && tongxunnum[zushu] <5 ){//&& kaishi<20
