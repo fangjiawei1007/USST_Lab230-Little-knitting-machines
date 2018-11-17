@@ -22,7 +22,7 @@
 #define	choose_not_ewaiduan				0
 
 #define ZUSHU_MAX						6
-#define DAOSHU_MAX						7
+#define DAOSHU_MAX						6
 //6
 /***Î¹É´¼ä¸ô 2018.1.24***/
 #define weisha_jiange_kw				g_InteralMemory.KeepWord[460]	//Î¹É´¼ä¸ô
@@ -45,8 +45,8 @@
 // #define JIANDAO_State					3
 // #define SONGSHA_State					4
 
-#define HCJ_SB_TIME						100000
-
+#define HCJ_SB_TIME						30000
+#define QUANSHU_FACTOR					10000
 extern unsigned int Ports_state[ZUSHU_MAX][DAOSHU_MAX];
 extern unsigned int tongxunzhen_Ports_state[ZUSHU_MAX];
 /*************************/

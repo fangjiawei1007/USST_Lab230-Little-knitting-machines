@@ -149,12 +149,12 @@ extern unsigned int lingwei_jiance_uncover;
 extern unsigned int	huiling_length_tmp;
 
 
-extern unsigned int chudao_start[6][7];	//调线功能 by FJW
-extern unsigned int shoudao_start[6][7];	//调线功能 by FJW
-extern unsigned int chudao_start_status[6][7];	//调线功能 by FJW
-extern unsigned int shoudao_start_status[6][7];	//调线功能 by FJW
-extern unsigned int chudao_jiange_tmp[6][7];		//出刀间隔记录 by FJW
-extern unsigned int shoudao_jiange_tmp[6][7];		//收刀间隔记录 by FJW
+extern unsigned int chudao_start[6][6];	//调线功能 by FJW
+extern unsigned int shoudao_start[6][6];	//调线功能 by FJW
+extern unsigned int chudao_start_status[6][6];	//调线功能 by FJW
+extern unsigned int shoudao_start_status[6][6];	//调线功能 by FJW
+extern unsigned int chudao_jiange_tmp[6][6];		//出刀间隔记录 by FJW
+extern unsigned int shoudao_jiange_tmp[6][6];		//收刀间隔记录 by FJW
 
 //extern	unsigned int tongxunzhen[6];
 //extern unsigned int shinengwei[6];	
@@ -164,8 +164,8 @@ extern unsigned int speed_status;
 extern unsigned int ewaiduan_fencen_status;
 //extern unsigned int jiajiaStatus;
 
-extern unsigned int weisha_jiange[6][7];
-extern unsigned int weisha_jiange_status[6][7];
+extern unsigned int weisha_jiange[6][6];
+extern unsigned int weisha_jiange_status[6][6];
 extern unsigned int tongxun_jiange[6];
 extern unsigned int tongxun_jiange_status[6];
 extern unsigned int tongxun_permmit[6];

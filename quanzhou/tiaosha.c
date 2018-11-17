@@ -3,7 +3,7 @@
 
 unsigned int Ports_state[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int tongxunzhen_Ports_state[ZUSHU_MAX] = {0x0000};
-
+unsigned int tongxun_kaishi = 0;
 
 
 unsigned int chudao_start_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
@@ -129,7 +129,7 @@ void tiaoxian_reset(void){
 			shoudao_start_status[bb][ii] = 0;
 			chudao_start[bb][ii] = 0;
 			shoudao_start[bb][ii] = 0;
-			//chudao_shoudao_status[bb][ii] = 0;
+			chudao_shoudao_status[bb][ii] = 0;
 			kaiguan[bb][ii] = 0x00;	
 			chudao_shoudao_start[bb][ii] = 0;
 			chudao_jiange_tmp[bb][ii] = 0;		
@@ -532,6 +532,7 @@ void tiaoxian(void)
 	unsigned int zushu;
 	shinengpanduan();	//判断第i把刀具的使能
 	
+	g_InteralMemory.Word[568] = weisha_jiange[0][0];
 	/**************当tiaoxianzu_flag=1时，tioaxianzu_quanshu++;*************************************************/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
 		
@@ -541,68 +542,11 @@ void tiaoxian(void)
 			/***********使能位==1之后，设置通讯帧，设置通讯开始标志位，出刀收刀开始标志，
 											  喂纱的工艺改变为出刀之后隔一段脉冲收回来
 			*********/
-			if (shinengwei[i] == 1 && (weisha_jiange_kw !=0 ) ){//&& tongxun_permmit[zushu] == 0
-				
-				tongxun_jiange_status[zushu] = 1;
-				
-			   if((tongxun_jiange[zushu] >= i*encoder1_cal_factor/7)
-			   && (tongxun_jiange[zushu] < (i+1)*encoder1_cal_factor/7)
-			   )
-			   {	
-
-				if(chudao_shoudao_start[zushu][i] == 0){
-					weisha(i,zushu,ON);
-					weisha_jiange_status[zushu][i] = 1;	
-					
-					Beep(1);
-					Delay(HCJ_SB_TIME);
-					Beep(0);
-					
-					
-				}
-				else if((weisha_jiange[zushu][i] >=weisha_jiange_kw && weisha_jiange[zushu][i] < 2*weisha_jiange_kw)){
-					weisha(i,zushu,MIDDLE);
-					
-					Beep(1);
-					Delay(HCJ_SB_TIME);
-					Beep(0);
-					
-				}
-				
-				else if(weisha_jiange[zushu][i] >= 2*weisha_jiange_kw)
-				{
-					weisha(i,zushu,OFF);
-					weisha_jiange_status[zushu][i] = 0;
-					weisha_jiange[zushu][i] = 0;	
-					tongxun_jiange_status[zushu] = 0;
-					
-					Beep(1);
-					Delay(HCJ_SB_TIME);
-					Beep(0);
-					
-				}
-				
-				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
-				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
-				
-				
-				/******************调线控制执行卡***************/
-				tongxunzhen_Ports_state[zushu] &=(~(1 << (i)));
-				tongxunzhen_Ports_state[zushu] |=(Ports_state[zushu][i] << (i));		
-				chudao_shoudao_status[zushu][i] = 1;
-				
-				chudao_shoudao_start[zushu][i] = 1;
-				
-				tongxunstart[zushu] = 1;
-				tongxunnum[zushu]=0;
-
-			}
-			}
-			
-			/***********使能位==0之后(即该段不需要调线，那么就要把刀收回来)，
+						/***********使能位==0之后(即该段不需要调线，那么就要把刀收回来)，
 					   设置出刀收刀，设置通讯开始标志位，出刀收刀开始标志
 			*********/
-			else if ((shinengwei[i] == 0) && (chudao_shoudao_status[zushu][i] == 1)){
+			if((shinengwei[i] == 0) && (chudao_shoudao_status[zushu][i] == 1)){
+				
 				chudao_shoudao_process(i,zushu);					//出刀收刀
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
 				tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2)); //设置
@@ -614,35 +558,107 @@ void tiaoxian(void)
 				chudao_shoudao_start[zushu][i] = 0; 
 				
 				///***18.11.15***//
-				tongxun_permmit[zushu] = 1;
 				tongxun_jiange_status[zushu] = 0;
 				
-				//kaishi=0;
-			}	
-		}
-		
-		
-		/***通讯开始***/
-		if (tongxunstart[zushu] == 1 && tongxunnum[zushu] <5 ){//&& kaishi<20
-			/***5次通讯容错***/
-			if (jidianqi_write_card(zushu) != 1){
-				tongxunnum[zushu] ++ ;
+				tongxun_kaishi = 1;
+				//continue;
 			}
-			else{
+			else if (shinengwei[i] == 1 && (weisha_jiange_kw !=0 )){//&& tongxun_permmit[zushu] == 0
+				
+				tongxun_jiange_status[zushu] = 1;
+			   
+				if((tongxun_jiange[zushu] >= i*QUANSHU_FACTOR)
+				&& (tongxun_jiange[zushu] < (i+1)*QUANSHU_FACTOR)){
+					
+				if(chudao_shoudao_start[zushu][i] == 0){
+					weisha(i,zushu,ON);
 
-					tongxunnum[zushu] = 0;
-					tongxunstart[zushu] = 0;
+					tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
+					tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
+					
+					/******************调线控制执行卡***************/
+					tongxunzhen_Ports_state[zushu] &=(~(1 << (i)));
+					tongxunzhen_Ports_state[zushu] |=(Ports_state[zushu][i] << (i));
+		
+					jidianqi_write_card(zushu);
+					
+					Beep(1);
+					Delay(HCJ_SB_TIME);
+					Beep(0);
+					weisha_jiange_status[zushu][i] = 1;
+					
+				}
+				else if((weisha_jiange[zushu][i] >=weisha_jiange_kw && weisha_jiange[zushu][i] < 2*weisha_jiange_kw)){
+					weisha(i,zushu,MIDDLE);
+					
+					tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
+					tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
+					
+					
+					/******************调线控制执行卡***************/
+					tongxunzhen_Ports_state[zushu] &=(~(1 << (i)));
+					tongxunzhen_Ports_state[zushu] |=(Ports_state[zushu][i] << (i));
+					
+					jidianqi_write_card(zushu);	
+					
+					Beep(1);
+					Delay(HCJ_SB_TIME);
+					Beep(0);
+				}
+				
+				else if(weisha_jiange[zushu][i] >= 3*weisha_jiange_kw){
+					weisha(i,zushu,OFF);
+					weisha_jiange_status[zushu][i] = 0;
+					weisha_jiange[zushu][i] = 0;	
+					tongxun_jiange_status[zushu] = 0;
+					
+					tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
+					tongxunzhen[zushu] |= (kaiguan[zushu][i] << (i*2));	//设置
+					
+					/******************调线控制执行卡***************/
+					tongxunzhen_Ports_state[zushu] &=(~(1 << (i)));
+					tongxunzhen_Ports_state[zushu] |=(Ports_state[zushu][i] << (i));
+						
+					jidianqi_write_card(zushu);
+					
+					Beep(1);
+					Delay(HCJ_SB_TIME);
+					Beep(0);
+				}
+				
+				chudao_shoudao_status[zushu][i] = 1;
+				chudao_shoudao_start[zushu][i] = 1;
+				
+				tongxunstart[zushu] = 1;
+				tongxunnum[zushu]=0;
+
+				}
 			}
+
+		}
+		/***通讯开始***/
+			if (tongxunstart[zushu] == 1 && tongxunnum[zushu] <5 && tongxun_kaishi == 1){//&& kaishi<20 shinengwei[i] == 0
 			
-//			kaishi++;
-		}
-		/**5次通讯错误之后**/
-		else if (tongxunstart[zushu] == 1){
-			tongxunnum[zushu] = 0;
-			tongxunstart[zushu] = 0;
-		}
-		else if (tongxunnum[zushu] != 0)
-			tongxunnum[zushu] = 0;
+				static int i = 0;
+				if(i >= 1)
+					g_InteralMemory.Word[567] = 12345;
+				i++;
+				
+				
+				
+				/***5次通讯容错***/
+				if (jidianqi_write_card(zushu) != 1){
+					tongxunnum[zushu] ++ ;
+				}
+				else{
+						tongxunnum[zushu] = 0;
+						tongxunstart[zushu] = 0;
+				}	
+			
+				tongxun_kaishi = 0;
+			}
+				
+
 	}
 	
 	if (shoudao_reset_flag == 1){
@@ -860,8 +876,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			/******************调线控制执行卡***************/
 			Ports_state[zushu][i] = WEISHA_0_JIANSHA_1st;//WEISHA_State
 		}
-		/* Set_Y_Value(Y9,LOW);
-		Set_Y_Value(Y10,LOW); */
+		
 	}
 	
 	/****************?????????????????**************************/
@@ -880,8 +895,6 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			Ports_state[zushu][i] = WEISHA_0_JIANSHA_2nd;//JIANDAO_State
 				
 		}
-		/* Set_Y_Value(Y9,HIGH);
-		Set_Y_Value(Y10,LOW); */
 		
 		chudao_start_status[zushu][i] = 1;
 		chudao_start[zushu][i] = 0;
@@ -902,14 +915,10 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 			Ports_state[zushu][i] = WEISHA_0_JIANSHA_3rd;	//SONGSHA_State
 		}
 		
-		/* Set_Y_Value(Y9,HIGH);
-		Set_Y_Value(Y10,HIGH); */
-		
 		shoudao_start_status[zushu][i] = 1;
 		shoudao_start[zushu][i] = 0;
 		shoudao_jiange_tmp[zushu][i] = 0;
 
-		//previous_stage[i] = current_stage;
 		chudao_shoudao_status[zushu][i] = 0;
 		weisha_jiange[zushu][i] = 0;
 		if (shoudao_tozero_status[zushu] == 1){
@@ -944,6 +953,7 @@ void weisha(unsigned int i,unsigned int zushu,unsigned int on_off)
 	}
 		
 	else if(on_off == MIDDLE){
+		Beep(1);
 		kaiguan[zushu][i] = 0x03;		//(0b) 01
 		/******************调线控制执行卡***************/
 		Ports_state[zushu][i] = WEISHA_1_State;//WEISHA_State

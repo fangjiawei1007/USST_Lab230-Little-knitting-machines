@@ -741,10 +741,6 @@ void __irq	encoder1_process(void)
 				if(tongxun_jiange_status[zushu] == 1){
 						tongxun_jiange[zushu]++;
 						
-						if(tongxun_jiange[zushu] >= encoder1_cal_factor){
-							tongxun_permmit[zushu] = 1;
-							tongxun_jiange[zushu]=0;
-						}
 				}
 				
 				for (jj = 0 ; jj < DAOSHU_MAX ; jj++){
