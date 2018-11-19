@@ -740,7 +740,7 @@ void __irq	encoder1_process(void)
 				
 				if(tongxun_jiange_status[zushu] == 1){
 						tongxun_jiange[zushu]++;
-						
+						//g_InteralMemory.Word[568] = tongxun_jiange[zushu];
 				}
 				
 				for (jj = 0 ; jj < DAOSHU_MAX ; jj++){

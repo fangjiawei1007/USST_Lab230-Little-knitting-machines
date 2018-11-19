@@ -527,15 +527,19 @@ Commented:方佳伟
 *************************************************/
 void tiaoxian(void)
 {
+//	static int tiaoshi=-1;
+	
 	int i;
 	int j=0;
 	unsigned int zushu;
 	shinengpanduan();	//判断第i把刀具的使能
 	
-	g_InteralMemory.Word[568] = weisha_jiange[0][0];
+	
 	/**************当tiaoxianzu_flag=1时，tioaxianzu_quanshu++;*************************************************/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
-		
+		if(dapan_round == 0){
+			tongxun_jiange[zushu] = 0;	
+		}
 		/***判断6把刀具是否使能***/
 		for (i = 0; i<DAOSHU_MAX ; i++){
 			
@@ -566,10 +570,10 @@ void tiaoxian(void)
 			else if (shinengwei[i] == 1 && (weisha_jiange_kw !=0 )){//&& tongxun_permmit[zushu] == 0
 				
 				tongxun_jiange_status[zushu] = 1;
-			   
-				if((tongxun_jiange[zushu] >= i*QUANSHU_FACTOR)
-				&& (tongxun_jiange[zushu] < (i+1)*QUANSHU_FACTOR)){
-					
+				
+				if((tongxun_jiange[zushu] >= i*(4*weisha_jiange_kw))
+				&& (tongxun_jiange[zushu] < (i+1)*(4*weisha_jiange_kw))){
+				
 				if(chudao_shoudao_start[zushu][i] == 0){
 					weisha(i,zushu,ON);
 
@@ -582,7 +586,7 @@ void tiaoxian(void)
 		
 					jidianqi_write_card(zushu);
 					
-					Beep(1);
+					Beep(0);
 					Delay(HCJ_SB_TIME);
 					Beep(0);
 					weisha_jiange_status[zushu][i] = 1;
@@ -601,7 +605,7 @@ void tiaoxian(void)
 					
 					jidianqi_write_card(zushu);	
 					
-					Beep(1);
+					Beep(0);
 					Delay(HCJ_SB_TIME);
 					Beep(0);
 				}
@@ -621,7 +625,7 @@ void tiaoxian(void)
 						
 					jidianqi_write_card(zushu);
 					
-					Beep(1);
+					Beep(0);
 					Delay(HCJ_SB_TIME);
 					Beep(0);
 				}
@@ -639,12 +643,13 @@ void tiaoxian(void)
 		/***通讯开始***/
 			if (tongxunstart[zushu] == 1 && tongxunnum[zushu] <5 && tongxun_kaishi == 1){//&& kaishi<20 shinengwei[i] == 0
 			
-				static int i = 0;
-				if(i >= 1)
-					g_InteralMemory.Word[567] = 12345;
-				i++;
+				// static int i = 0;
+				// static int j = 0;
+				// if(i >= 1)
+				//	g_InteralMemory.Word[567] = 12345;
+				// i++;
 				
-				
+				// g_InteralMemory.Word[568] = j++;
 				
 				/***5次通讯容错***/
 				if (jidianqi_write_card(zushu) != 1){
@@ -849,22 +854,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 	/****工艺：1.外部喂纱间隔为0:直接执行原来工艺
 			  2.外部喂纱间隔不为0:weisha_jiange_status为0; weisha_jiange[6][6]此时=0;
 	****/
-	if(weisha_jiange_kw !=0){
-		if(weisha_jiange_status[zushu][i] != 1 && weisha_jiange[zushu][i] == 0){
-			kaiguan[zushu][i] = 0x01;		//(0b) 01
-			tongxunstart[zushu] = 1;
-			tongxunnum[zushu] = 0;
-			weisha_jiange_status[zushu][i] = 1;
-			
-			/******************调线控制执行卡***************/
-			Ports_state[zushu][i] = WEISHA_1_JIANSHA_1st;//WEISHA_State_None
-		}
-		else if(weisha_jiange[zushu][i]<weisha_jiange_kw){
-			return;
-		}
-		else 
-			weisha_jiange_status[zushu][i] = 0;
-	}
+
 	/**********第一步：kaiguan[zushu][i] = 0x00，打开通讯开关*********/
 	if(chudao_start[zushu][i] == 0 && shoudao_start[zushu][i] == 0)
 	{
@@ -920,6 +910,9 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		shoudao_jiange_tmp[zushu][i] = 0;
 
 		chudao_shoudao_status[zushu][i] = 0;
+		
+		//chudao_shoudao_start[zushu][i]=0;
+		
 		weisha_jiange[zushu][i] = 0;
 		if (shoudao_tozero_status[zushu] == 1){
 			shoudao_tozero_status[zushu]=0;
@@ -953,7 +946,7 @@ void weisha(unsigned int i,unsigned int zushu,unsigned int on_off)
 	}
 		
 	else if(on_off == MIDDLE){
-		Beep(1);
+		//Beep(1);
 		kaiguan[zushu][i] = 0x03;		//(0b) 01
 		/******************调线控制执行卡***************/
 		Ports_state[zushu][i] = WEISHA_1_State;//WEISHA_State
