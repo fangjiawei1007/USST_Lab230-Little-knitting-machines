@@ -365,7 +365,7 @@ void bianpingqi_speed_cal(void){
 		if ((at_check((dapan_round+1)) && encoder1_pulse_number >= 
 			(encoder1_cal_factor - jiajiansujiangemaichong_kw))){
 			if (weisha_check(dapan_round) == WEISHAJIANSU){
-				bianpingqi_speed = bianpingqi_tiaoxian_speed_set;
+				bianpingqi_speed = bianpingqi_fullspeed_set*(bianpingqi_weisha_delta_num/100.0);//bianpingqi_tiaoxian_speed_set
 			}
 			else{
 				bianpingqi_speed=bianpingqi_fullspeed_set*(bianpingqi_weisha_delta_num/100.0);
