@@ -571,8 +571,8 @@ void tiaoxian(void)
 				
 				tongxun_jiange_status[zushu] = 1;
 				
-				if((tongxun_jiange[zushu] >= i*(4*weisha_jiange_kw))
-				&& (tongxun_jiange[zushu] < (i+1)*(4*weisha_jiange_kw))){
+				if((tongxun_jiange[zushu] >= i*(3*weisha_jiange_kw))
+				&& (tongxun_jiange[zushu] < ((i+1)*(3*weisha_jiange_kw)+tiaoxian_buchang))){
 				
 				if(chudao_shoudao_start[zushu][i] == 0){
 					weisha(i,zushu,ON);
@@ -610,7 +610,7 @@ void tiaoxian(void)
 					Beep(0);
 				}
 				
-				else if(weisha_jiange[zushu][i] >= 3*weisha_jiange_kw){
+				else if(weisha_jiange[zushu][i] >= 2*weisha_jiange_kw){
 					weisha(i,zushu,OFF);
 					weisha_jiange_status[zushu][i] = 0;
 					weisha_jiange[zushu][i] = 0;	

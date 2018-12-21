@@ -10,9 +10,11 @@
 #define shoudao_jiange					(g_InteralMemory.KeepWord[152]) //收刀间隔
 
 #define	tiaoxianzu_jiange				g_InteralMemory.KeepWord[99]	//调线间隔圈数
-#define	tiaoxianzu_max					g_InteralMemory.KeepWord[61]	//调线组数
+#define	tiaoxianzu_max					1
+//g_InteralMemory.KeepWord[61]	//调线组数
 #define	tiaoxianzu						g_InteralMemory.KeepWord[93]	//记录当前为第几组
 #define	tiaoxianzu_quanshu				g_InteralMemory.KeepWord[62]	//记录调线组实际走了多少圈
+#define tiaoxian_buchang				g_InteralMemory.KeepWord[888]	//调线补偿
 
 #define Y9								9
 #define Y10								10

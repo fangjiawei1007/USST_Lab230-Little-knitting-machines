@@ -171,7 +171,8 @@ void menu_init(void)
 		chudao_jiange = 10000;	//by FJW
 		shoudao_jiange = 10000; //by FJW
 		tiaoxiankaiguan_kb = 0;
-		tiaoxianzu_max = 5;
+		tiaoxian_buchang = 500;
+		//tiaoxianzu_max = 1;
 		tiaoxianzu = 1;
 		tiaoxianzu_quanshu=0;
 		tiaoxianzu_flag = 0;
