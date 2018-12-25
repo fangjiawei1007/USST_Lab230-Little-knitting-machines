@@ -1340,7 +1340,7 @@ void __irq	encoder1_process(void)
 			***/
 			
 		#ifdef YAZHEN_NORMAL_EN
-			if(j != 1 && j != 2 && jj != 3 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
+			if(j == 0 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
 				rGPEDAT |= (1<<(jj + 4));
 			}
 		
@@ -1471,7 +1471,7 @@ void __irq	encoder1_process(void)
 		for (jj=4;jj<8;jj++)
 		{
 		#ifdef YAZHEN_NORMAL_EN
-			if (jj != 5 && jj != 6 && jj != 7){
+			if (jj == 4){
 				motor_factor[jj] += k_motor[jj];
 				if (motor_factor[jj]>=1000000)
 				{
