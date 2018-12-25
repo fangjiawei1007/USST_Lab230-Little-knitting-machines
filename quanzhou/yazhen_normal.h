@@ -150,12 +150,21 @@ enum Direction_Fenceng{
 
 
 /****µ˜ ‘ªÿ¡„∞¥≈•****/
-#define datou_shangyazhen_zero_kb		(g_InteralMemory.KeepBit[105])
-#define datou_xiayazhen_zero_kb			(g_InteralMemory.KeepBit[106])
-#define xiaotou_shangyazhen_zero_kb		(g_InteralMemory.KeepBit[107])
-#define xiaotou_xiayazhen_zero_kb		(g_InteralMemory.KeepBit[108]) 
-#define fenceng_shangyazhen_zero_kb		(g_InteralMemory.KeepBit[114])
-#define fenceng_xiayazhen_zero_kb		(g_InteralMemory.KeepBit[115]) 
+#define datou_shangyazhen_zero_kb		0
+#define datou_xiayazhen_zero_kb			0
+#define xiaotou_shangyazhen_zero_kb		0
+#define xiaotou_xiayazhen_zero_kb		0
+#define fenceng_shangyazhen_zero_kb		0
+#define fenceng_xiayazhen_zero_kb		0
+
+// #define datou_shangyazhen_zero_kb		(g_InteralMemory.KeepBit[105])
+// #define datou_xiayazhen_zero_kb			(g_InteralMemory.KeepBit[106])
+// #define xiaotou_shangyazhen_zero_kb		(g_InteralMemory.KeepBit[107])
+// #define xiaotou_xiayazhen_zero_kb		(g_InteralMemory.KeepBit[108]) 
+// #define fenceng_shangyazhen_zero_kb		(g_InteralMemory.KeepBit[114])
+// #define fenceng_xiayazhen_zero_kb		(g_InteralMemory.KeepBit[115]) 
+
+
 
 #define shangyazhen_zero_confirm_kb		(g_InteralMemory.KeepBit[109])
 #define xiayazhen_zero_confirm_kb		(g_InteralMemory.KeepBit[110])
