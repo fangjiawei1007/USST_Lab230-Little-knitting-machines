@@ -172,6 +172,14 @@ extern unsigned int tongxun_permmit[6];
 
 extern TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
+#ifdef YAZHEN_NORMAL_EN
+
+extern int YAZHEN_ZERO_ERR;
+
+extern unsigned int X3_SIG;
+extern unsigned int X4_SIG;
+
+#endif
 //extern unsigned int SET_HIGH_STATUS;		//置高电平标志位 by FJW
 //unsigned int chudao_shoudao_status;
 #endif

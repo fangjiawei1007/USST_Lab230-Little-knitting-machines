@@ -151,7 +151,9 @@ void menu_init(void)
 		
 		reset_time_kw = 700;
 		init_stop_time_kw = 30;
-		
+	#ifdef YAZHEN_NORMAL_EN
+		Yazhen_Normal_Init_Once();	
+	#endif
 		/*************8段调线设置*****************/
 		for (ii = 0; ii < tiaoshaduan_max; ii++){
 			g_InteralMemory.KeepWord[156 + 10*ii] = 0;			//开始圈
