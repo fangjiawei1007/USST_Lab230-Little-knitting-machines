@@ -982,8 +982,8 @@ Commented:·½¼ÑÎ°
 *************************************************/
 int jidianqi_write_card(unsigned int zushu)
 {
-	U8 auchMsg[8],SendArray[8],RecArray[8];  
-	U8 Count,jdqCheck,waitTime;
+	U8 auchMsg[8],SendArray[8];  //,RecArray[8]
+	U8 Count,waitTime;	//jdqCheck,
 	int i;
 	U32 ErrorLoop;
 	ErrorLoop = ERROR_NUM*19200/g_SystemConf.BaudRates;

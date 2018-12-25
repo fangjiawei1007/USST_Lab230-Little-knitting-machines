@@ -358,7 +358,13 @@ void bianpingqi_speed_cal(void){
 		bianpingqi_speed_down_b = 0;
 	}		
 	/*************************************************************/
-
+#ifdef YAZHEN_NORMAL_EN
+	if((yazhen_datou_debug_kb == 1) || (yazhen_xiaotou_debug_kb == 1) || (yazhen_fenceng_debug_kb == 1)){
+		bianpingqi_speed = bianpingqi_yazhen_speed_set;
+		return;
+	}
+	
+#endif
 	//µ÷Ïß
 	/**************************************************************/
 	if (tiaoxiankaiguan_kb == 1){//&& current_stage != ewaiduan

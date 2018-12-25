@@ -1196,6 +1196,47 @@
                 </File>
                 <File RelativePath=".\quanzhou\tiaosha.h" FileType="4" />
             </Filter>
+            <Filter Name="ันี๋">
+                <File RelativePath=".\quanzhou\yazhen_normal.c" FileType="1" Output="yazhen_normal.o">
+                    <ADS_CParam Name="ADS_CfgFlag" ver64m_bin=" -cpu ARM926EJ-S -O0 -g+ -D__OPTIMISE_LEVEL==0 -D__TARGET_ARCH_4T= -D__TARGET_ARCH_5TE -D__TARGET_CPU_ARM7TDMI= -D__TARGET_CPU_ARM926EJ_S -D__TARGET_FEATURE_DOUBLEWORD -D__TARGET_FEATURE_DSPMUL -DSDRAM_SIZE64M" ver64m_bin_tool="2" ver64m_hex=" -cpu ARM920T -DSDRAM_SIZE64M -D__TARGET_CPU_ARM7TDMI= -D__TARGET_CPU_ARM920T  -g+ -O2" ver64m_hex_tool="2" />
+                    <Header RelativePath=".\inc\2416addr.h" />
+                    <Header RelativePath=".\inc\2416lib.h" />
+                    <Header RelativePath=".\inc\Def.h" />
+                    <Header RelativePath=".\inc\LCD.h" />
+                    <Header RelativePath=".\inc\Nand.h" />
+                    <Header RelativePath=".\inc\Rtc.h" />
+                    <Header RelativePath=".\inc\appBase.h" />
+                    <Header RelativePath=".\inc\communication.h" />
+                    <Header RelativePath=".\inc\def.h" />
+                    <Header RelativePath=".\inc\download.h" />
+                    <Header RelativePath=".\inc\encrypt.h" />
+                    <Header RelativePath=".\inc\function.h" />
+                    <Header RelativePath=".\inc\jiema.h" />
+                    <Header RelativePath=".\inc\mmu.h" />
+                    <Header RelativePath=".\inc\option.h" />
+                    <Header RelativePath=".\inc\systemconf.h" />
+                    <Header RelativePath=".\inc\systemmenu.h" />
+                    <Header RelativePath=".\inc\test.h" />
+                    <Header RelativePath=".\quanzhou\16jidianqi.h" />
+                    <Header RelativePath=".\quanzhou\bianpingqi.h" />
+                    <Header RelativePath=".\quanzhou\delay.h" />
+                    <Header RelativePath=".\quanzhou\encoder1.h" />
+                    <Header RelativePath=".\quanzhou\encoder2.h" />
+                    <Header RelativePath=".\quanzhou\encoder3.h" />
+                    <Header RelativePath=".\quanzhou\encoder4.h" />
+                    <Header RelativePath=".\quanzhou\encoder5.h" />
+                    <Header RelativePath=".\quanzhou\includes.h" />
+                    <Header RelativePath=".\quanzhou\init.h" />
+                    <Header RelativePath=".\quanzhou\pid.h" />
+                    <Header RelativePath=".\quanzhou\qigang.h" />
+                    <Header RelativePath=".\quanzhou\qz_system.h" />
+                    <Header RelativePath=".\quanzhou\stepmotor.h" />
+                    <Header RelativePath=".\quanzhou\tiaosha.h" />
+                    <Header RelativePath=".\quanzhou\wdt.h" />
+                    <Header RelativePath=".\quanzhou\zhongduan.h" />
+                </File>
+                <File RelativePath=".\quanzhou\yazhen_normal.h" FileType="4" />
+            </Filter>
         </Filter>
     </Files>
 </TKStudioProject>
