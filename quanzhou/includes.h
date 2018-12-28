@@ -53,7 +53,7 @@
 #include "pressing_cal.h"
 #include "pressing_get_zero.h"		//ันี๋ by FJW */
 #include "tiaosha.h"				//ต๗ฯ฿ by FJW
-
+#include "yazhen_normal.h"
 
 #define	start_quanzhou					1
 #define	stop_quanzhou					0

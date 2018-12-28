@@ -700,10 +700,10 @@ void Yazhen_Normal_Init(void){
 	fenceng_shangyazhen_monitor_clear_b	= 0;
 	fenceng_xiayazhen_monitor_clear_b	= 0;
 	
-	datou_shangyazhen_zero_kb	= 0;
-	datou_xiayazhen_zero_kb		= 0;
-	xiaotou_shangyazhen_zero_kb	= 0;
-	xiaotou_xiayazhen_zero_kb	= 0;
+	// datou_shangyazhen_zero_kb	= 0;
+	// datou_xiayazhen_zero_kb		= 0;
+	// xiaotou_shangyazhen_zero_kb	= 0;
+	// xiaotou_xiayazhen_zero_kb	= 0;
 	
 	shangyazhen_zero_confirm_kb	= 0;
 	xiayazhen_zero_confirm_kb	= 0;
@@ -776,10 +776,10 @@ void Yazhen_Normal_Init_Once(void){
 	xiaotou_shangyazhen_monitor_clear_b	= 0;
 	xiaotou_xiayazhen_monitor_clear_b	= 0;
 	
-	datou_shangyazhen_zero_kb	= 0;
-	datou_xiayazhen_zero_kb		= 0;
-	xiaotou_shangyazhen_zero_kb	= 0;
-	xiaotou_xiayazhen_zero_kb	= 0;
+	// datou_shangyazhen_zero_kb	= 0;
+	// datou_xiayazhen_zero_kb		= 0;
+	// xiaotou_shangyazhen_zero_kb	= 0;
+	// xiaotou_xiayazhen_zero_kb	= 0;
 	
 	shangyazhen_zero_confirm_kb	= 0;
 	xiayazhen_zero_confirm_kb	= 0;
@@ -821,8 +821,8 @@ void Yazhen_Normal_Init_Once(void){
 
 	err_feed						= 0;
 	
-	fenceng_shangyazhen_zero_kb		= 0;
-	fenceng_xiayazhen_zero_kb	    = 0;
+//	fenceng_shangyazhen_zero_kb		= 0;
+//	fenceng_xiayazhen_zero_kb	    = 0;
 	yazhen_fenceng_debug_kb         = 0;
 	                                
 	fenceng_shangyazhen_monitor		= 0;
@@ -1490,6 +1490,40 @@ void Yazhen_Get_Zero_Start_Com(void){
 		xiayazhen_back_zero_counter = 0;
 		xiayazhen_back_counter = 0;
 		xiayazhen_back_start = 0;
+		
+		if(yazhen_datou_debug_kb == 1){
+			DBG_shangyazhen_back_zero_counter = 0;
+			DBG_shangyazhen_back_counter = 0;			
+			/**********上压针计数清零**********/
+			DBG_shangyazhen_counter = 0;
+			DBG_xiayazhen_back_zero_counter = 0;
+			DBG_xiayazhen_back_counter = 0;
+			/*******下压针计数清零********/
+			DBG_xiayazhen_counter = 0;
+		}
+		
+		if(yazhen_xiaotou_debug_kb == 1){
+			DBG_shangyazhen_back_zero_counter_xiaotou = 0;
+			DBG_shangyazhen_back_counter_xiaotou = 0;		
+			/**********上压针计数清零**********/
+			DBG_shangyazhen_counter_xiaotou = 0;
+			DBG_xiayazhen_back_zero_counter_xiaotou = 0;
+			DBG_xiayazhen_back_counter_xiaotou = 0;
+			/*******下压针计数清零********/
+			DBG_xiayazhen_counter_xiaotou = 0;
+		}
+		if(yazhen_fenceng_debug_kb == 1){
+			DBG_shangyazhen_back_zero_counter_fenceng = 0;
+			DBG_shangyazhen_back_counter_fenceng = 0;
+			/**********上压针计数清零**********/
+			DBG_shangyazhen_counter_fenceng = 0;
+			DBG_xiayazhen_back_zero_counter_fenceng = 0;
+			DBG_xiayazhen_back_counter_fenceng = 0;
+			/*******下压针计数清零********/
+			DBG_xiayazhen_counter_fenceng = 0;	
+		}
+		
+		
 		
 		for(i = 0;i<COM_TIMES;i++){
 			Enter_Zero_Mode();

@@ -728,7 +728,7 @@ void dingdanlianghua(void){
 	}
 }
 
-
+#ifndef YAZHEN_NORMAL_EN
 void __irq pwrDownHandler(void)	//X4-X7µÄÖÐ¶Ï·þÎñ³ÌÐò°ó¶¨µÄÐÂÃû×Ö£¬µ«ÊÇÄ¿Ç°Ã»ÓÐÓÃµ½
 {
 	//U8 pwrOffCount;
@@ -763,3 +763,4 @@ void __irq pwrDownHandler(void)	//X4-X7µÄÖÐ¶Ï·þÎñ³ÌÐò°ó¶¨µÄÐÂÃû×Ö£¬µ«ÊÇÄ¿Ç°Ã»ÓÐÓ
 	}
 	ClearPending(BIT_EINT4_7);
 }
+#endif

@@ -1186,7 +1186,7 @@ void __irq	encoder1_process(void)
 					/**********上压针计数清零**********/
 					DBG_shangyazhen_counter = 0;
 					
-					datou_shangyazhen_zero_kb = 0;
+//					datou_shangyazhen_zero_kb = 0;
 				}
 			}
 			/**********小头上压针回零***********/
@@ -1205,7 +1205,7 @@ void __irq	encoder1_process(void)
 					/**********上压针计数清零**********/
 					DBG_shangyazhen_counter_xiaotou = 0;
 					
-					xiaotou_shangyazhen_zero_kb = 0;
+//					xiaotou_shangyazhen_zero_kb = 0;
 				}
 			}
 			/***********分层上压针回零************/
@@ -1227,7 +1227,7 @@ void __irq	encoder1_process(void)
 					/**********上压针计数清零**********/
 					DBG_shangyazhen_counter_fenceng = 0;
 					
-					fenceng_shangyazhen_zero_kb = 0;
+//					fenceng_shangyazhen_zero_kb = 0;
 				}
 			}
 			/**********大头下压针回零***********/
@@ -1246,7 +1246,7 @@ void __irq	encoder1_process(void)
 					/*******下压针计数清零********/
 					DBG_xiayazhen_counter = 0;
 					
-					datou_xiayazhen_zero_kb = 0;
+//					datou_xiayazhen_zero_kb = 0;
 				}
 			}
 			/**********小头下压针回零***********/
@@ -1265,7 +1265,7 @@ void __irq	encoder1_process(void)
 					/*******下压针计数清零********/
 					DBG_xiayazhen_counter_xiaotou = 0;
 					
-					xiaotou_xiayazhen_zero_kb = 0;
+//					xiaotou_xiayazhen_zero_kb = 0;
 				}
 			}
 			/**********分层下压针回零*********/
@@ -1287,7 +1287,7 @@ void __irq	encoder1_process(void)
 					/*******下压针计数清零********/
 					DBG_xiayazhen_counter_fenceng = 0;
 					
-					fenceng_xiayazhen_zero_kb = 0;
+//					fenceng_xiayazhen_zero_kb = 0;
 				}
 			}
 	#endif
@@ -1340,7 +1340,7 @@ void __irq	encoder1_process(void)
 			***/
 			
 		#ifdef YAZHEN_NORMAL_EN
-			if(j == 0 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
+			if(jj == 0 && (motor_factor[jj + 4] >= 500000 || k_motor[jj + 4] >= 500000)){
 				rGPEDAT |= (1<<(jj + 4));
 			}
 		
