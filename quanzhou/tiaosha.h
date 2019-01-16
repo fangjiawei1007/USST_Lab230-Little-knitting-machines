@@ -51,6 +51,10 @@
 #define QUANSHU_FACTOR					10000
 extern unsigned int Ports_state[ZUSHU_MAX][DAOSHU_MAX];
 extern unsigned int tongxunzhen_Ports_state[ZUSHU_MAX];
+extern unsigned int tongxun_reset_finish;
+extern unsigned char *shinengwei_pre;
+extern unsigned char *shinengwei_cur;
+extern INT16U *shinengwei_jdg;
 /*************************/
 typedef struct{
 	INT16U* kaishiquanshu;				//调线开始圈数
@@ -65,7 +69,10 @@ enum TIAOXIAN_MACRO{
 	OFF,
 	MIDDLE,
 	WEISHAJIANSU,
-	WEISHABUJIANSU
+	WEISHABUJIANSU,
+	WEISHA_ALLOW,
+	CHUDAOSHOUDAO_ALLOW,
+	SHINENG_NO
 };
 
 
@@ -81,6 +88,7 @@ void tiaoxian_reset(void);
 int weisha_check(unsigned int roundShineng);
 unsigned int tiqushuzi(INT16U channal_choose);
 int jidianqi_write_card(unsigned int zushu);
-
+void tiaoxian_init_Once(void);
+void tiaoxian_reset_finish(void);
 #endif
 

@@ -68,7 +68,6 @@ Commented:方佳伟
 void menu_init(void)
 {
 	int ban,lei;
-	int ii,bb;
 	if (menu_init_flag!=1)
 	{
 		zhibusheding=2000;				//对应件数上限
@@ -154,35 +153,8 @@ void menu_init(void)
 	#ifdef YAZHEN_NORMAL_EN
 		Yazhen_Normal_Init_Once();	
 	#endif
-		/*************8段调线设置*****************/
-		for (ii = 0; ii < tiaoshaduan_max; ii++){
-			g_InteralMemory.KeepWord[156 + 10*ii] = 0;			//开始圈
-			g_InteralMemory.KeepWord[157 + 10*ii] = 0;			//结束圈
-			g_InteralMemory.KeepWord[158 + 10*ii] = 0;			//调线选择
-			g_InteralMemory.KeepBit[49 + ii] = 0;
-			
-			//上部大送纱轮、上部小送砂轮、下部大送纱轮、下部小送砂轮
-			//卷布机、五号送砂轮、六号送砂轮 循环设置(百分比)
-			for (bb = 0; bb<7; bb++){
-				g_InteralMemory.KeepWord[159 + 10*ii + bb] = 100;
-			}
-		}
-		/******************************************/
-		jiajiaStatus = 0;
-		tiaoxianzu_jiange = 2;
-		chudao_jiange = 10000;	//by FJW
-		shoudao_jiange = 10000; //by FJW
-		tiaoxiankaiguan_kb = 0;
-		tiaoxian_buchang = 500;
-		//tiaoxianzu_max = 1;
-		tiaoxianzu = 1;
-		tiaoxianzu_quanshu=0;
-		tiaoxianzu_flag = 0;
+		tiaoxian_init_Once();
 		
-		jiajiansujiangemaichong_kw = 10000;
-		
-		weisha_jiange_kw = 0;	//喂纱间隔
-	/**********************************************/	
 		
 		menu_init_flag=1;
 	}

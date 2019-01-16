@@ -12,7 +12,7 @@ unsigned int chudao_start[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int shoudao_start[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int chudao_shoudao_status[ZUSHU_MAX][DAOSHU_MAX] = {0};
 unsigned int kaiguan[ZUSHU_MAX][DAOSHU_MAX] = {0x00};			//外部通讯帧的具体实现	
-unsigned int shinengwei[DAOSHU_MAX]={0};	
+unsigned char shinengwei[DAOSHU_MAX]={0};	
 unsigned int tongxunzhen[ZUSHU_MAX] = {0x0000};
 unsigned int tongxunstart[ZUSHU_MAX] = {0};
 unsigned int chudao_jiange_tmp[ZUSHU_MAX][DAOSHU_MAX] = {0};		//出刀间隔记录 by FJW
@@ -32,10 +32,60 @@ unsigned int shoudao_reset_flag = 0;
 unsigned int tongxunnum[6] = {0};
 
 //unsigned int kaishi;
+unsigned char *shinengwei_pre;
+unsigned char *shinengwei_cur;
+INT16U *shinengwei_jdg;
+
+unsigned int tongxun_reset_start;
+unsigned int tongxun_reset_finish;
 
 
 TIAOXIANDUAN tiaoxianduan[tiaoshaduan_max];
 
+void tiaoxian_init_Once(void)	//调线初始化 by FJW
+{
+	unsigned int ii,bb,j;
+	/*************8段调线设置*****************/
+		for (ii = 0; ii < tiaoshaduan_max; ii++){
+			g_InteralMemory.KeepWord[156 + 10*ii] = 0;			//开始圈
+			g_InteralMemory.KeepWord[157 + 10*ii] = 0;			//结束圈
+			g_InteralMemory.KeepWord[158 + 10*ii] = 0;			//调线选择
+			g_InteralMemory.KeepBit[49 + ii] = 0;
+			
+			//上部大送纱轮、上部小送砂轮、下部大送纱轮、下部小送砂轮
+			//卷布机、五号送砂轮、六号送砂轮 循环设置(百分比)
+			for (bb = 0; bb<7; bb++){
+				g_InteralMemory.KeepWord[159 + 10*ii + bb] = 100;
+			}
+		}
+		for(j = 0;j<DAOSHU_MAX;j++){
+			g_InteralMemory.KeepBit[150+j] = 0;
+			g_InteralMemory.KeepBit[160+j] = 0;
+			g_InteralMemory.KeepWord[900+j] = SHINENG_NO;
+		}
+		/******************************************/
+		jiajiaStatus = 0;
+		tiaoxianzu_jiange = 2;
+		chudao_jiange = 10000;	//by FJW
+		shoudao_jiange = 10000; //by FJW
+		tiaoxiankaiguan_kb = 0;
+		tiaoxian_buchang = 500;
+		//tiaoxianzu_max = 1;
+		tiaoxianzu = 1;
+		tiaoxianzu_quanshu=0;
+		tiaoxianzu_flag = 0;
+		
+		jiajiansujiangemaichong_kw = 10000;
+		
+		weisha_jiange_kw = 1000;	//喂纱间隔
+		
+		shinengwei_pre = g_InteralMemory.KeepBit + 150;
+		//shinengwei_cur = g_InteralMemory.KeepBit + 160;
+		//shinengwei_jdg = g_InteralMemory.KeepWord + 900;
+		
+		
+	/**********************************************/	
+}
 /*************************************************
 Function(函数名称): tiaoxian_init(void)
 Description(函数功能、性能等的描述): 调线功能初始化
@@ -54,7 +104,8 @@ void tiaoxian_init(void)	//调线初始化 by FJW
 {
 	int ii,bb;
 	
-	//写入8路通讯帧，外部输出对应的状态
+	//写入8路通讯帧，外部输出对应的状态，黄成坚的板子说自己能保持，那就不鸟他
+	#if 0
 	if (tiaoxiankaiguan_kb ==1 ){
 		for (ii = 0 ;ii<ZUSHU_MAX;ii++){
 			tongxunzhen[ii] = 0x0;//初始化继电器吸合
@@ -71,7 +122,7 @@ void tiaoxian_init(void)	//调线初始化 by FJW
 			}
 		}
 	}
-	
+	#endif
 	/***8段参数初始化***/
 	for (ii = 0; ii < tiaoshaduan_max; ii++){
 		tiaoxianduan[ii].kaishiquanshu = &g_InteralMemory.KeepWord[156 + 10*ii];
@@ -102,26 +153,11 @@ Commented:方佳伟
 *************************************************/
 void tiaoxian_reset(void){
 	int ii,bb;
-	/* for (ii = 0 ;ii<ZUSHU_MAX;ii++){
-		tongxunzhen[ii] = 0x0;
-	}
-	
-	for (bb = 0 ; bb < ZUSHU_MAX; bb++){
-		for (ii = 0 ; ii < 5 ; ii++){
-			//通讯成功之后会直接退出循环，5次容错
-			if (tiaoxian_jidianqi_write(bb) == 1){
-				break;
-			}
-		}
-	} */
 	
 	/*****************6组刀具，6把刀全部复位********************/
 	for (bb =0; bb<ZUSHU_MAX;bb++){
 		
-		/*****使能位、通讯帧、通讯开始信号*****/
-		//shinengwei[bb]=0;					//此处使能位应该与刀数对应，由于组数和刀数相同，所以在外面可行
-		tongxunzhen[bb] = 0x0;
-		tongxunstart[bb] = 0;
+		
 		
 		/*******调线出刀收刀部分复位,调纱参数复位*******/
 		for (ii=0;ii<DAOSHU_MAX;ii++){
@@ -130,7 +166,7 @@ void tiaoxian_reset(void){
 			chudao_start[bb][ii] = 0;
 			shoudao_start[bb][ii] = 0;
 			chudao_shoudao_status[bb][ii] = 0;
-			kaiguan[bb][ii] = 0x00;	
+			
 			chudao_shoudao_start[bb][ii] = 0;
 			chudao_jiange_tmp[bb][ii] = 0;		
 			shoudao_jiange_tmp[bb][ii] = 0;	
@@ -150,20 +186,30 @@ void tiaoxian_reset(void){
 			if (chudao_shoudao_status[bb][ii] == 1){//喂纱后点击清零，需要出刀的才将shoudao_tozero_status[bb]置1
 				shoudao_tozero_status[bb]= 1;
 			}	
+			
+			if(shinengwei_cur[ii] == 1){
+				if(kaiguan[bb][ii] != 0x03){
+					kaiguan[bb][ii] = 0x03;		//(0b) 11
+					/******************调线控制执行卡***************/
+					Ports_state[bb][ii] = WEISHA_0_JIANSHA_1st;//WEISHA_State
+				}
+				tongxunzhen[bb] &= (~(3<< (ii*2)));				//清零
+				tongxunzhen[bb] |= (kaiguan[bb][ii] << (ii*2)); //设置
+				
+				/******************调线控制执行卡***************/
+				tongxunzhen_Ports_state[bb] &=(~(1 << (ii)));
+				tongxunzhen_Ports_state[bb] |=(Ports_state[bb][ii] << (ii));
+				tongxun_reset_start = 1;
+			}	
 		}
-	}
-	/****************调线间隔圈数******************/
-	/* if (tiaoxianzu_jiange != 0){
-		tiaoxianzu = 1;
-	}
-	else
-		tiaoxianzu = tiaoxianzu_max; */
-	
-	for (ii = 0 ;ii<ZUSHU_MAX;ii++){
-		tongxunzhen[ii] = 0x0;
-		tongxunzhen_Ports_state[ii] = 0x0;
-		jidianqi_write_card(ii);
-		
+	}	
+	if(tongxun_reset_start == 1){
+		jidianqi_write_card(0);//因为就剩下一组
+		Beep(0);
+		Delay(HCJ_SB_TIME);
+		Beep(0);
+		tongxun_reset_start = 0;
+		tongxun_reset_finish = 1;
 	}
 
 	shoudao_reset_flag = 1;
@@ -172,7 +218,19 @@ void tiaoxian_reset(void){
 	tiaoxianzu_quanshu=0;
 //	kaishi=0;
 }
-
+void tiaoxian_reset_finish(void){
+	
+	if(tongxun_reset_finish == 1){
+		tongxunzhen[0] = 0x0;
+		tongxunzhen_Ports_state[0] = 0x0;
+		jidianqi_write_card(0);//因为就剩下一组
+		Beep(0);
+		Delay(HCJ_SB_TIME);
+		Beep(0);
+		tongxun_reset_finish = 0;
+	}
+	
+}
 /*************************************************
 Function(函数名称): between_check(unsigned int roundShineng)
 Description(函数功能、性能等的描述): 主要用于shinengpanduan()函数，判断当前阶段是否是在调线圈数之内
@@ -505,12 +563,27 @@ void shinengpanduan(void){
 		weizhi = tiqushuzi(*tiaoxianduan[i].channal_choose);
 		for (i = 0 ; i <DAOSHU_MAX ; i++){
 			if ( (weizhi>>i) & 0x01){
-				shinengwei[i] = 1;
+				shinengwei_cur[i] = shinengwei[i] = 1;
 			}
 		}
 	}
 }
 
+
+void shineng_record(void){
+	int i;
+	for(i = 0; i<DAOSHU_MAX;i++){
+		if(shinengwei_cur[i] != *(shinengwei_pre + i)){
+			if(*(shinengwei_cur +i) == 1)
+				*(shinengwei_jdg +i) = WEISHA_ALLOW;
+			else
+				*(shinengwei_jdg +i) = CHUDAOSHOUDAO_ALLOW;
+		}
+		else
+			*(shinengwei_jdg +i)= SHINENG_NO;
+	}
+	
+}
 /*************************************************
 Function(函数名称): tiaoxian(void)
 Description(函数功能、性能等的描述): 调线功能代码
@@ -533,7 +606,7 @@ void tiaoxian(void)
 	int j=0;
 	unsigned int zushu;
 	shinengpanduan();	//判断第i把刀具的使能
-	
+	shineng_record();
 	
 	/**************当tiaoxianzu_flag=1时，tioaxianzu_quanshu++;*************************************************/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
@@ -549,7 +622,7 @@ void tiaoxian(void)
 						/***********使能位==0之后(即该段不需要调线，那么就要把刀收回来)，
 					   设置出刀收刀，设置通讯开始标志位，出刀收刀开始标志
 			*********/
-			if((shinengwei[i] == 0) && (chudao_shoudao_status[zushu][i] == 1)){
+			if((shinengwei[i] == 0) && (chudao_shoudao_status[zushu][i] == 1) && *(shinengwei_jdg + i)== CHUDAOSHOUDAO_ALLOW){
 				
 				chudao_shoudao_process(i,zushu);					//出刀收刀
 				tongxunzhen[zushu] &= (~(3<< (i*2)));				//清零
@@ -567,7 +640,7 @@ void tiaoxian(void)
 				tongxun_kaishi = 1;
 				//continue;
 			}
-			else if (shinengwei[i] == 1 && (weisha_jiange_kw !=0 )){//&& tongxun_permmit[zushu] == 0
+			else if (shinengwei[i] == 1 && (weisha_jiange_kw !=0 ) && *(shinengwei_jdg +i) == WEISHA_ALLOW){//&& tongxun_permmit[zushu] == 0
 				
 				tongxun_jiange_status[zushu] = 1;
 				
@@ -628,6 +701,10 @@ void tiaoxian(void)
 					Beep(0);
 					Delay(HCJ_SB_TIME);
 					Beep(0);
+					
+					/******************记录用*****************/
+					*(shinengwei_pre + i) = shinengwei_cur[i];
+					
 				}
 				
 				chudao_shoudao_status[zushu][i] = 1;
@@ -917,6 +994,9 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		if (shoudao_tozero_status[zushu] == 1){
 			shoudao_tozero_status[zushu]=0;
 		}
+		
+		/************************记录用************************/
+		*(shinengwei_pre + i) = shinengwei_cur[i];
 		
 	}
 }

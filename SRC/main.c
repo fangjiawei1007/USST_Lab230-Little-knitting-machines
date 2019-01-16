@@ -379,6 +379,7 @@ void Main(void)
 				zhongduan_fun();
 				qigang_fun();
 				
+				
 			/*****qz_error_status==1,在zhongduan_fun(void);encoder1_process()中也有将qz_error_status=1*****/
 				if (qz_error_status==1)
 				{
@@ -519,7 +520,7 @@ void Main(void)
 				g_InteralMemory.Word[49] = extra_part_quanshu;
 				/************************************************************************************************************/
 			}
-	
+			tiaoxian_reset_finish();//调线归零之后reset
 
 			if(g_GlobalVar.Screen_Flag==1)
 			{
