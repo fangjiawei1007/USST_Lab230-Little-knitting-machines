@@ -177,7 +177,7 @@ static EnvParams Env;
 //#define VERSION "Ver4.3.10 2018-1-24"
 //#define VERSION "Ver4.5.1 2018-1-25"
 //#define VERSION "Ver5.0.6 2018-11-23"
-#define VERSION "Ver8.0.1 2018-12-26"
+#define VERSION "Ver8.0.4 2018-1-26"
 #define UART_PrintStr		0		// 是否串口输出调试信息
 									// 1 串口输出，则波特率不能修改								
 #define Nand_SJF		(UART_PrintStr)	// SJF 需要通过DNW , DNW 用的串口打印

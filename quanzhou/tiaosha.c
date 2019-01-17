@@ -187,7 +187,7 @@ void tiaoxian_reset(void){
 				shoudao_tozero_status[bb]= 1;
 			}	
 			
-			if(shinengwei_cur[ii] == 1){
+			if(*(shinengwei_cur + ii) == 1){
 				if(kaiguan[bb][ii] != 0x03){
 					kaiguan[bb][ii] = 0x03;		//(0b) 11
 					/******************调线控制执行卡***************/
@@ -199,6 +199,10 @@ void tiaoxian_reset(void){
 				/******************调线控制执行卡***************/
 				tongxunzhen_Ports_state[bb] &=(~(1 << (ii)));
 				tongxunzhen_Ports_state[bb] |=(Ports_state[bb][ii] << (ii));
+				
+				*(shinengwei_cur +ii) = 0;
+				*(shinengwei_pre +ii) = 0;
+				*(shinengwei_jdg +ii) = 0;
 				tongxun_reset_start = 1;
 			}	
 		}
@@ -228,6 +232,7 @@ void tiaoxian_reset_finish(void){
 		Delay(HCJ_SB_TIME);
 		Beep(0);
 		tongxun_reset_finish = 0;
+		
 	}
 	
 }
@@ -563,7 +568,7 @@ void shinengpanduan(void){
 		weizhi = tiqushuzi(*tiaoxianduan[i].channal_choose);
 		for (i = 0 ; i <DAOSHU_MAX ; i++){
 			if ( (weizhi>>i) & 0x01){
-				shinengwei_cur[i] = shinengwei[i] = 1;
+				*(shinengwei_cur + i) = shinengwei[i] = 1;
 			}
 		}
 	}
@@ -572,10 +577,13 @@ void shinengpanduan(void){
 
 void shineng_record(void){
 	int i;
-	for(i = 0; i<DAOSHU_MAX;i++){
-		if(shinengwei_cur[i] != *(shinengwei_pre + i)){
-			if(*(shinengwei_cur +i) == 1)
+	for(i = (DAOSHU_MAX - 1); i<=0;i--){
+		if(*(shinengwei_cur+i) != *(shinengwei_pre + i)){
+			if(*(shinengwei_cur +i) == 1){
 				*(shinengwei_jdg +i) = WEISHA_ALLOW;
+				tongxun_jiange[0] = i*(3*weisha_jiange_kw);
+			}
+				
 			else
 				*(shinengwei_jdg +i) = CHUDAOSHOUDAO_ALLOW;
 		}
@@ -610,9 +618,10 @@ void tiaoxian(void)
 	
 	/**************当tiaoxianzu_flag=1时，tioaxianzu_quanshu++;*************************************************/
 	for (zushu =0; zushu < tiaoxianzu; zushu++){
-		if(dapan_round == 0){
-			tongxun_jiange[zushu] = 0;	
-		}
+		/*****************直接通过record判断**********************/
+		// if(dapan_round == 0){
+			// tongxun_jiange[zushu] = 0;	
+		// }
 		/***判断6把刀具是否使能***/
 		for (i = 0; i<DAOSHU_MAX ; i++){
 			
@@ -703,7 +712,7 @@ void tiaoxian(void)
 					Beep(0);
 					
 					/******************记录用*****************/
-					*(shinengwei_pre + i) = shinengwei_cur[i];
+					*(shinengwei_pre + i) = *(shinengwei_cur +i);
 					
 				}
 				
@@ -996,7 +1005,7 @@ void chudao_shoudao_process(unsigned int i,unsigned int zushu)
 		}
 		
 		/************************记录用************************/
-		*(shinengwei_pre + i) = shinengwei_cur[i];
+		*(shinengwei_pre + i) = *(shinengwei_cur + i);
 		
 	}
 }
