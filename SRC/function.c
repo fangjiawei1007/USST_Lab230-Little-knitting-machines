@@ -107,7 +107,7 @@ void KeyBoard_Refresh(void)
 		Encrypt_Operation();
 #elif ProductTest
 		////////////// 成品测试////////////////
-		Test_Run();
+//		Test_Run();
 		Test_RTC_SetTime();  // 按钮控制
 		Test_RTC_ReadTime(); 
 		
